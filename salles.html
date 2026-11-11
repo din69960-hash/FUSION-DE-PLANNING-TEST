@@ -280,8 +280,10 @@
           <div class="prof-tabs" id="rg-tabs"></div>
           <div id="rg-corps"></div>
           <div class="set-section">
-            <h4>✉️ Adresse qui reçoit les nouvelles demandes de salle</h4>
-            <p class="aide">Un mail part à chaque nouvelle demande. Laissez vide pour utiliser l'adresse des mails automatiques des manifestations.</p>
+            <h4>✉️ Mail au service à chaque nouvelle demande</h4>
+            <p class="aide">Les nouvelles demandes s'affichent toujours sur l'accueil administrateur (bandeau et compteur rouge). Le mail est en plus : utile pour être prévenu sans ouvrir le site. Les mails aux demandeurs (validée, pièces manquantes, refusée…) partent dans tous les cas.</p>
+            <div class="sw" id="rg-mail-sw" onclick="basculerMailResa()"><div><b id="rg-mail-sw-txt"></b></div><div class="toggle"></div></div>
+            <p class="aide">Adresse qui reçoit ce mail. Laissez vide pour utiliser l'adresse des mails automatiques des manifestations.</p>
             <div class="inline-f">
               <div class="mf"><label>Adresse</label><input type="email" id="rg-mail" placeholder="sports@ville-corbas.fr"></div>
               <button class="btn btn-primary btn-sm" style="padding:11px 18px" onclick="sauverMailResa()">Enregistrer</button>
@@ -883,7 +885,7 @@ async function supprimerSalle(id){
 // ---------- Règles par profil ----------
 let RG_PROFIL='asso', RG=null;
 async function renderReglages(){
-  try{ INFOS=await FU.rpc('ft_resa_infos',{p_token:tok()}); const reg=await FU.reglages(); document.getElementById('rg-mail').value=reg.mail_resa||''; }
+  try{ INFOS=await FU.rpc('ft_resa_infos',{p_token:tok()}); const reg=await FU.reglages(); document.getElementById('rg-mail').value=reg.mail_resa||''; MAIL_ACTIF=(reg.cfg_mail_resa??'1')!=='0'; dessinerMailSw(); }
   catch(e){ document.getElementById('rg-corps').innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
   chargerProfil(RG_PROFIL);
 }
@@ -948,6 +950,14 @@ async function retirerConvention(code){
   if(!confirm('Retirer cette convention ?')) return;
   try{ await FU.rpc('ft_resa_doc_supprimer',{p_token:tok(),p_cle:RG_PROFIL+'|'+code}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
   const n=RG.natures.find(x=>x.code===code); if(n) n.convention=null; dessinerReglages();
+}
+let MAIL_ACTIF=true;
+function dessinerMailSw(){ const s=document.getElementById('rg-mail-sw'); s.className='sw '+(MAIL_ACTIF?'on':'off');
+  document.getElementById('rg-mail-sw-txt').textContent=MAIL_ACTIF?'🔔 Mail activé : le service reçoit un mail à chaque nouvelle demande':'🔕 Mail coupé : les nouvelles demandes sont seulement affichées sur l\'accueil administrateur'; }
+async function basculerMailResa(){
+  const v=!MAIL_ACTIF;
+  try{ await FU.rpc('ft_reglage',{p_token:tok(),p_cle:'cfg_mail_resa',p_valeur:v?'1':'0'}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  MAIL_ACTIF=v; dessinerMailSw(); toast(v?'🔔 Mail au service activé':'🔕 Mail au service coupé','ok');
 }
 async function sauverMailResa(){
   const v=document.getElementById('rg-mail').value.trim();

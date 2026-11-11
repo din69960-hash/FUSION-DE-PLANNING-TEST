@@ -566,3 +566,7 @@ grant execute on function public.ft_resa_mail_preparer(text, bigint, text) to se
 grant execute on function public.ft_mail_resultat(bigint, text, text) to service_role;
 
 -- Réglage « mail_resa » autorisé dans public.ft_reglage (adresse qui reçoit les nouvelles demandes de salle).
+
+-- Accueil administrateur : compteur des demandes (public.ft_resa_a_traiter) ;
+-- mail « nouvelle demande » au service coupable par le réglage cfg_mail_resa = '0'
+-- (migration ft_resa_a_traiter_et_mail_optionnel).

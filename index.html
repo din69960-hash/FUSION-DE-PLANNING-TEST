@@ -143,6 +143,11 @@
 
   /* ===== CARTES DE MENU ===== */
   .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;}
+  .alerte-salles{display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#fff4e6;border:2px solid #f6c58a;color:#9a4d00;border-radius:var(--r2);padding:14px 18px;margin-bottom:18px;font-size:14.5px;cursor:pointer;}
+  .alerte-salles.on{display:flex;}
+  .alerte-salles b{font-size:16px;}
+  .badge-rouge{background:#c0392b;color:#fff;border-radius:20px;font-size:11px;font-weight:700;padding:1px 8px;margin-left:6px;}
+  .menu-card .badge-coin{position:absolute;top:14px;right:14px;background:#c0392b;color:#fff;border-radius:20px;font-size:12px;font-weight:700;padding:3px 10px;}
   .menu-card{background:#fff;border:2px solid var(--gris);border-radius:var(--r2);padding:26px 24px;cursor:pointer;transition:all .25s;position:relative;display:flex;flex-direction:column;}
   .menu-card:hover{border-color:var(--bleu2);transform:translateY(-3px);box-shadow:0 10px 26px rgba(37,99,168,.14);}
   .menu-card .icon{font-size:34px;margin-bottom:12px;}
@@ -387,7 +392,7 @@
         <div class="nav-item on" id="nav-accueil" onclick="adminNav('accueil')">🏠 Accueil</div>
         <div class="nav-item" onclick="allerVers('creneaux.html')">📅 Créneaux à l'année ↗</div>
         <div class="nav-item" onclick="allerVers('manifestations.html')">🏆 Manifestations ↗</div>
-        <div class="nav-item" onclick="allerVers('salles.html#demandes')">🏛️ Salles municipales ↗</div>
+        <div class="nav-item" onclick="allerVers('salles.html#demandes')">🏛️ Salles municipales<span class="badge-rouge" id="badge-salles-nav" style="display:none"></span></div>
         <div class="nav-sep"></div>
         <div class="sidebar-lbl">Réglages communs</div>
         <div class="nav-item" id="nav-saisons" onclick="adminNav('saisons')">🗓️ Saisons &amp; ouverture</div>
@@ -404,6 +409,10 @@
         <div id="adm-accueil" class="page on">
           <div class="section-title">Espace administrateur</div>
           <p class="section-sub">Choisissez la saison, puis le planning à gérer.</p>
+          <div class="alerte-salles" id="alerte-salles" onclick="allerVers('salles.html#demandes')">
+            <div>🔔 <b id="alerte-salles-txt"></b><br><span id="alerte-salles-sous" style="font-size:13px"></span></div>
+            <button class="btn btn-primary btn-sm" style="flex:none">Traiter les demandes →</button>
+          </div>
           <div class="saison-bar" id="admin-saison-bar"></div>
           <div class="menu-grid">
             <div class="menu-card grand" onclick="allerVers('creneaux.html')">
@@ -420,6 +429,7 @@
             </div>
             <div class="menu-card grand" onclick="allerVers('salles.html#demandes')">
               <div class="icon">🏛️</div>
+              <span class="badge-coin" id="badge-salles-carte" style="display:none"></span>
               <h3>Salles municipales</h3>
               <p>Demandes de réservation, planning des salles, dates bloquées, fiches des salles et règles par profil.</p>
             </div>
@@ -843,7 +853,7 @@ async function entrerAsso(){
 async function entrerAdmin(){
   montrer('ecran-admin');
   try{ await FU.chargerSaisons(); }catch(e){ toast('Erreur de chargement des saisons : '+e.message,'err'); }
-  majMenus();
+  majMenus(); majAlerteSalles();
   const h=(location.hash||'').replace('#','');
   if(['saisons','assos','ent','part','docs','mails','code'].includes(h)) adminNav(h);
 }
@@ -861,6 +871,21 @@ async function changerMonMdp(){
   fermerM('chg'); toast('✅ Mot de passe modifié','ok');
 }
 
+// Demandes de salles à traiter : bandeau et compteurs de l'accueil administrateur
+async function majAlerteSalles(){
+  const s=FU.lireSession(); if(!s||s.role!=='admin') return;
+  let r; try{ r=await FU.rpc('ft_resa_a_traiter',{p_token:s.token}); }catch(e){ return; }
+  const n=r.nouvelles||0, pc=r.pieces||0, pa=r.paiement||0;
+  const bandeau=document.getElementById('alerte-salles');
+  bandeau.classList.toggle('on', n>0);
+  document.getElementById('alerte-salles-txt').textContent = n===1 ? '1 nouvelle demande de salle à traiter' : n+' nouvelles demandes de salle à traiter';
+  const sous=[]; if(pc) sous.push(pc+' en attente de pièces'); if(pa) sous.push(pa+' en attente de paiement');
+  document.getElementById('alerte-salles-sous').textContent=sous.join(' · ');
+  ['badge-salles-nav','badge-salles-carte'].forEach(id=>{ const b=document.getElementById(id); b.textContent=n; b.style.display=n?'inline':'none'; });
+}
+setInterval(()=>{ if(document.getElementById('adm-accueil')?.classList.contains('on') && !document.hidden) majAlerteSalles(); }, 60000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && document.getElementById('adm-accueil')?.classList.contains('on')) majAlerteSalles(); });
+
 // =====================================================================
 // ADMINISTRATION COMMUNE
 // =====================================================================
@@ -870,7 +895,7 @@ function adminNav(sec){
   document.querySelectorAll('#ecran-admin .page').forEach(p=>p.classList.remove('on'));
   document.getElementById('adm-'+sec)?.classList.add('on');
   history.replaceState(null,'',sec==='accueil'?'index.html':'index.html#'+sec);
-  if(sec==='accueil') majMenus();
+  if(sec==='accueil'){ majMenus(); majAlerteSalles(); }
   if(sec==='saisons') renderSaisons();
   if(sec==='assos') renderAssos();
   if(sec==='ent') renderUsagers('entreprise');
