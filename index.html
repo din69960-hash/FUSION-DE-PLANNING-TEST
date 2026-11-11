@@ -279,6 +279,11 @@
         <p>Compétitions, tournois, galas, stages… Saisissez vos demandes, suivez-les et consultez le planning et vos impacts.</p>
         <span class="etat" id="asso-etat-ma"></span>
       </div>
+      <div class="menu-card grand" onclick="allerVers('salles.html#planning')">
+        <div class="icon">🏛️</div>
+        <h3>Réserver une salle municipale</h3>
+        <p>Moment festif, assemblée générale, vente, réunion : visitez les salles, consultez le planning et suivez vos demandes.</p>
+      </div>
       <div class="menu-card discret" onclick="ouvrirChgMdp()">
         <div class="icon">🔑</div>
         <h3>Changer votre mot de passe</h3>
@@ -337,23 +342,20 @@
     <div class="section-title" id="usr-bonjour">Bonjour</div>
     <p class="section-sub">Réservation des salles municipales de Corbas.</p>
     <div class="menu-grid">
-      <div class="menu-card grand inactif">
+      <div class="menu-card grand" onclick="allerVers('salles.html#visite')">
         <div class="icon">🏛️</div>
         <h3>Visite des salles</h3>
         <p>Photos, vidéo, tarifs, cautions et matériel disponible de chaque salle.</p>
-        <span class="bientot">🚧 Prochaine étape du site test</span>
       </div>
-      <div class="menu-card grand inactif">
+      <div class="menu-card grand" onclick="allerVers('salles.html#planning')">
         <div class="icon">📆</div>
-        <h3>Planning des salles</h3>
-        <p>Choisissez une salle et voyez, mois par mois, les dates libres et prises.</p>
-        <span class="bientot">🚧 Prochaine étape du site test</span>
+        <h3>Planning &amp; réservation</h3>
+        <p>Choisissez une salle, voyez mois par mois les dates libres et faites votre demande.</p>
       </div>
-      <div class="menu-card grand inactif">
+      <div class="menu-card grand" onclick="allerVers('salles.html#mes')">
         <div class="icon">📝</div>
         <h3>Mes demandes de réservation</h3>
         <p>Suivez vos demandes : en cours, validées, à payer, confirmées.</p>
-        <span class="bientot">🚧 Prochaine étape du site test</span>
       </div>
       <div class="menu-card" onclick="ouvrirMonCompte()">
         <div class="icon">👤</div>
@@ -385,6 +387,7 @@
         <div class="nav-item on" id="nav-accueil" onclick="adminNav('accueil')">🏠 Accueil</div>
         <div class="nav-item" onclick="allerVers('creneaux.html')">📅 Créneaux à l'année ↗</div>
         <div class="nav-item" onclick="allerVers('manifestations.html')">🏆 Manifestations ↗</div>
+        <div class="nav-item" onclick="allerVers('salles.html#demandes')">🏛️ Salles municipales ↗</div>
         <div class="nav-sep"></div>
         <div class="sidebar-lbl">Réglages communs</div>
         <div class="nav-item" id="nav-saisons" onclick="adminNav('saisons')">🗓️ Saisons &amp; ouverture</div>
@@ -414,6 +417,11 @@
               <h3>Planning des manifestations</h3>
               <p>Planning mensuel, demandes des associations, traitement, bilans et extractions.</p>
               <span class="etat" id="admin-etat-ma"></span>
+            </div>
+            <div class="menu-card grand" onclick="allerVers('salles.html#demandes')">
+              <div class="icon">🏛️</div>
+              <h3>Salles municipales</h3>
+              <p>Demandes de réservation, planning des salles, dates bloquées, fiches des salles et règles par profil.</p>
             </div>
             <div class="menu-card" onclick="adminNav('saisons')">
               <div class="icon">🗓️</div>

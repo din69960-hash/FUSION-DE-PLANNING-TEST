@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a3a5c">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TEST Corbas">
+<title>Salles municipales de Corbas — Réservation</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="commun.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap');
+  :root{
+    --bleu:#1a3a5c; --bleu2:#2563a8; --or:#c8972a; --or2:#f0b429; --clair:#f4f7fb; --blanc:#fff;
+    --gris:#e2e8f0; --gris2:#64748b; --rouge:#c0392b; --vert:#1a7a4a; --r:10px; --r2:18px;
+    --c-libre:#22a05a; --c-demande:#2f74d0; --c-option:#f08c1a; --c-reserve:#d33b2c; --c-hors:#d5dbe3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--clair);color:var(--bleu);min-height:100vh;}
+  a{color:var(--bleu2);}
+
+  .app-header{background:var(--bleu);padding:0 24px;min-height:62px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.18);position:sticky;top:0;z-index:100;gap:10px;}
+  .hdr-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:#fff;white-space:nowrap;}
+  .hdr-logo span{color:var(--or2);}
+  .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+  .role-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;}
+  .role-badge.admin{background:rgba(200,151,42,.3);border-color:var(--or);}
+  .hdr-nom{color:#fff;font-weight:700;font-size:13.5px;}
+  .btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:inherit;}
+  .btn-logout:hover{background:rgba(255,255,255,.2);}
+  .app-body{max-width:1240px;margin:0 auto;padding:26px 20px 70px;}
+  .section-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--bleu);margin-bottom:6px;}
+  .section-sub{color:var(--gris2);font-size:14px;margin-bottom:20px;line-height:1.5;}
+  .chargement{color:var(--gris2);font-size:13px;padding:14px 0;}
+  .vide{color:var(--gris2);font-style:italic;font-size:13px;}
+
+  /* Onglets usager */
+  .onglets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+  .onglet{background:#fff;border:2px solid var(--gris);border-radius:30px;padding:9px 18px;font-weight:700;font-size:14px;cursor:pointer;color:var(--bleu);font-family:inherit;}
+  .onglet.on{background:var(--bleu);border-color:var(--bleu);color:#fff;}
+
+  /* Admin */
+  .admin-wrap{display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:start;}
+  .admin-sidebar{background:#fff;border-radius:var(--r2);padding:12px;border:1px solid var(--gris);position:sticky;top:80px;}
+  .sidebar-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:var(--gris2);font-weight:700;padding:8px 10px 6px;}
+  .nav-item{padding:10px 12px;border-radius:var(--r);cursor:pointer;font-size:14px;font-weight:500;color:var(--bleu);display:flex;justify-content:space-between;align-items:center;gap:6px;}
+  .nav-item:hover{background:var(--clair);} .nav-item.on{background:var(--bleu);color:#fff;}
+  .nav-sep{height:1px;background:var(--gris);margin:8px 6px;}
+  .pastille{background:var(--rouge);color:#fff;border-radius:20px;font-size:11px;font-weight:700;padding:1px 8px;}
+  .admin-content{min-width:0;}
+  .page{display:none;} .page.on{display:block;}
+
+  .set-section{background:#fff;border:1px solid var(--gris);border-radius:var(--r2);padding:20px;margin-bottom:18px;}
+  .set-section h4{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--bleu);margin-bottom:10px;}
+  .aide{font-size:12.5px;color:var(--gris2);margin-bottom:12px;line-height:1.5;}
+  .inline-f{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+  .inline-f .mf{flex:1;min-width:170px;margin-bottom:0;}
+
+  /* Formulaires */
+  .mf{text-align:left;margin-bottom:12px;}
+  .mf label,.lbl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gris2);margin-bottom:5px;}
+  .mf input,.mf select,.mf textarea{width:100%;padding:10px 12px;border:2px solid var(--gris);border-radius:var(--r);font-size:15px;font-family:inherit;color:var(--bleu);outline:none;background:#fff;}
+  .mf input:focus,.mf select:focus,.mf textarea:focus{border-color:var(--bleu2);}
+  .mf textarea{min-height:70px;resize:vertical;}
+  .grille2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+  .grille2 .plein{grid-column:1/-1;}
+  .coches{display:flex;flex-wrap:wrap;gap:8px;}
+  .coche{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--gris);border-radius:20px;padding:6px 12px;font-size:13.5px;cursor:pointer;user-select:none;background:#fff;}
+  .coche input,.mf .coche input{accent-color:var(--bleu);width:auto;padding:0;border:none;}
+  .mf label.btn{display:inline-block;text-transform:none;letter-spacing:0;color:var(--bleu);margin:0;font-size:12px;}
+  .mf label.coche{display:inline-flex;text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500;color:var(--bleu);margin:0;}
+  .coche:has(input:checked){border-color:var(--bleu2);background:#eef4fc;}
+  .err-msg{color:var(--rouge);font-size:13px;margin-top:8px;display:none;text-align:left;background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:8px 10px;}
+  .err-msg.on{display:block;}
+  .note{background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:9px 12px;font-size:13px;margin:0 0 12px;text-align:left;line-height:1.45;}
+  .note.bleu{background:#eef4fc;border-color:#bcd3f1;color:#1d4f8f;}
+  .note.vert{background:#effaf3;border-color:#bbe5cb;color:var(--vert);}
+  .note.rouge{background:#fff5f5;border-color:#fecaca;color:var(--rouge);}
+
+  .btn{flex:1;padding:11px 16px;border-radius:var(--r);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;border:none;transition:.2s;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-primary{background:var(--bleu);color:#fff;} .btn-primary:hover:not(:disabled){background:var(--bleu2);}
+  .btn-secondary{background:var(--gris);color:var(--bleu);} .btn-secondary:hover{background:#d1dce8;}
+  .btn-danger{background:var(--rouge);color:#fff;} .btn-success{background:var(--vert);color:#fff;}
+  .btn-or{background:var(--or);color:#fff;} .btn-orange{background:var(--c-option);color:#fff;}
+  .btn-sm{flex:none;padding:7px 13px;font-size:12px;}
+  .lnk{background:none;border:none;color:var(--bleu2);font-size:12.5px;cursor:pointer;font-family:inherit;text-decoration:underline;}
+  .lnk.red{color:var(--rouge);}
+  .btns{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+
+  /* Modales */
+  .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;padding:14px;}
+  .modal-ov.on{display:flex;}
+  .modal-box{background:#fff;border-radius:var(--r2);padding:26px;width:560px;max-width:100%;box-shadow:0 16px 60px rgba(0,0,0,.25);max-height:94vh;overflow:auto;position:relative;}
+  .modal-box.large{width:820px;}
+  .modal-box h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--bleu);margin-bottom:6px;padding-right:30px;}
+  .modal-box .sous{color:var(--gris2);font-size:13px;margin-bottom:16px;line-height:1.45;}
+  .fermer-x{position:absolute;top:14px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:var(--gris2);line-height:1;}
+
+  /* Fiches salles */
+  .salles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
+  .salle-card{background:#fff;border:1px solid var(--gris);border-radius:var(--r2);overflow:hidden;display:flex;flex-direction:column;}
+  .salle-photo{height:190px;background:linear-gradient(135deg,#1a3a5c,#2563a8);display:flex;align-items:center;justify-content:center;font-size:54px;color:rgba(255,255,255,.6);}
+  .salle-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .salle-corps{padding:18px;flex:1;display:flex;flex-direction:column;gap:8px;}
+  .salle-corps h3{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;}
+  .salle-meta{font-size:13px;color:var(--gris2);}
+  .salle-desc{font-size:13.5px;line-height:1.5;white-space:pre-line;}
+  .cond{background:var(--clair);border-radius:12px;padding:12px 14px;font-size:13.5px;}
+  .cond h5{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gris2);margin-bottom:6px;}
+  .cond dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;}
+  .cond dt{color:var(--gris2);} .cond dd{font-weight:700;white-space:pre-line;}
+  .salle-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:8px;}
+  .video-wrap{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000;}
+  .video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+
+  /* Calendrier */
+  .cal-barre{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;background:#fff;border:1px solid var(--gris);border-radius:var(--r2);padding:14px 18px;margin-bottom:14px;}
+  .cal-barre .mf{margin:0;min-width:220px;flex:1;max-width:380px;}
+  .mois-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:thin;}
+  .mois-tab{flex:none;border:2px solid var(--gris);background:#fff;border-radius:20px;padding:7px 14px;font-weight:700;font-size:13px;cursor:pointer;color:var(--bleu);font-family:inherit;white-space:nowrap;}
+  .mois-tab.on{background:var(--bleu);color:#fff;border-color:var(--bleu);}
+  .legende{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;margin:4px 0 12px;color:var(--gris2);}
+  .legende span{display:inline-flex;align-items:center;gap:6px;}
+  .legende i{width:14px;height:14px;border-radius:4px;display:inline-block;}
+  .cal{background:#fff;border:1px solid var(--gris);border-radius:var(--r2);padding:12px;}
+  .cal-jours,.cal-grille{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .cal-jours div{text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gris2);padding:4px 0;}
+  .jour{border:1.5px solid var(--gris);border-radius:10px;padding:5px;min-height:78px;cursor:pointer;display:flex;flex-direction:column;gap:3px;background:#fff;transition:.15s;}
+  .jour:hover{border-color:var(--bleu2);box-shadow:0 4px 12px rgba(37,99,168,.15);}
+  .jour.vide{visibility:hidden;}
+  .jour.passe{opacity:.55;}
+  .jour .num{font-weight:800;font-size:13px;display:flex;justify-content:space-between;align-items:center;}
+  .jour .num small{font-weight:700;font-size:10px;color:var(--gris2);}
+  .barre{flex:1;min-height:12px;border-radius:5px;font-size:10px;line-height:12px;color:#fff;padding:1px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:700;}
+  .e-libre{background:var(--c-libre);} .e-demande{background:var(--c-demande);} .e-option{background:var(--c-option);}
+  .e-reserve,.e-bloque{background:var(--c-reserve);} .e-hors{background:var(--c-hors);color:#6b7685;}
+  .barre.mien{box-shadow:inset 0 0 0 2px #111;}
+  .jour.aujourdhui{border-color:var(--or);border-width:2.5px;}
+  .creneau-ligne{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border:1.5px solid var(--gris);border-radius:12px;margin-bottom:8px;flex-wrap:wrap;}
+  .creneau-ligne b{font-size:14.5px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;color:#fff;}
+
+  /* Demandes */
+  .dem-card{background:#fff;border:1px solid var(--gris);border-left:6px solid var(--gris);border-radius:var(--r2);padding:16px 18px;margin-bottom:12px;}
+  .dem-card.s-demande,.dem-card.s-pieces{border-left-color:var(--c-demande);}
+  .dem-card.s-option{border-left-color:var(--c-option);}
+  .dem-card.s-reservee{border-left-color:var(--c-reserve);}
+  .dem-card.s-refusee,.dem-card.s-annulee,.dem-card.s-expiree{border-left-color:#9aa5b4;opacity:.85;}
+  .dem-tete{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;}
+  .dem-tete h4{font-family:'Syne',sans-serif;font-size:16.5px;}
+  .dem-infos{font-size:13.5px;color:var(--gris2);margin-top:4px;line-height:1.5;}
+  .piece{display:inline-flex;align-items:center;gap:6px;background:var(--clair);border:1px solid var(--gris);border-radius:8px;padding:5px 10px;font-size:12.5px;margin:4px 6px 0 0;cursor:pointer;}
+  .piece:hover{border-color:var(--bleu2);}
+  .filtres{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+  .filtre{border:2px solid var(--gris);background:#fff;border-radius:20px;padding:6px 13px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--bleu);font-family:inherit;}
+  .filtre.on{background:var(--bleu);border-color:var(--bleu);color:#fff;}
+  .recherche{padding:8px 12px;border:2px solid var(--gris);border-radius:var(--r);font-size:14px;font-family:inherit;min-width:200px;flex:1;max-width:320px;}
+  .histo{font-size:12.5px;color:var(--gris2);border-left:2px solid var(--gris);padding-left:12px;margin-top:8px;}
+  .histo div{margin-bottom:5px;}
+  table.tb{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.tb th{background:var(--clair);color:var(--gris2);font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:8px;text-align:left;border-bottom:2px solid var(--gris);}
+  table.tb td{padding:8px;border-bottom:1px solid var(--gris);vertical-align:top;}
+  table.tb input[type=text],table.tb input[type=number],table.tb textarea{width:100%;padding:7px 9px;border:1px solid var(--gris);border-radius:8px;font-family:inherit;font-size:13.5px;color:var(--bleu);}
+  table.tb textarea{min-height:56px;resize:vertical;}
+  .tb-wrap{overflow-x:auto;}
+  .sw{display:flex;align-items:center;justify-content:space-between;gap:12px;border:2px solid var(--gris);border-radius:var(--r);padding:12px 14px;cursor:pointer;user-select:none;margin-bottom:14px;}
+  .sw.on{border-color:#9fd8b4;background:#f2fbf5;} .sw.off{background:#fff8f7;border-color:#f3c4bf;}
+  .toggle{width:46px;height:26px;border-radius:20px;background:#cbd5e1;position:relative;flex-shrink:0;}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .sw.on .toggle{background:var(--vert);} .sw.on .toggle::after{left:23px;}
+  .prof-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bleu);color:#fff;padding:12px 22px;border-radius:30px;font-size:14px;font-weight:500;opacity:0;transition:.3s;z-index:2000;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:92vw;text-align:center;}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.ok{background:var(--vert);} .toast.err{background:var(--rouge);} .toast.warn{background:#b45309;}
+
+  @media(max-width:820px){
+    .admin-wrap{grid-template-columns:1fr;}
+    .admin-sidebar{position:static;display:flex;flex-wrap:wrap;gap:4px;}
+    .sidebar-lbl,.nav-sep{display:none;}
+    .nav-item{font-size:13px;padding:8px 10px;}
+    .app-header{padding:10px 14px;flex-wrap:wrap;}
+  }
+  @media(max-width:640px){
+    .app-body{padding:18px 10px 60px;}
+    .grille2{grid-template-columns:1fr;}
+    .cal{padding:6px;} .cal-jours,.cal-grille{gap:3px;}
+    .jour{min-height:62px;padding:3px;border-radius:7px;}
+    .barre{font-size:0;min-height:10px;}
+    .modal-box{padding:20px 16px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="hdr-logo">🏛️ <span>Salles</span> Corbas</div>
+  <div class="hdr-right">
+    <span class="role-badge" id="hdr-role"></span>
+    <span class="hdr-nom" id="hdr-nom"></span>
+    <button class="btn-logout" onclick="location.href='index.html'">← Menu</button>
+    <button class="btn-logout" onclick="FU.deconnexion()">Déconnexion</button>
+  </div>
+</header>
+
+<div class="app-body">
+  <div id="chargement" class="chargement">Chargement…</div>
+
+  <!-- ===================== USAGERS (association, entreprise, particulier) ===================== -->
+  <div id="vue-usager" style="display:none">
+    <div class="section-title">Réservation des salles municipales</div>
+    <p class="section-sub" id="u-sous"></p>
+    <div class="onglets">
+      <button class="onglet" id="og-visite" onclick="usagerNav('visite')">🏛️ Visite des salles</button>
+      <button class="onglet" id="og-planning" onclick="usagerNav('planning')">📆 Planning &amp; réservation</button>
+      <button class="onglet" id="og-mes" onclick="usagerNav('mes')">📝 Mes demandes</button>
+    </div>
+    <div id="u-etat"></div>
+    <div id="u-visite" class="page"><div class="salles-grid" id="u-salles"></div></div>
+    <div id="u-planning" class="page"></div>
+    <div id="u-mes" class="page"><div id="u-mes-liste"></div></div>
+  </div>
+
+  <!-- ===================== ADMINISTRATEUR ===================== -->
+  <div id="vue-admin" style="display:none">
+    <div class="admin-wrap">
+      <div class="admin-sidebar">
+        <div class="sidebar-lbl">Réservations</div>
+        <div class="nav-item" id="nav-demandes" onclick="adminNav('demandes')">📥 Demandes <span class="pastille" id="pastille" style="display:none"></span></div>
+        <div class="nav-item" id="nav-planning" onclick="adminNav('planning')">📆 Planning des salles</div>
+        <div class="nav-item" id="nav-blocages" onclick="adminNav('blocages')">⛔ Dates bloquées</div>
+        <div class="nav-sep"></div>
+        <div class="sidebar-lbl">Réglages</div>
+        <div class="nav-item" id="nav-salles" onclick="adminNav('salles')">🏛️ Salles</div>
+        <div class="nav-item" id="nav-reglages" onclick="adminNav('reglages')">⚙️ Règles par profil</div>
+        <div class="nav-sep"></div>
+        <div class="nav-item" onclick="location.href='index.html'">← Menu administrateur</div>
+      </div>
+      <div class="admin-content">
+        <div id="a-demandes" class="page">
+          <div class="section-title">📥 Demandes de réservation</div>
+          <p class="section-sub">Vérifiez les pièces, puis validez, demandez des pièces ou refusez. Une demande validée avec un tarif passe en <b style="color:var(--c-option)">orange</b> jusqu'au paiement ; gratuite, elle passe directement en <b style="color:var(--c-reserve)">rouge</b>.</p>
+          <div class="filtres" id="a-filtres"></div>
+          <div id="a-demandes-liste"><div class="chargement">Chargement…</div></div>
+        </div>
+        <div id="a-planning" class="page"></div>
+        <div id="a-blocages" class="page">
+          <div class="section-title">⛔ Dates bloquées</div>
+          <p class="section-sub">Bloquez des dates (travaux, élections, manifestation municipale…) pour une salle ou pour toutes, pour les trois profils ou pour un seul. Une date bloquée apparaît en rouge « indisponible ».</p>
+          <div class="set-section">
+            <h4>＋ Bloquer des dates</h4>
+            <div class="grille2">
+              <div class="mf"><label>Salle</label><select id="bl-salle"></select></div>
+              <div class="mf"><label>Motif (visible par l'administrateur)</label><input type="text" id="bl-motif" placeholder="Ex : élections"></div>
+              <div class="mf"><label>Du</label><input type="date" id="bl-debut"></div>
+              <div class="mf"><label>Au (inclus)</label><input type="date" id="bl-fin"></div>
+              <div class="mf plein"><label>Moments</label><div class="coches" id="bl-creneaux"></div></div>
+              <div class="mf plein"><label>Bloqué pour</label><div class="coches" id="bl-profils"></div></div>
+            </div>
+            <div class="err-msg" id="bl-err"></div>
+            <button class="btn btn-primary" style="margin-top:8px" onclick="ajouterBlocage()">Bloquer ces dates</button>
+          </div>
+          <div class="set-section"><h4>Blocages en cours et à venir</h4><div id="bl-liste"></div></div>
+        </div>
+        <div id="a-salles" class="page">
+          <div class="section-title">🏛️ Salles</div>
+          <p class="section-sub">Fiche de chaque salle : photo, vidéo, descriptif, conditions par profil (tarif, cautions, matériel), périodes réservables et règles d'enchaînement.</p>
+          <button class="btn btn-primary" style="margin-bottom:16px" onclick="ouvrirSalle(null)">＋ Ajouter une salle</button>
+          <div id="a-salles-liste"></div>
+        </div>
+        <div id="a-reglages" class="page">
+          <div class="section-title">⚙️ Règles par profil</div>
+          <p class="section-sub">Pour chaque profil : ouverture des réservations, date limite, délai de paiement, natures de demande avec leur tarif, les pièces exigées et la convention à télécharger.</p>
+          <div class="prof-tabs" id="rg-tabs"></div>
+          <div id="rg-corps"></div>
+          <div class="set-section">
+            <h4>✉️ Adresse qui reçoit les nouvelles demandes de salle</h4>
+            <p class="aide">Un mail part à chaque nouvelle demande. Laissez vide pour utiliser l'adresse des mails automatiques des manifestations.</p>
+            <div class="inline-f">
+              <div class="mf"><label>Adresse</label><input type="email" id="rg-mail" placeholder="sports@ville-corbas.fr"></div>
+              <button class="btn btn-primary btn-sm" style="padding:11px 18px" onclick="sauverMailResa()">Enregistrer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Détail d'un jour -->
+<div class="modal-ov" id="modal-jour" onclick="if(event.target===this)fermerM('jour')">
+  <div class="modal-box"><button class="fermer-x" onclick="fermerM('jour')">×</button>
+    <h3 id="jr-titre"></h3><p class="sous" id="jr-sous"></p><div id="jr-corps"></div></div>
+</div>
+
+<!-- Formulaire de demande -->
+<div class="modal-ov" id="modal-resa">
+  <div class="modal-box"><button class="fermer-x" onclick="fermerM('resa')">×</button>
+    <h3>Demande de réservation</h3>
+    <div class="note bleu" id="rs-recap"></div>
+    <form onsubmit="event.preventDefault();envoyerDemande();" autocomplete="off" novalidate>
+      <div class="mf"><label>Nature de la demande</label><select id="rs-nature" onchange="majNature()"></select></div>
+      <div class="mf" id="rs-precision-zone" style="display:none"><label>Précisez</label><input type="text" id="rs-precision" placeholder="Ex : communion, départ en retraite…"></div>
+      <div id="rs-conditions"></div>
+      <div class="grille2">
+        <div class="mf"><label>Nombre de personnes (environ)</label><input type="number" id="rs-nb" min="1" inputmode="numeric"></div>
+        <div id="rs-contact" style="display:contents">
+          <div class="mf"><label>Mail de contact</label><input type="email" id="rs-mail" placeholder="Pour recevoir les réponses"></div>
+          <div class="mf"><label>Téléphone de contact</label><input type="tel" id="rs-tel"></div>
+        </div>
+      </div>
+      <div id="rs-pieces"></div>
+      <div class="mf"><label>Remarque (facultatif)</label><textarea id="rs-rem"></textarea></div>
+      <div class="err-msg" id="rs-err"></div>
+      <div class="btns">
+        <button type="button" class="btn btn-secondary" onclick="fermerM('resa')">Annuler</button>
+        <button type="submit" class="btn btn-primary" id="rs-go">Envoyer ma demande</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Fiche salle (admin) -->
+<div class="modal-ov" id="modal-salle">
+  <div class="modal-box large"><button class="fermer-x" onclick="fermerM('salle')">×</button>
+    <h3 id="sa-titre">Salle</h3>
+    <div class="grille2">
+      <div class="mf"><label>Nom de la salle</label><input type="text" id="sa-nom"></div>
+      <div class="mf"><label>Adresse</label><input type="text" id="sa-adresse"></div>
+      <div class="mf"><label>Capacité</label><input type="text" id="sa-capacite" placeholder="Ex : 120 personnes debout, 80 assises"></div>
+      <div class="mf"><label>Lien vidéo YouTube</label><input type="url" id="sa-youtube" placeholder="https://youtu.be/…"></div>
+      <div class="mf plein"><label>Descriptif</label><textarea id="sa-desc"></textarea></div>
+      <div class="mf plein"><label>Photo</label>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div id="sa-photo-apercu" style="width:150px;height:96px;border-radius:10px;overflow:hidden;background:var(--clair);display:flex;align-items:center;justify-content:center;color:var(--gris2);font-size:12px">Aucune photo</div>
+          <label class="btn btn-secondary btn-sm">Choisir une photo<input type="file" accept="image/*" style="display:none" onchange="choisirPhoto(this)"></label>
+          <button type="button" class="lnk red" onclick="retirerPhoto()">Retirer la photo</button>
+        </div>
+      </div>
+      <div class="mf plein"><label>Périodes réservables</label><div class="coches" id="sa-periodes"></div></div>
+      <div class="mf plein"><label class="coche"><input type="checkbox" id="sa-actif"> Salle visible et réservable</label></div>
+    </div>
+    <div class="set-section" style="padding:16px">
+      <h4>Conditions affichées à chaque profil</h4>
+      <div class="prof-tabs" id="sa-cond-tabs"></div>
+      <div class="grille2" id="sa-cond"></div>
+    </div>
+    <div class="set-section" style="padding:16px">
+      <h4>Règles d'enchaînement</h4>
+      <p class="aide">Selon le jour de la réservation : après une réservation du matin ou de l'après-midi, le soir reste-t-il réservable ? Après une réservation du soir, le lendemain matin reste-t-il réservable (état des lieux, ménage) ?</p>
+      <div class="tb-wrap"><table class="tb" id="sa-ench"></table></div>
+    </div>
+    <div class="err-msg" id="sa-err"></div>
+    <div class="btns">
+      <button type="button" class="btn btn-secondary" onclick="fermerM('salle')">Annuler</button>
+      <button type="button" class="btn btn-primary" onclick="enregistrerSalle()">Enregistrer la salle</button>
+    </div>
+  </div>
+</div>
+
+<!-- Détail d'une demande (admin) -->
+<div class="modal-ov" id="modal-dem" onclick="if(event.target===this)fermerM('dem')">
+  <div class="modal-box large"><button class="fermer-x" onclick="fermerM('dem')">×</button><div id="dm-corps"></div></div>
+</div>
+
+<!-- Vidéo -->
+<div class="modal-ov" id="modal-video" onclick="if(event.target===this)fermerVideo()">
+  <div class="modal-box large"><button class="fermer-x" onclick="fermerVideo()">×</button><h3 id="vd-titre"></h3><div id="vd-corps"></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================================
+// RÉSERVATION DES SALLES MUNICIPALES — usagers et administrateur
+// =====================================================================
+const esc = FU.esc;
+const PROFILS = {asso:'Association', entreprise:'Entreprise', particulier:'Particulier'};
+const PROFILS_PL = {asso:'Associations', entreprise:'Entreprises', particulier:'Particuliers'};
+const CRENEAUX = [['matin','Matin'],['apres_midi','Après-midi'],['soir','Soir']];
+const PERIODES = {matin:'Matin', apres_midi:'Après-midi', soir:'Soir', journee:'Journée entière', weekend:'Week-end (samedi + dimanche)'};
+const ETATS = {libre:'Disponible', demande:'Demande en cours', option:'Validée, en attente de paiement', reserve:'Indisponible', bloque:'Indisponible', hors:'Non réservable'};
+const STATUTS = {demande:['Demande en cours','var(--c-demande)'], pieces:['Pièces à compléter','var(--c-demande)'], option:['Validée — paiement attendu','var(--c-option)'],
+  reservee:['Réservée','var(--c-reserve)'], refusee:['Refusée','#8a94a3'], annulee:['Annulée','#8a94a3'], expiree:['Annulée (délai dépassé)','#8a94a3']};
+const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+
+let SES = null, ROLE = '', INFOS = null, SALLES = [], CAL = {salle:null, mois:null, cases:{}}, DEMANDES = [], RESA = null;
+
+// ---------- Outils ----------
+let _tt;
+function toast(msg,type=''){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast on '+type; clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('on'),4200); }
+function ouvrirM(id){ const m=document.getElementById('modal-'+id); m.querySelectorAll('.err-msg').forEach(e=>{e.classList.remove('on');e.textContent='';}); m.classList.add('on'); }
+function fermerM(id){ document.getElementById('modal-'+id).classList.remove('on'); }
+function errM(id,txt){ const e=document.getElementById(id); e.textContent='❌ '+txt; e.classList.add('on'); e.scrollIntoView({block:'nearest'}); }
+const tok = () => (FU.lireSession()||{}).token;
+const pad = n => String(n).padStart(2,'0');
+const iso = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const dDate = s => { const [y,m,j]=String(s).slice(0,10).split('-').map(Number); return new Date(y,m-1,j); };
+const ajout = (s,n) => { const d=dDate(s); d.setDate(d.getDate()+n); return iso(d); };
+const dateFr = s => s ? dDate(s).toLocaleDateString('fr-FR') : '';
+const dateLongue = s => { const d=dDate(s); return JOURS[d.getDay()]+' '+d.getDate()+' '+MOIS[d.getMonth()]+' '+d.getFullYear(); };
+const euros = t => t===null||t===undefined||t==='' ? 'Tarif communiqué par le service des sports' : Number(t)===0 ? 'Gratuit' : Number(t).toLocaleString('fr-FR')+' €';
+const taille = o => o>1048576 ? (Math.round(o/104857.6)/10)+' Mo' : Math.max(1,Math.round((o||0)/1024))+' Ko';
+const chipStatut = st => { const s=STATUTS[st]||[st,'#888']; return `<span class="chip" style="background:${s[1]}">${esc(s[0])}</span>`; };
+function slug(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,40) || 'nature'; }
+function idYoutube(u){ const m=String(u||'').match(/(?:youtu\.be\/|v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/); return m?m[1]:null; }
+
+function lireBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]||''); r.onerror=()=>rej(new Error('Lecture du fichier impossible')); r.readAsDataURL(file); }); }
+// Photo → JPEG réduit (les photos de téléphone font souvent 4 à 8 Mo)
+function reduireImage(file, maxPx, qualite){
+  return new Promise((res,rej)=>{
+    const img=new Image(), url=URL.createObjectURL(file);
+    img.onload=()=>{ let w=img.naturalWidth, h=img.naturalHeight; const k=Math.min(1, maxPx/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k);
+      const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,w,h); x.drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', qualite)); };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('Image illisible')); };
+    img.src=url;
+  });
+}
+// Pièce justificative : photo réduite, PDF / autre fichier tel quel (5 Mo maximum)
+async function preparerFichier(file){
+  if(/^image\/(jpeg|png|webp|heic|heif)/i.test(file.type) || /\.(jpe?g|png|webp|heic)$/i.test(file.name)){
+    try{ const d=await reduireImage(file,1800,0.82); return {nom:file.name.replace(/\.[^.]+$/,'')+'.jpg', type:'image/jpeg', contenu:d.split(',')[1]}; }catch(e){}
+  }
+  if(file.size>5*1024*1024) throw new Error('« '+file.name+' » est trop lourd (5 Mo maximum).');
+  return {nom:file.name, type:file.type||'application/octet-stream', contenu:await lireBase64(file)};
+}
+function telecharger(o){
+  const bin=atob(o.contenu); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([u],{type:o.type||'application/octet-stream'})); a.download=o.nom||'document';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+async function lirePiece(id){ try{ telecharger(await FU.rpc('ft_resa_piece_lire',{p_token:tok(),p_piece:id})); }catch(e){ toast('Erreur : '+e.message,'err'); } }
+async function lireConvention(cle){ try{ telecharger(await FU.rpc('ft_resa_doc_lire',{p_token:tok(),p_cle:cle})); }catch(e){ toast('Erreur : '+e.message,'err'); } }
+
+// Mail automatique (composé par le serveur à partir de la base)
+async function envoyerMail(id, evt){
+  try{
+    const r=await fetch(FU_URL+'/functions/v1/fusiontest-salles-mail',{method:'POST',
+      headers:{'Content-Type':'application/json','apikey':FU_KEY,'Authorization':'Bearer '+FU_KEY},body:JSON.stringify({token:tok(),id,evt})});
+    return await r.json().catch(()=>({}));
+  }catch(e){ return {envoye:false, detail:String(e)}; }
+}
+
+// ---------- Démarrage ----------
+window.addEventListener('load', async ()=>{
+  SES = await FU.exigerSession(['admin','asso','entreprise','particulier']); if(!SES) return;
+  ROLE = SES.role;
+  document.getElementById('hdr-role').textContent = ROLE==='admin' ? 'Administrateur' : PROFILS[ROLE];
+  document.getElementById('hdr-role').classList.toggle('admin', ROLE==='admin');
+  document.getElementById('hdr-nom').textContent = ROLE==='admin' ? '' : (SES.nom||'');
+  try{ [INFOS, SALLES] = await Promise.all([FU.rpc('ft_resa_infos',{p_token:tok()}), FU.rpc('ft_salles_liste',{p_token:tok()})]); }
+  catch(e){ document.getElementById('chargement').textContent='Erreur de chargement : '+e.message; return; }
+  document.getElementById('chargement').style.display='none';
+  const h=(location.hash||'').replace('#','');
+  if(ROLE==='admin'){ document.getElementById('vue-admin').style.display='block'; adminNav(['demandes','planning','blocages','salles','reglages'].includes(h)?h:'demandes'); }
+  else { document.getElementById('vue-usager').style.display='block'; usagerNav(['visite','planning','mes'].includes(h)?h:'visite'); }
+});
+window.addEventListener('hashchange',()=>{ const h=(location.hash||'').replace('#',''); if(!h) return;
+  if(ROLE==='admin' && document.getElementById('a-'+h) && !document.getElementById('a-'+h).classList.contains('on')) adminNav(h);
+  if(ROLE!=='admin' && document.getElementById('u-'+h) && !document.getElementById('u-'+h).classList.contains('on')) usagerNav(h);
+});
+
+// =====================================================================
+// USAGERS
+// =====================================================================
+const monProfil = () => (INFOS && INFOS.profils && INFOS.profils[ROLE]) || {};
+function usagerNav(sec){
+  ['visite','planning','mes'].forEach(x=>{ document.getElementById('og-'+x).classList.toggle('on',x===sec); document.getElementById('u-'+x).classList.toggle('on',x===sec); });
+  history.replaceState(null,'','salles.html#'+sec);
+  const p=monProfil();
+  document.getElementById('u-sous').textContent = ROLE==='asso' ? 'Réservez une salle municipale pour un moment festif, une assemblée générale, une vente ou une réunion.'
+    : ROLE==='entreprise' ? 'Réservez une salle municipale pour une assemblée générale, une vente ou une réunion.'
+    : 'Réservez une salle municipale pour un anniversaire, un mariage, un baptême…';
+  document.getElementById('u-etat').innerHTML = !p.ouvert ? '<div class="note rouge">🔒 Les réservations sont fermées pour le moment. Vous pouvez consulter les salles et le planning.</div>'
+    : p.limite ? `<div class="note vert">🔓 Réservations possibles jusqu'au <b>${dateFr(p.limite)}</b>.</div>` : '';
+  if(sec==='visite') renderVisite();
+  if(sec==='planning') renderPlanning('u-planning');
+  if(sec==='mes') renderMes();
+  window.scrollTo(0,0);
+}
+
+function conditionsHtml(c){
+  c=c||{};
+  const l=[['Tarif de location',c.tarif],['Caution ménage',c.caution_menage],['Caution réparation',c.caution_reparation],['Matériel disponible',c.materiel],['Bon à savoir',c.infos]].filter(x=>x[1]&&String(x[1]).trim());
+  if(!l.length) return '';
+  return `<div class="cond"><h5>Conditions ${ROLE==='admin'?'':'pour les '+PROFILS_PL[ROLE].toLowerCase()}</h5><dl>${l.map(x=>`<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join('')}</dl></div>`;
+}
+function renderVisite(){
+  const box=document.getElementById('u-salles');
+  if(!SALLES.length){ box.innerHTML='<p class="vide">Aucune salle n\'est encore proposée à la réservation.</p>'; return; }
+  box.innerHTML=SALLES.map(s=>`<div class="salle-card">
+    <div class="salle-photo">${s.photo?`<img src="${esc(s.photo)}" alt="${esc(s.nom)}" loading="lazy">`:'🏛️'}</div>
+    <div class="salle-corps">
+      <h3>${esc(s.nom)}</h3>
+      ${s.adresse||s.capacite?`<div class="salle-meta">${s.adresse?'📍 '+esc(s.adresse):''}${s.adresse&&s.capacite?' · ':''}${s.capacite?'👥 '+esc(s.capacite):''}</div>`:''}
+      ${s.descriptif?`<div class="salle-desc">${esc(s.descriptif)}</div>`:''}
+      ${conditionsHtml(s.conditions)}
+      <div class="salle-meta">Périodes : ${(s.periodes||[]).map(p=>PERIODES[p]).join(' · ')}</div>
+      <div class="salle-btns">
+        ${idYoutube(s.youtube)?`<button class="btn btn-secondary btn-sm" onclick="voirVideo(${s.id})">▶️ Visite en vidéo</button>`:''}
+        <button class="btn btn-primary btn-sm" onclick="CAL.salle=${s.id};usagerNav('planning')">📆 Voir le planning</button>
+      </div>
+    </div></div>`).join('');
+}
+function voirVideo(id){
+  const s=SALLES.find(x=>x.id===id); const v=idYoutube(s&&s.youtube); if(!v) return;
+  document.getElementById('vd-titre').textContent=s.nom;
+  document.getElementById('vd-corps').innerHTML=`<div class="video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/${v}?rel=0" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>
+    <p style="margin-top:10px;font-size:13px"><a href="${esc(s.youtube)}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a></p>`;
+  ouvrirM('video');
+}
+function fermerVideo(){ document.getElementById('vd-corps').innerHTML=''; fermerM('video'); }
+
+// ---------- Planning (commun usagers / administrateur) ----------
+function moisDisponibles(){
+  const auj=dDate(INFOS.aujourdhui); const liste=[];
+  let debut=new Date(auj.getFullYear(), auj.getMonth()-(ROLE==='admin'?2:0), 1);
+  let fin=new Date(auj.getFullYear(), auj.getMonth()+(ROLE==='admin'?14:12), 1);
+  if(ROLE!=='admin' && monProfil().limite){ const l=dDate(monProfil().limite); const fl=new Date(l.getFullYear(), l.getMonth(), 1); if(fl<fin) fin=fl; }
+  if(fin<debut) fin=new Date(debut);
+  for(let d=new Date(debut); d<=fin; d.setMonth(d.getMonth()+1)) liste.push(d.getFullYear()+'-'+pad(d.getMonth()+1));
+  return liste;
+}
+function renderPlanning(cid){
+  const box=document.getElementById(cid);
+  if(!SALLES.length){ box.innerHTML=(ROLE==='admin'?'<div class="section-title">📆 Planning des salles</div>':'')+'<p class="vide">Aucune salle n\'est encore créée.</p>'; return; }
+  if(!SALLES.some(s=>s.id===CAL.salle)) CAL.salle=SALLES[0].id;
+  const mois=moisDisponibles(); if(!mois.includes(CAL.mois)) CAL.mois=mois[ROLE==='admin'?Math.min(2,mois.length-1):0];
+  box.innerHTML=`${ROLE==='admin'?'<div class="section-title">📆 Planning des salles</div><p class="section-sub">Le nom du réservant apparaît sur chaque date. Touchez un jour pour voir le détail ou le bloquer.</p>':''}
+    <div class="cal-barre">
+      <div class="mf"><label>Salle</label><select id="cal-salle" onchange="CAL.salle=Number(this.value);chargerMois()">${SALLES.map(s=>`<option value="${s.id}" ${s.id===CAL.salle?'selected':''}>${esc(s.nom)}${s.actif===false?' (masquée)':''}</option>`).join('')}</select></div>
+      ${ROLE!=='admin'?'<div class="aide" style="margin:0;flex:1;min-width:200px">Touchez une date pour voir les périodes libres et faire votre demande.</div>':''}
+    </div>
+    <div class="mois-tabs" id="cal-mois">${mois.map(m=>{const [y,mm]=m.split('-').map(Number);return `<button class="mois-tab ${m===CAL.mois?'on':''}" data-m="${m}" onclick="CAL.mois='${m}';chargerMois()">${MOIS[mm-1].charAt(0).toUpperCase()+MOIS[mm-1].slice(1)} ${y}</button>`;}).join('')}</div>
+    <div class="legende"><span><i class="e-libre"></i>Disponible</span><span><i class="e-demande"></i>Demande en cours</span><span><i class="e-option"></i>Validée, attente de paiement</span><span><i class="e-reserve"></i>Indisponible</span><span><i class="e-hors"></i>Non réservable</span>${ROLE!=='admin'?'<span><i style="box-shadow:inset 0 0 0 2px #111;background:#fff"></i>Ma demande</span>':''}</div>
+    <div class="cal" id="cal-zone"><div class="chargement">Chargement…</div></div>`;
+  chargerMois();
+}
+async function chargerMois(){
+  document.querySelectorAll('#cal-mois .mois-tab').forEach(b=>b.classList.toggle('on',b.dataset.m===CAL.mois));
+  const t=document.querySelector('#cal-mois .mois-tab.on'); if(t) t.scrollIntoView({inline:'center',block:'nearest'});
+  const [y,m]=CAL.mois.split('-').map(Number);
+  const debut=iso(new Date(y,m-1,1)), fin=iso(new Date(y,m,1));   // + 1er du mois suivant (week-ends à cheval)
+  const zone=document.getElementById('cal-zone'); if(!zone) return;
+  try{ const r=await FU.rpc('ft_salle_calendrier',{p_token:tok(),p_salle:CAL.salle,p_debut:debut,p_fin:fin}); CAL.cases=r.cases||{}; }
+  catch(e){ zone.innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
+  dessinerMois();
+}
+function etatCase(d,c){
+  const x=CAL.cases[d+'|'+c]; if(x) return x;
+  if(ROLE==='admin') return {e:'libre'};
+  const p=monProfil();
+  if(d<=INFOS.aujourdhui || (p.limite && d>p.limite)) return {e:'hors'};
+  return {e:'libre'};
+}
+function dessinerMois(){
+  const [y,m]=CAL.mois.split('-').map(Number); const premier=new Date(y,m-1,1), nb=new Date(y,m,0).getDate();
+  const decal=(premier.getDay()+6)%7; let h='';
+  for(let i=0;i<decal;i++) h+='<div class="jour vide"></div>';
+  for(let j=1;j<=nb;j++){
+    const d=iso(new Date(y,m-1,j));
+    const barres=CRENEAUX.map(([c,l])=>{ const x=etatCase(d,c); const txt=ROLE==='admin'&&x.n?x.n:(x.m?'Moi':'');
+      return `<div class="barre e-${x.e} ${x.m?'mien':''}" title="${l} : ${esc(ETATS[x.e])}${x.n?' — '+esc(x.n):''}">${esc(txt)}</div>`; }).join('');
+    h+=`<div class="jour ${d<INFOS.aujourdhui?'passe':''} ${d===INFOS.aujourdhui?'aujourdhui':''}" onclick="ouvrirJour('${d}')"><div class="num">${j}<small>${JOURS[dDate(d).getDay()].slice(0,3)}</small></div>${barres}</div>`;
+  }
+  document.getElementById('cal-zone').innerHTML=`<div class="cal-jours">${['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(x=>`<div>${x}</div>`).join('')}</div><div class="cal-grille">${h}</div>`;
+}
+function ouvrirJour(d){
+  const s=SALLES.find(x=>x.id===CAL.salle); const p=monProfil();
+  document.getElementById('jr-titre').textContent=dateLongue(d).replace(/^./,c=>c.toUpperCase());
+  document.getElementById('jr-sous').textContent=s.nom;
+  let h=CRENEAUX.map(([c,l])=>{ const x=etatCase(d,c);
+    const coul=x.e==='libre'?'var(--c-libre)':x.e==='demande'?'var(--c-demande)':x.e==='option'?'var(--c-option)':x.e==='hors'?'#9aa5b4':'var(--c-reserve)';
+    let det='';
+    if(ROLE==='admin' && x.n) det=`<div style="font-size:13px;margin-top:3px">${esc(x.n)} · ${esc(PROFILS[x.p]||'')} · ${esc(x.mo||'')}</div>`;
+    else if(ROLE==='admin' && x.mo) det=`<div style="font-size:13px;margin-top:3px">${esc(x.mo)}</div>`;
+    if(x.m) det+='<div style="font-size:13px;margin-top:3px">C\'est votre demande.</div>';
+    const act=ROLE==='admin'&&x.id?`<button class="btn btn-secondary btn-sm" onclick="fermerM('jour');ouvrirDemande(${x.id})">Ouvrir la demande</button>`:'';
+    return `<div class="creneau-ligne"><div><b>${l}</b>${det}</div><div style="display:flex;gap:8px;align-items:center"><span class="chip" style="background:${coul}">${esc(ETATS[x.e])}</span>${act}</div></div>`;
+  }).join('');
+  if(ROLE==='admin'){
+    h+=`<div class="btns"><button class="btn btn-secondary" onclick="fermerM('jour');preparerBlocage('${d}')">⛔ Bloquer cette date</button></div>`;
+  } else {
+    const libres=periodesLibres(s,d);
+    if(!p.ouvert) h+='<div class="note rouge">🔒 Les réservations sont fermées pour le moment.</div>';
+    else if(d<=INFOS.aujourdhui) h+='<div class="note">Les réservations se font au plus tard la veille.</div>';
+    else if(p.limite && d>p.limite) h+=`<div class="note">Réservations possibles jusqu'au ${dateFr(p.limite)} seulement.</div>`;
+    else if(!libres.length) h+='<div class="note">Aucune période libre ce jour-là pour cette salle.</div>';
+    else h+=`<h4 style="font-family:Syne,sans-serif;margin:14px 0 8px">Réserver</h4><div class="btns" style="margin-top:0">${libres.map(pp=>`<button class="btn btn-success btn-sm" onclick="ouvrirResa('${d}','${pp}')">${PERIODES[pp]}</button>`).join('')}</div>`;
+  }
+  document.getElementById('jr-corps').innerHTML=h;
+  ouvrirM('jour');
+}
+function periodesLibres(s,d){
+  const p=monProfil(); const lib=c=>etatCase(d,c).e==='libre';
+  return (s.periodes||[]).filter(pp=>{
+    if(['matin','apres_midi','soir'].includes(pp)) return lib(pp);
+    if(pp==='journee') return CRENEAUX.every(([c])=>lib(c));
+    if(pp==='weekend'){ if(dDate(d).getDay()!==6) return false; const dim=ajout(d,1); if(p.limite && dim>p.limite) return false;
+      return CRENEAUX.every(([c])=>lib(c)) && CRENEAUX.every(([c])=>etatCase(dim,c).e==='libre'); }
+    return false;
+  });
+}
+
+// ---------- Formulaire de demande ----------
+function ouvrirResa(d,per){
+  fermerM('jour');
+  const s=SALLES.find(x=>x.id===CAL.salle); const p=monProfil();
+  RESA={salle:s, date:d, periode:per};
+  document.getElementById('rs-recap').innerHTML=`<b>${esc(s.nom)}</b><br>${esc(dateLongue(d))}${per==='weekend'?' et dimanche '+dDate(ajout(d,1)).getDate():''} — ${esc(PERIODES[per])}`;
+  document.getElementById('rs-nature').innerHTML='<option value="">— Choisissez —</option>'+(p.natures||[]).map(n=>`<option value="${esc(n.code)}">${esc(n.libelle)}</option>`).join('');
+  ['rs-precision','rs-nb','rs-rem','rs-mail','rs-tel'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('rs-contact').style.display = ROLE==='asso' ? 'contents' : 'none';
+  if(ROLE==='asso'){ try{ const m=JSON.parse(localStorage.getItem('ft_contact_'+SES.nom)||'{}'); document.getElementById('rs-mail').value=m.mail||''; document.getElementById('rs-tel').value=m.tel||''; }catch(e){} }
+  majNature(); ouvrirM('resa');
+}
+function natureChoisie(){ const c=document.getElementById('rs-nature').value; return (monProfil().natures||[]).find(n=>n.code===c)||null; }
+function majNature(){
+  const n=natureChoisie();
+  document.getElementById('rs-precision-zone').style.display = n&&n.precision ? 'block' : 'none';
+  const cond=document.getElementById('rs-conditions'), pz=document.getElementById('rs-pieces');
+  if(!n){ cond.innerHTML=''; pz.innerHTML=''; return; }
+  const c=RESA.salle.conditions||{};
+  cond.innerHTML=`<div class="cond" style="margin-bottom:12px"><h5>Conditions</h5><dl>
+      <dt>Location</dt><dd>${esc(euros(n.tarif))}</dd>
+      ${c.caution_menage?`<dt>Caution ménage</dt><dd>${esc(c.caution_menage)}</dd>`:''}
+      ${c.caution_reparation?`<dt>Caution réparation</dt><dd>${esc(c.caution_reparation)}</dd>`:''}
+      ${n.tarif!==0?`<dt>Paiement</dt><dd>dans les ${monProfil().delai_paiement} jours après la validation</dd>`:''}
+    </dl>
+    ${n.convention?`<div style="margin-top:10px"><button type="button" class="btn btn-or btn-sm" onclick="lireConvention('${ROLE}|${esc(n.code)}')">⬇️ Télécharger la convention (${esc(n.convention.nom)})</button><div class="aide" style="margin:6px 0 0">Complétez-la, signez-la et déposez-la avec vos pièces ci-dessous.</div></div>`:''}
+  </div>`;
+  const pieces=(n.pieces||[]).slice(); if(n.convention && !pieces.some(x=>/convention/i.test(x))) pieces.push('Convention complétée et signée');
+  RESA.pieces=pieces;
+  pz.innerHTML=`<div class="mf"><label>Pièces à fournir ${pieces.length?'(obligatoires)':''}</label>
+    ${pieces.map((x,i)=>`<div style="border:1.5px dashed var(--gris);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+      <div style="font-weight:700;font-size:14px;margin-bottom:6px">📎 ${esc(x)}</div><input type="file" id="rs-pc-${i}" accept="image/*,application/pdf,.pdf,.doc,.docx,.odt">
+    </div>`).join('')}
+    <div style="border:1.5px dashed var(--gris);border-radius:10px;padding:10px 12px"><div style="font-size:13px;margin-bottom:6px;color:var(--gris2)">Autre document (facultatif)</div><input type="file" id="rs-pc-autre" accept="image/*,application/pdf,.pdf,.doc,.docx,.odt"></div>
+    <div class="aide" style="margin-top:6px">PDF ou photo prise avec le téléphone. 5 Mo maximum par fichier.</div></div>`;
+}
+async function envoyerDemande(){
+  const n=natureChoisie(); const btn=document.getElementById('rs-go');
+  document.getElementById('rs-err').classList.remove('on');
+  if(!n) return errM('rs-err','Choisissez la nature de la demande.');
+  if(n.precision && !document.getElementById('rs-precision').value.trim()) return errM('rs-err','Précisez la nature de votre demande.');
+  const mail=document.getElementById('rs-mail').value.trim(), tel=document.getElementById('rs-tel').value.trim();
+  if(ROLE==='asso' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return errM('rs-err','Indiquez un mail de contact valide : les réponses du service des sports y seront envoyées.');
+  const pieces=[];
+  for(let i=0;i<RESA.pieces.length;i++){ const f=document.getElementById('rs-pc-'+i).files[0]; if(!f) return errM('rs-err','Pièce manquante : '+RESA.pieces[i]+'. Sans pièces, la demande n\'est pas possible.'); pieces.push({libelle:RESA.pieces[i], f}); }
+  const fa=document.getElementById('rs-pc-autre').files[0]; if(fa) pieces.push({libelle:'Autre document', f:fa});
+  btn.disabled=true; btn.textContent='⏳ Envoi…';
+  try{
+    const prep=[]; for(const x of pieces){ const o=await preparerFichier(x.f); prep.push({libelle:x.libelle, ...o}); }
+    const r=await FU.rpc('ft_resa_demander',{p_token:tok(), p_demande:{salle_id:RESA.salle.id, date:RESA.date, periode:RESA.periode, nature:n.code,
+      precision:document.getElementById('rs-precision').value, nb_personnes:document.getElementById('rs-nb').value, remarque:document.getElementById('rs-rem').value,
+      contact_mail:mail, contact_tel:tel}, p_pieces:prep});
+    if(ROLE==='asso'){ try{ localStorage.setItem('ft_contact_'+SES.nom, JSON.stringify({mail,tel})); }catch(e){} }
+    envoyerMail(r.id,'nouvelle');
+    fermerM('resa'); toast('✅ Demande envoyée : la date apparaît en bleu en attendant la réponse du service des sports','ok');
+    usagerNav('mes');
+  }catch(e){ errM('rs-err', e.message); }
+  finally{ btn.disabled=false; btn.textContent='Envoyer ma demande'; }
+}
+
+// ---------- Mes demandes ----------
+async function renderMes(){
+  const box=document.getElementById('u-mes-liste'); box.innerHTML='<div class="chargement">Chargement…</div>';
+  let l=[]; try{ l=await FU.rpc('ft_resa_mes_demandes',{p_token:tok()})||[]; }catch(e){ box.innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
+  if(!l.length){ box.innerHTML='<div class="set-section"><p class="vide">Vous n\'avez encore fait aucune demande. Ouvrez le planning et touchez une date libre.</p></div>'; return; }
+  box.innerHTML=l.map(r=>{
+    let action='';
+    if(r.statut==='demande') action='<div class="note bleu">Votre demande est en attente de la réponse du service des sports.</div>';
+    if(r.statut==='pieces') action=`<div class="note">📎 Le service des sports vous demande de compléter votre dossier :<br><b style="white-space:pre-line">${esc(r.message||'')}</b></div>`;
+    if(r.statut==='option') action=`<div class="note" style="background:#fff4e6;border-color:#f6c58a;color:#9a4d00">💳 <b>Pour confirmer la réservation, vous devez procéder au paiement avant le ${dateFr(r.echeance)}.</b> Sans paiement dans ce délai, la réservation est annulée automatiquement.${r.message?'<br>'+esc(r.message):''}</div>`;
+    if(r.statut==='reservee') action=`<div class="note vert">✅ Réservation confirmée. Le service des sports vous contactera pour les clés, les états des lieux et le chèque de caution.${r.message?'<br>'+esc(r.message):''}</div>`;
+    if(['refusee','annulee'].includes(r.statut) && r.message) action=`<div class="note rouge">${esc(r.message)}</div>`;
+    return `<div class="dem-card s-${r.statut}">
+      <div class="dem-tete"><div><h4>${esc(r.salle)} — ${esc(dateLongue(r.date))}</h4>
+        <div class="dem-infos">${esc(PERIODES[r.periode])} · ${esc(r.nature_libelle)}${r.precision?' ('+esc(r.precision)+')':''} · ${esc(euros(r.tarif))}</div></div>${chipStatut(r.statut)}</div>
+      <div style="margin-top:10px">${action}</div>
+      <div>${(r.pieces||[]).map(p=>`<span class="piece" onclick="lirePiece(${p.id})">📎 ${esc(p.libelle)} · ${esc(taille(p.taille))}</span>`).join('')}</div>
+      <div class="btns">
+        ${['demande','pieces'].includes(r.statut)?`<label class="btn btn-secondary btn-sm">＋ Ajouter une pièce<input type="file" style="display:none" accept="image/*,application/pdf,.pdf,.doc,.docx,.odt" onchange="ajouterPiece(${r.id},this)"></label>`:''}
+        ${['demande','pieces','option'].includes(r.statut)?`<button class="lnk red" onclick="annulerMaDemande(${r.id})">Annuler ma demande</button>`:''}
+      </div></div>`;
+  }).join('');
+}
+async function ajouterPiece(id,input){
+  const f=input.files[0]; if(!f) return;
+  const lib=prompt('Quelle pièce déposez-vous ? (ex : attestation d\'assurance)', ''); if(lib===null) return;
+  toast('⏳ Envoi de la pièce…');
+  try{ const o=await preparerFichier(f); await FU.rpc('ft_resa_piece_ajouter',{p_token:tok(),p_resa:id,p_libelle:lib,p_nom:o.nom,p_type:o.type,p_contenu:o.contenu}); }
+  catch(e){ toast('Erreur : '+e.message,'err'); return; }
+  toast('✅ Pièce ajoutée : le service des sports va revoir votre demande','ok'); renderMes();
+}
+async function annulerMaDemande(id){
+  if(!confirm('Annuler cette demande ? La date redeviendra libre pour les autres.')) return;
+  try{ await FU.rpc('ft_resa_annuler',{p_token:tok(),p_resa:id}); }catch(e){ toast('Erreur : '+e.message,'err'); return; }
+  toast('Demande annulée','ok'); renderMes();
+}
+
+// =====================================================================
+// ADMINISTRATEUR
+// =====================================================================
+function adminNav(sec){
+  document.querySelectorAll('.admin-sidebar .nav-item').forEach(n=>n.classList.remove('on'));
+  document.getElementById('nav-'+sec)?.classList.add('on');
+  document.querySelectorAll('.admin-content .page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('a-'+sec).classList.add('on');
+  history.replaceState(null,'','salles.html#'+sec);
+  if(sec==='demandes') renderDemandes();
+  if(sec==='planning') renderPlanning('a-planning');
+  if(sec==='blocages') renderBlocages();
+  if(sec==='salles') renderSallesAdmin();
+  if(sec==='reglages') renderReglages();
+  window.scrollTo(0,0);
+}
+async function rechargerSalles(){ SALLES=await FU.rpc('ft_salles_liste',{p_token:tok()}); }
+
+// ---------- Demandes ----------
+let FILTRE='a_traiter', RECH='';
+const FILTRES=[['a_traiter','À traiter',['demande','pieces']],['option','Attente de paiement',['option']],['reservee','Réservées',['reservee']],['closes','Refusées / annulées',['refusee','annulee','expiree']],['toutes','Toutes',null]];
+async function renderDemandes(){
+  try{ DEMANDES=await FU.rpc('ft_resa_liste',{p_token:tok()})||[]; }catch(e){ document.getElementById('a-demandes-liste').innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
+  const n=DEMANDES.filter(r=>r.statut==='demande').length; const pa=document.getElementById('pastille'); pa.textContent=n; pa.style.display=n?'inline':'none';
+  dessinerDemandes();
+}
+function dessinerDemandes(){
+  document.getElementById('a-filtres').innerHTML=FILTRES.map(([k,l,st])=>{ const nb=DEMANDES.filter(r=>!st||st.includes(r.statut)).length;
+    return `<button class="filtre ${FILTRE===k?'on':''}" onclick="FILTRE='${k}';dessinerDemandes()">${l} (${nb})</button>`; }).join('')
+    +`<input class="recherche" placeholder="🔎 Rechercher (nom, salle…)" value="${esc(RECH)}" oninput="RECH=this.value;dessinerListe()">`;
+  dessinerListe();
+}
+function dessinerListe(){
+  const st=FILTRES.find(f=>f[0]===FILTRE)[2]; const q=FU.norm(RECH);
+  const l=DEMANDES.filter(r=>(!st||st.includes(r.statut)) && (!q || FU.norm(r.demandeur_nom+' '+r.salle+' '+r.nature_libelle).includes(q)));
+  const box=document.getElementById('a-demandes-liste');
+  if(!l.length){ box.innerHTML='<div class="set-section"><p class="vide">Aucune demande.</p></div>'; return; }
+  box.innerHTML=l.map(r=>`<div class="dem-card s-${r.statut}" style="cursor:pointer" onclick="ouvrirDemande(${r.id})">
+    <div class="dem-tete"><div><h4>${esc(r.demandeur_nom)} <span style="font-size:12px;color:var(--gris2);font-family:'DM Sans'">· ${esc(PROFILS[r.profil])}</span></h4>
+      <div class="dem-infos">🏛️ ${esc(r.salle)} · 📅 ${esc(dateLongue(r.date))} · ${esc(PERIODES[r.periode])}<br>${esc(r.nature_libelle)}${r.precision?' ('+esc(r.precision)+')':''} · ${esc(euros(r.tarif))} · 📎 ${r.pieces.length} pièce(s)${r.statut==='option'?' · à payer avant le <b>'+dateFr(r.echeance)+'</b>':''}</div></div>
+      ${chipStatut(r.statut)}</div></div>`).join('');
+}
+function ouvrirDemande(id){
+  const r=DEMANDES.find(x=>x.id===id);
+  if(!r){ FU.rpc('ft_resa_liste',{p_token:tok()}).then(l=>{ DEMANDES=l||[]; if(DEMANDES.find(x=>x.id===id)) ouvrirDemande(id); }); return; }
+  const actions=[];
+  if(['demande','pieces'].includes(r.statut)){
+    actions.push(`<button class="btn btn-success" onclick="decider(${r.id},'valider')">✅ Valider${r.tarif===0?' (gratuit : réservée)':' → attente de paiement'}</button>`);
+    actions.push(`<button class="btn btn-secondary" onclick="decider(${r.id},'pieces')">📎 Pièces manquantes</button>`);
+  }
+  if(r.statut==='option') actions.push(`<button class="btn btn-danger" style="background:var(--c-reserve)" onclick="decider(${r.id},'payee')">💳 Paiement reçu → réservée</button>`);
+  if(['demande','pieces','option'].includes(r.statut)) actions.push(`<button class="btn btn-secondary" onclick="decider(${r.id},'refuser')">✖️ Refuser</button>`);
+  if(r.statut==='reservee') actions.push(`<button class="btn btn-secondary" onclick="decider(${r.id},'annuler')">Annuler la réservation</button>`);
+  const NOMS={demande:'Demande déposée',piece:'Pièce ajoutée',validee:'Validée',pieces:'Pièces demandées',refusee:'Refusée',reservee:'Réservée',annulee:'Annulée par le service',annulee_demandeur:'Annulée par le demandeur',expiree:'Annulée automatiquement'};
+  document.getElementById('dm-corps').innerHTML=`
+    <h3>${esc(r.demandeur_nom)}</h3>
+    <div style="margin-bottom:12px">${chipStatut(r.statut)} <span style="font-size:12.5px;color:var(--gris2);margin-left:6px">${esc(PROFILS[r.profil])} · demande n° ${r.id} du ${new Date(r.cree).toLocaleDateString('fr-FR')}</span></div>
+    <div class="grille2">
+      <div class="cond"><h5>Réservation</h5><dl>
+        <dt>Salle</dt><dd>${esc(r.salle)}</dd><dt>Date</dt><dd>${esc(dateLongue(r.date))}</dd><dt>Période</dt><dd>${esc(PERIODES[r.periode])}</dd>
+        <dt>Nature</dt><dd>${esc(r.nature_libelle)}${r.precision?' ('+esc(r.precision)+')':''}</dd>
+        ${r.nb_personnes?`<dt>Personnes</dt><dd>${r.nb_personnes}</dd>`:''}<dt>Tarif</dt><dd>${esc(euros(r.tarif))}</dd>
+        ${r.echeance&&r.statut==='option'?`<dt>Paiement avant</dt><dd>${dateFr(r.echeance)}</dd>`:''}</dl></div>
+      <div class="cond"><h5>Contact</h5><dl>
+        <dt>Mail</dt><dd>${r.contact_mail?`<a href="mailto:${esc(r.contact_mail)}">${esc(r.contact_mail)}</a>`:'—'}</dd>
+        <dt>Téléphone</dt><dd>${r.contact_tel?`<a href="tel:${esc(r.contact_tel)}">${esc(r.contact_tel)}</a>`:'—'}</dd></dl>
+        ${r.remarque?`<h5 style="margin-top:10px">Remarque</h5><div style="white-space:pre-line">${esc(r.remarque)}</div>`:''}</div>
+    </div>
+    <h4 style="font-family:Syne,sans-serif;margin:16px 0 4px">Pièces déposées</h4>
+    <div>${r.pieces.length?r.pieces.map(p=>`<span class="piece" onclick="lirePiece(${p.id})">⬇️ ${esc(p.libelle)} — ${esc(p.nom||'')} · ${esc(taille(p.taille))}</span>`).join(''):'<span class="vide">Aucune pièce.</span>'}</div>
+    ${actions.length?`<div class="mf" style="margin-top:16px"><label>Message au demandeur (pièces à compléter, motif du refus, consignes…)</label><textarea id="dm-msg" placeholder="Facultatif pour une validation"></textarea></div>
+      <div class="err-msg" id="dm-err"></div><div class="btns">${actions.join('')}</div>`:''}
+    <h4 style="font-family:Syne,sans-serif;margin:18px 0 4px">Historique</h4>
+    <div class="histo">${(r.historique||[]).map(h=>`<div><b>${new Date(h.at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</b> — ${esc(NOMS[h.action]||h.action)} (${esc(h.par)})${h.message?' : '+esc(h.message):''}</div>`).join('')}</div>`;
+  ouvrirM('dem');
+}
+async function decider(id,action){
+  const msg=(document.getElementById('dm-msg')||{}).value||'';
+  if(action==='pieces' && !msg.trim()) return errM('dm-err','Indiquez dans le message les pièces à compléter.');
+  if(action==='refuser' && !confirm('Refuser cette demande ? La date redeviendra libre.')) return;
+  if(action==='annuler' && !confirm('Annuler cette réservation confirmée ? La date redeviendra libre.')) return;
+  let r; try{ r=await FU.rpc('ft_resa_decider',{p_token:tok(),p_resa:id,p_action:action,p_message:msg}); }catch(e){ return errM('dm-err',e.message); }
+  fermerM('dem'); toast('⏳ Enregistré, envoi du mail…');
+  const m=await envoyerMail(id,r.evt);
+  toast(m.envoye?'✅ Enregistré — mail envoyé au demandeur':m.sans_adresse?'✅ Enregistré (pas d\'adresse mail pour ce demandeur)':'✅ Enregistré — ⚠️ mail non envoyé'+(m.erreur?' : '+m.erreur:''), m.envoye||m.sans_adresse?'ok':'warn');
+  renderDemandes();
+}
+
+// ---------- Blocages ----------
+function coches(id, liste, coche){ document.getElementById(id).innerHTML=liste.map(([v,l])=>`<label class="coche"><input type="checkbox" value="${v}" ${coche.includes(v)?'checked':''}> ${l}</label>`).join(''); }
+const cochees = id => [...document.querySelectorAll('#'+id+' input:checked')].map(i=>i.value);
+function preparerBlocage(d){ adminNav('blocages'); document.getElementById('bl-salle').value=String(CAL.salle); document.getElementById('bl-debut').value=d; document.getElementById('bl-fin').value=d; document.getElementById('bl-motif').focus(); }
+async function renderBlocages(){
+  const sel=document.getElementById('bl-salle'); const cur=sel.value;
+  sel.innerHTML='<option value="">Toutes les salles</option>'+SALLES.map(s=>`<option value="${s.id}">${esc(s.nom)}</option>`).join(''); if(cur) sel.value=cur;
+  if(!document.querySelector('#bl-creneaux input')){ coches('bl-creneaux',CRENEAUX,['matin','apres_midi','soir']); coches('bl-profils',Object.entries(PROFILS_PL),['asso','entreprise','particulier']); }
+  const box=document.getElementById('bl-liste'); let l=[];
+  try{ l=await FU.rpc('ft_blocages_liste',{p_token:tok()})||[]; }catch(e){ box.innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
+  if(!l.length){ box.innerHTML='<p class="vide">Aucune date bloquée.</p>'; return; }
+  box.innerHTML='<div class="tb-wrap"><table class="tb"><tr><th>Dates</th><th>Salle</th><th>Moments</th><th>Pour</th><th>Motif</th><th></th></tr>'+l.map(b=>`<tr>
+    <td>${b.date_debut===b.date_fin?dateFr(b.date_debut):'du '+dateFr(b.date_debut)+' au '+dateFr(b.date_fin)}</td><td>${esc(b.salle||'Toutes')}</td>
+    <td>${b.creneaux.length===3?'Toute la journée':b.creneaux.map(c=>PERIODES[c]).join(', ')}</td><td>${b.profils.length===3?'Tous':b.profils.map(p=>PROFILS_PL[p]).join(', ')}</td>
+    <td>${esc(b.motif||'')}</td><td><button class="lnk red" onclick="retirerBlocage(${b.id})">Débloquer</button></td></tr>`).join('')+'</table></div>';
+}
+async function ajouterBlocage(){
+  document.getElementById('bl-err').classList.remove('on');
+  const debut=document.getElementById('bl-debut').value, fin=document.getElementById('bl-fin').value||debut;
+  try{ await FU.rpc('ft_blocage_ajouter',{p_token:tok(),p_blocage:{salle_id:document.getElementById('bl-salle').value, date_debut:debut, date_fin:fin,
+      creneaux:cochees('bl-creneaux'), profils:cochees('bl-profils'), motif:document.getElementById('bl-motif').value}}); }
+  catch(e){ return errM('bl-err',e.message); }
+  document.getElementById('bl-motif').value=''; toast('✅ Dates bloquées','ok'); renderBlocages();
+}
+async function retirerBlocage(id){
+  if(!confirm('Débloquer ces dates ?')) return;
+  try{ await FU.rpc('ft_blocage_supprimer',{p_token:tok(),p_id:id}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  toast('Dates débloquées','ok'); renderBlocages();
+}
+
+// ---------- Salles ----------
+let SALLE_EDIT=null, COND_PROFIL='asso';
+const COND_CHAMPS=[['tarif','Tarif de location','Ex : 250 € la journée'],['caution_menage','Caution ménage','Ex : 150 €'],['caution_reparation','Caution réparation','Ex : 800 €'],['materiel','Matériel disponible','Ex : 20 tables, 120 chaises, cuisine équipée'],['infos','Bon à savoir','Ex : fin de la location à 2 h, parking de 40 places']];
+function renderSallesAdmin(){
+  const box=document.getElementById('a-salles-liste');
+  if(!SALLES.length){ box.innerHTML='<div class="set-section"><p class="vide">Aucune salle. Ajoutez la première.</p></div>'; return; }
+  box.innerHTML='<div class="salles-grid">'+SALLES.map(s=>`<div class="salle-card" style="${s.actif?'':'opacity:.6'}">
+    <div class="salle-photo" style="height:140px">${s.photo?`<img src="${esc(s.photo)}" alt="">`:'🏛️'}</div>
+    <div class="salle-corps"><h3>${esc(s.nom)}${s.actif?'':' <span style="font-size:12px;color:var(--rouge)">(masquée)</span>'}</h3>
+      <div class="salle-meta">${(s.periodes||[]).map(p=>PERIODES[p]).join(' · ')}</div>
+      <div class="salle-btns"><button class="btn btn-primary btn-sm" onclick="ouvrirSalle(${s.id})">✏️ Modifier</button>
+      <button class="btn btn-secondary btn-sm" onclick="CAL.salle=${s.id};adminNav('planning')">📆 Planning</button>
+      <button class="lnk red" onclick="supprimerSalle(${s.id})">Supprimer</button></div></div></div>`).join('')+'</div>';
+}
+function ouvrirSalle(id){
+  const s=id?JSON.parse(JSON.stringify(SALLES.find(x=>x.id===id))):{nom:'',periodes:['matin','apres_midi','soir','journee'],actif:true,conditions:{},enchainement:{}};
+  SALLE_EDIT=s; SALLE_EDIT.photoModifiee=false; COND_PROFIL='asso';
+  document.getElementById('sa-titre').textContent=id?'Modifier la salle':'Nouvelle salle';
+  [['sa-nom','nom'],['sa-adresse','adresse'],['sa-capacite','capacite'],['sa-youtube','youtube'],['sa-desc','descriptif']].forEach(([i,k])=>document.getElementById(i).value=s[k]||'');
+  document.getElementById('sa-actif').checked=s.actif!==false;
+  coches('sa-periodes',Object.entries(PERIODES),s.periodes||[]);
+  apercuPhoto(); dessinerCond();
+  const ench=s.enchainement||{};
+  document.getElementById('sa-ench').innerHTML='<tr><th>Réservation le…</th><th>Bloque le soir même</th><th>Bloque le lendemain matin</th></tr>'+[1,2,3,4,5,6,0].map(j=>{ const e=ench[j]||{};
+    return `<tr><td><b>${JOURS[j].charAt(0).toUpperCase()+JOURS[j].slice(1)}</b></td><td><input type="checkbox" data-j="${j}" data-k="soir" ${e.soir?'checked':''}></td><td><input type="checkbox" data-j="${j}" data-k="lendemain" ${e.lendemain?'checked':''}></td></tr>`; }).join('');
+  ouvrirM('salle');
+}
+function lireCond(){ const c=SALLE_EDIT.conditions[COND_PROFIL]={}; COND_CHAMPS.forEach(([k])=>{ const v=document.getElementById('sa-c-'+k).value.trim(); if(v) c[k]=v; }); }
+function dessinerCond(){
+  document.getElementById('sa-cond-tabs').innerHTML=Object.entries(PROFILS_PL).map(([k,l])=>`<button type="button" class="filtre ${k===COND_PROFIL?'on':''}" onclick="lireCond();COND_PROFIL='${k}';dessinerCond()">${l}</button>`).join('')
+    +(COND_PROFIL!=='asso'?`<button type="button" class="lnk" onclick="copierCond()">Copier les conditions des associations</button>`:'');
+  const c=(SALLE_EDIT.conditions||{})[COND_PROFIL]||{};
+  document.getElementById('sa-cond').innerHTML=COND_CHAMPS.map(([k,l,ph])=>`<div class="mf ${k==='materiel'||k==='infos'?'plein':''}"><label>${l}</label>${k==='materiel'||k==='infos'?`<textarea id="sa-c-${k}" placeholder="${esc(ph)}">${esc(c[k]||'')}</textarea>`:`<input type="text" id="sa-c-${k}" placeholder="${esc(ph)}" value="${esc(c[k]||'')}">`}</div>`).join('');
+}
+function copierCond(){ SALLE_EDIT.conditions[COND_PROFIL]=JSON.parse(JSON.stringify(SALLE_EDIT.conditions.asso||{})); dessinerCond(); }
+function apercuPhoto(){ document.getElementById('sa-photo-apercu').innerHTML=SALLE_EDIT.photo?`<img src="${esc(SALLE_EDIT.photo)}" style="width:100%;height:100%;object-fit:cover">`:'Aucune photo'; }
+async function choisirPhoto(input){ const f=input.files[0]; if(!f) return; try{ SALLE_EDIT.photo=await reduireImage(f,1400,0.8); SALLE_EDIT.photoModifiee=true; apercuPhoto(); }catch(e){ toast(e.message,'err'); } input.value=''; }
+function retirerPhoto(){ SALLE_EDIT.photo=''; SALLE_EDIT.photoModifiee=true; apercuPhoto(); }
+async function enregistrerSalle(){
+  lireCond();
+  const ench={}; document.querySelectorAll('#sa-ench input').forEach(i=>{ (ench[i.dataset.j]=ench[i.dataset.j]||{})[i.dataset.k]=i.checked; });
+  const o={id:SALLE_EDIT.id||null, nom:document.getElementById('sa-nom').value, adresse:document.getElementById('sa-adresse').value, capacite:document.getElementById('sa-capacite').value,
+    youtube:document.getElementById('sa-youtube').value.trim(), descriptif:document.getElementById('sa-desc').value, periodes:cochees('sa-periodes'),
+    actif:document.getElementById('sa-actif').checked, conditions:SALLE_EDIT.conditions, enchainement:ench};
+  if(o.youtube && !idYoutube(o.youtube)) return errM('sa-err','Le lien YouTube n\'est pas reconnu (ex : https://youtu.be/xxxxxxxxxxx).');
+  if(SALLE_EDIT.photoModifiee || !SALLE_EDIT.id) o.photo=SALLE_EDIT.photo||'';
+  try{ const id=await FU.rpc('ft_salle_sauver',{p_token:tok(),p_salle:o}); CAL.salle=Number(id); await rechargerSalles(); }catch(e){ return errM('sa-err',e.message); }
+  fermerM('salle'); toast('✅ Salle enregistrée','ok'); renderSallesAdmin();
+}
+async function supprimerSalle(id){
+  const s=SALLES.find(x=>x.id===id); if(!confirm('Supprimer la salle « '+s.nom+' » ? (Pour la retirer temporairement, décochez plutôt « visible et réservable ».)')) return;
+  try{ await FU.rpc('ft_salle_supprimer',{p_token:tok(),p_id:id}); await rechargerSalles(); }catch(e){ return toast(e.message,'err'); }
+  toast('Salle supprimée','ok'); renderSallesAdmin();
+}
+
+// ---------- Règles par profil ----------
+let RG_PROFIL='asso', RG=null;
+async function renderReglages(){
+  try{ INFOS=await FU.rpc('ft_resa_infos',{p_token:tok()}); const reg=await FU.reglages(); document.getElementById('rg-mail').value=reg.mail_resa||''; }
+  catch(e){ document.getElementById('rg-corps').innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
+  chargerProfil(RG_PROFIL);
+}
+function chargerProfil(p){ RG_PROFIL=p; RG=JSON.parse(JSON.stringify(INFOS.profils[p])); dessinerReglages(); }
+function dessinerReglages(){
+  document.getElementById('rg-tabs').innerHTML=Object.entries(PROFILS_PL).map(([k,l])=>`<button class="onglet ${k===RG_PROFIL?'on':''}" onclick="chargerProfil('${k}')">${l}</button>`).join('');
+  const r=RG;
+  document.getElementById('rg-corps').innerHTML=`
+    <div class="set-section">
+      <div class="sw ${r.ouvert?'on':'off'}" onclick="RG.ouvert=!RG.ouvert;dessinerReglages()"><div><b>${r.ouvert?'🔓 Réservations ouvertes':'🔒 Réservations fermées'}</b><br><small>${PROFILS_PL[RG_PROFIL]} : ${r.ouvert?'elles peuvent déposer des demandes':'elles voient les salles et le planning sans pouvoir réserver'}</small></div><div class="toggle"></div></div>
+      <h4>Date limite des réservations</h4>
+      <div class="coches" style="margin-bottom:10px">
+        ${[['aucune','Pas de limite'],['fixe','Date fixe'],['glissant','Date qui avance chaque jour']].map(([v,l])=>`<label class="coche"><input type="radio" name="rg-mode" value="${v}" ${r.limite_mode===v?'checked':''} onchange="RG.limite_mode=this.value;dessinerReglages()"> ${l}</label>`).join('')}
+      </div>
+      ${r.limite_mode==='fixe'?`<div class="mf" style="max-width:260px"><label>Réservations possibles jusqu'au</label><input type="date" value="${r.limite_date||''}" onchange="RG.limite_date=this.value"></div>`:''}
+      ${r.limite_mode==='glissant'?`<div class="inline-f" style="max-width:520px"><div class="mf"><label>Nombre de jours à partir d'aujourd'hui</label><input type="number" min="1" value="${r.limite_jours||''}" oninput="RG.limite_jours=this.value;document.getElementById('rg-apercu').textContent=this.value?'Aujourd\\'hui : jusqu\\'au '+dateFr(ajout(INFOS.aujourdhui,Number(this.value))):''"></div></div>
+        <p class="aide" id="rg-apercu" style="margin-top:6px">${r.limite_jours?'Aujourd\'hui : jusqu\'au '+dateFr(ajout(INFOS.aujourdhui,Number(r.limite_jours))):''}</p>`:''}
+      <p class="aide">Les ${PROFILS_PL[RG_PROFIL].toLowerCase()} voient le planning jusqu'à cette date, avec toutes les dates prises (quel que soit le profil qui a réservé), sans les noms.</p>
+      <h4 style="margin-top:14px">Délai de paiement</h4>
+      <div class="inline-f" style="max-width:360px"><div class="mf"><label>Jours après la validation</label><input type="number" min="1" value="${r.delai_paiement||15}" oninput="RG.delai_paiement=this.value"></div></div>
+      <p class="aide" style="margin-top:6px">Passé ce délai sans paiement, la réservation est annulée automatiquement et la date redevient libre.</p>
+    </div>
+    <div class="set-section">
+      <h4>Natures de demande, tarifs, pièces et convention</h4>
+      <p class="aide">Tarif : laissez vide si le service le communique au cas par cas, 0 si c'est gratuit (une demande gratuite validée passe directement en « réservée »). Pièces : une par ligne. La convention est proposée au téléchargement dans le formulaire.</p>
+      <div class="tb-wrap"><table class="tb"><tr><th style="min-width:150px">Nature</th><th style="width:100px">Tarif (€)</th><th style="min-width:190px">Pièces exigées</th><th>À préciser</th><th style="min-width:170px">Convention</th><th></th></tr>
+      ${r.natures.map((n,i)=>`<tr>
+        <td><input type="text" value="${esc(n.libelle)}" oninput="RG.natures[${i}].libelle=this.value"></td>
+        <td><input type="number" min="0" step="0.01" value="${n.tarif===null||n.tarif===undefined?'':n.tarif}" placeholder="—" oninput="RG.natures[${i}].tarif=this.value===''?null:Number(this.value)"></td>
+        <td><textarea oninput="RG.natures[${i}].pieces=this.value.split('\\n').map(x=>x.trim()).filter(Boolean)">${esc((n.pieces||[]).join('\n'))}</textarea></td>
+        <td style="text-align:center"><input type="checkbox" ${n.precision?'checked':''} onchange="RG.natures[${i}].precision=this.checked" title="Le demandeur doit préciser (ex : « Autre »)"></td>
+        <td>${n.convention?`<span class="piece" onclick="lireConvention('${RG_PROFIL}|${esc(n.code)}')">📄 ${esc(n.convention.nom)}</span><br><button class="lnk red" onclick="retirerConvention('${esc(n.code)}')">Retirer</button>`:''}
+          <label class="lnk" style="display:inline-block;margin-top:4px">${n.convention?'Remplacer':'＋ Déposer'}<input type="file" style="display:none" accept=".pdf,.doc,.docx,.odt,application/pdf" onchange="deposerConvention('${esc(n.code)}',this)"></label></td>
+        <td><button class="lnk red" onclick="RG.natures.splice(${i},1);dessinerReglages()">Retirer</button></td></tr>`).join('')}
+      </table></div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="ajouterNature()">＋ Ajouter une nature</button>
+    </div>
+    <div class="err-msg" id="rg-err"></div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:18px" onclick="sauverProfil()">💾 Enregistrer les règles ${PROFILS_PL[RG_PROFIL].toLowerCase()}</button>`;
+}
+function ajouterNature(){
+  const lib=prompt('Nom de la nouvelle nature de demande :'); if(!lib||!lib.trim()) return;
+  let code=slug(lib), k=2; while(RG.natures.some(n=>n.code===code)) code=slug(lib)+'_'+(k++);
+  RG.natures.push({code, libelle:lib.trim(), tarif:null, pieces:[], precision:false}); dessinerReglages();
+}
+async function sauverProfil(){
+  const o={ouvert:RG.ouvert, limite_mode:RG.limite_mode, limite_date:RG.limite_date||'', limite_jours:RG.limite_jours===null||RG.limite_jours===undefined?'':String(RG.limite_jours),
+    delai_paiement:String(RG.delai_paiement||''), natures:RG.natures.map(n=>({code:n.code, libelle:String(n.libelle||'').trim(), tarif:n.tarif===''||n.tarif===undefined?null:n.tarif, pieces:n.pieces||[], precision:!!n.precision}))};
+  try{ await FU.rpc('ft_resa_profil_sauver',{p_token:tok(),p_profil:RG_PROFIL,p_reglages:o}); INFOS=await FU.rpc('ft_resa_infos',{p_token:tok()}); }
+  catch(e){ return errM('rg-err',e.message); }
+  toast('✅ Règles enregistrées','ok'); chargerProfil(RG_PROFIL);
+}
+async function deposerConvention(code,input){
+  const f=input.files[0]; if(!f) return; if(f.size>8*1024*1024) return toast('Fichier trop lourd (8 Mo maximum)','err');
+  toast('⏳ Envoi de la convention…');
+  try{ await FU.rpc('ft_resa_doc_enregistrer',{p_token:tok(),p_cle:RG_PROFIL+'|'+code,p_nom:f.name,p_type:f.type||'application/octet-stream',p_contenu:await lireBase64(f)}); }
+  catch(e){ return toast('Erreur : '+e.message,'err'); }
+  const n=RG.natures.find(x=>x.code===code); if(n) n.convention={nom:f.name, taille:f.size};
+  toast('✅ Convention enregistrée','ok'); dessinerReglages();
+}
+async function retirerConvention(code){
+  if(!confirm('Retirer cette convention ?')) return;
+  try{ await FU.rpc('ft_resa_doc_supprimer',{p_token:tok(),p_cle:RG_PROFIL+'|'+code}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  const n=RG.natures.find(x=>x.code===code); if(n) n.convention=null; dessinerReglages();
+}
+async function sauverMailResa(){
+  const v=document.getElementById('rg-mail').value.trim();
+  if(v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return toast('Adresse mail invalide','err');
+  try{ await FU.rpc('ft_reglage',{p_token:tok(),p_cle:'mail_resa',p_valeur:v}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  toast('✅ Adresse enregistrée','ok');
+}
+</script>
+</body>
+</html>
