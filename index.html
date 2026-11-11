@@ -66,6 +66,23 @@
   .inst-ico{display:inline-block;border:1.5px solid var(--bleu2);color:var(--bleu2);border-radius:6px;padding:0 6px;font-weight:700;font-size:13px;}
   @media (max-width:640px){ .install-bar{padding:12px 14px;gap:12px;} .install-bar .btn-enter{padding:8px 14px;} }
 
+  /* ===== COMPTES ENTREPRISE / PARTICULIER ===== */
+  .sep-ou{display:flex;align-items:center;gap:10px;color:var(--gris2);font-size:12px;margin:18px 0 10px;}
+  .sep-ou::before,.sep-ou::after{content:'';flex:1;height:1px;background:var(--gris);}
+  .modal-box.large{width:560px;}
+  .grille-champs{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+  .grille-champs .mf.plein{grid-column:1/-1;}
+  .mf textarea{min-height:76px;resize:vertical;}
+  .mf .aide-champ{font-size:11.5px;color:var(--gris2);margin-top:4px;}
+  .etapes-insc{display:flex;gap:8px;justify-content:center;margin:-6px 0 16px;}
+  .etapes-insc span{font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:20px;background:var(--gris);color:var(--gris2);}
+  .etapes-insc span.on{background:var(--bleu);color:#fff;}
+  .bientot{display:inline-flex;margin-top:14px;align-self:flex-start;font-size:11.5px;font-weight:700;padding:4px 11px;border-radius:20px;background:#fff7e6;color:#b45309;}
+  .menu-card.inactif{cursor:default;opacity:.75;} .menu-card.inactif:hover{transform:none;box-shadow:none;border-color:var(--gris);}
+  .usr-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .recherche{padding:9px 12px;border:2px solid var(--gris);border-radius:var(--r);font-size:14px;font-family:inherit;min-width:220px;flex:1;max-width:360px;}
+  @media (max-width:640px){ .grille-champs{grid-template-columns:1fr;} }
+
   /* ===== MODALES ===== */
   .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;padding:16px;}
   .modal-ov.on{display:flex;}
@@ -196,7 +213,7 @@
   <div class="login-logo">
     <div class="login-badge">Ville de Corbas · Service des sports</div>
     <h1>Équipements sportifs<br><span>de Corbas</span></h1>
-    <p>Créneaux à l'année et manifestations ponctuelles : un seul site pour saisir vos demandes et consulter les plannings.</p>
+    <p>Créneaux à l'année, manifestations et réservation des salles municipales : un seul site pour saisir vos demandes et consulter les plannings.</p>
   </div>
   <div class="install-bar" id="install-bar" onclick="installerAppli()">
     <img src="icons/icon-192.png" alt="">
@@ -210,7 +227,19 @@
     <div class="login-card" onclick="ouvrirConnexionAsso()">
       <div class="icon">🏃</div>
       <h2>Associations</h2>
-      <p>Saisissez vos créneaux de la saison et vos manifestations, consultez les plannings.</p>
+      <p>Créneaux de la saison, manifestations et réservation des salles municipales.</p>
+      <button class="btn-enter">Accéder →</button>
+    </div>
+    <div class="login-card" onclick="ouvrirConnexionUsager('entreprise')">
+      <div class="icon">🏢</div>
+      <h2>Entreprises</h2>
+      <p>Réservez une salle municipale pour une réunion, une assemblée générale ou une vente.</p>
+      <button class="btn-enter">Accéder →</button>
+    </div>
+    <div class="login-card" onclick="ouvrirConnexionUsager('particulier')">
+      <div class="icon">👤</div>
+      <h2>Particuliers</h2>
+      <p>Réservez une salle municipale pour un anniversaire, un mariage, un baptême…</p>
       <button class="btn-enter">Accéder →</button>
     </div>
     <div class="login-card" onclick="ouvrirConnexionAdmin()">
@@ -259,6 +288,87 @@
   </div>
 </div>
 
+<!-- ===================== CRÉATION DE COMPTE (entreprise / particulier) ===================== -->
+<div id="ecran-inscription" class="ecran">
+  <header class="app-header">
+    <div class="hdr-logo">🏟️ <span>Équipements</span> Corbas</div>
+    <div class="hdr-right"><button class="btn-logout" onclick="montrer('ecran-accueil')">← Accueil</button></div>
+  </header>
+  <div class="app-body" style="max-width:640px">
+    <div class="section-title" id="insc-titre">Créer votre compte</div>
+    <p class="section-sub" id="insc-sous">Ce compte vous permettra de réserver les salles municipales de Corbas.</p>
+    <div class="etapes-insc"><span id="insc-e1" class="on">1. Vos informations</span><span id="insc-e2">2. Mot de passe</span></div>
+    <div class="set-section">
+      <form id="insc-f1" onsubmit="event.preventDefault();inscEtape2();" autocomplete="off" novalidate>
+        <div class="grille-champs" id="insc-champs"></div>
+        <div class="err-msg" id="insc-err1"></div>
+        <div class="modal-btns">
+          <button type="button" class="btn btn-secondary" onclick="montrer('ecran-accueil')">Annuler</button>
+          <button type="submit" class="btn btn-primary">Valider</button>
+        </div>
+      </form>
+      <form id="insc-f2" onsubmit="event.preventDefault();inscCreer();" autocomplete="off" style="display:none">
+        <p class="aide" style="font-size:13px;color:var(--gris2);margin-bottom:14px">Choisissez votre mot de passe (8 caractères minimum) et saisissez-le deux fois.</p>
+        <div class="asso-nom-box" id="insc-recap"></div>
+        <div class="mf"><label>Mot de passe</label><input type="password" id="insc-mdp" autocomplete="off" placeholder="8 caractères minimum"></div>
+        <div class="mf"><label>Confirmer le mot de passe</label><input type="password" id="insc-mdp2" autocomplete="off" placeholder="Saisissez-le une deuxième fois"></div>
+        <label class="voir-mdp"><input type="checkbox" onchange="toggleVoir(this,['insc-mdp','insc-mdp2'])"> Voir les caractères</label>
+        <div class="err-msg" id="insc-err2"></div>
+        <div class="modal-btns">
+          <button type="button" class="btn btn-secondary" onclick="inscEtape1()">← Retour</button>
+          <button type="submit" class="btn btn-primary" id="insc-go">Créer mon compte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ESPACE ENTREPRISE / PARTICULIER ===================== -->
+<div id="ecran-usager" class="ecran">
+  <header class="app-header">
+    <div class="hdr-logo">🏟️ <span>Équipements</span> Corbas</div>
+    <div class="hdr-right">
+      <span class="role-badge" id="usr-badge">Entreprise</span>
+      <span class="hdr-nom" id="usr-nom-hdr"></span>
+      <button class="btn-logout" onclick="FU.deconnexion()">Déconnexion</button>
+    </div>
+  </header>
+  <div class="app-body">
+    <div class="section-title" id="usr-bonjour">Bonjour</div>
+    <p class="section-sub">Réservation des salles municipales de Corbas.</p>
+    <div class="menu-grid">
+      <div class="menu-card grand inactif">
+        <div class="icon">🏛️</div>
+        <h3>Visite des salles</h3>
+        <p>Photos, vidéo, tarifs, cautions et matériel disponible de chaque salle.</p>
+        <span class="bientot">🚧 Prochaine étape du site test</span>
+      </div>
+      <div class="menu-card grand inactif">
+        <div class="icon">📆</div>
+        <h3>Planning des salles</h3>
+        <p>Choisissez une salle et voyez, mois par mois, les dates libres et prises.</p>
+        <span class="bientot">🚧 Prochaine étape du site test</span>
+      </div>
+      <div class="menu-card grand inactif">
+        <div class="icon">📝</div>
+        <h3>Mes demandes de réservation</h3>
+        <p>Suivez vos demandes : en cours, validées, à payer, confirmées.</p>
+        <span class="bientot">🚧 Prochaine étape du site test</span>
+      </div>
+      <div class="menu-card" onclick="ouvrirMonCompte()">
+        <div class="icon">👤</div>
+        <h3>Mon compte</h3>
+        <p>Vos coordonnées : modifiez-les à tout moment.</p>
+      </div>
+      <div class="menu-card discret" onclick="ouvrirChgMdp()">
+        <div class="icon">🔑</div>
+        <h3>Changer votre mot de passe</h3>
+        <p>L'ancien mot de passe vous sera demandé.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== ESPACE ADMINISTRATEUR ===================== -->
 <div id="ecran-admin" class="ecran">
   <header class="app-header">
@@ -279,6 +389,8 @@
         <div class="sidebar-lbl">Réglages communs</div>
         <div class="nav-item" id="nav-saisons" onclick="adminNav('saisons')">🗓️ Saisons &amp; ouverture</div>
         <div class="nav-item" id="nav-assos" onclick="adminNav('assos')">🏃 Associations</div>
+        <div class="nav-item" id="nav-ent" onclick="adminNav('ent')">🏢 Entreprises</div>
+        <div class="nav-item" id="nav-part" onclick="adminNav('part')">👤 Particuliers</div>
         <div class="nav-item" id="nav-docs" onclick="adminNav('docs')">📄 Documents à télécharger</div>
         <div class="nav-item" id="nav-mails" onclick="adminNav('mails')">✉️ Adresses mail</div>
         <div class="nav-item" id="nav-code" onclick="adminNav('code')">🔐 Code administrateur</div>
@@ -356,6 +468,10 @@
         </div>
 
         <!-- Documents -->
+        <!-- Comptes entreprises / particuliers -->
+        <div id="adm-ent" class="page"><div id="ent-body"></div></div>
+        <div id="adm-part" class="page"><div id="part-body"></div></div>
+
         <div id="adm-docs" class="page">
           <div class="section-title">📄 Documents à télécharger</div>
           <p class="section-sub">Ces documents sont proposés aux associations dans le formulaire « Saisir votre manifestation ». Formats conseillés : PDF, Word ou LibreOffice (8 Mo maximum).</p>
@@ -426,6 +542,7 @@
         <label class="voir-mdp"><input type="checkbox" id="la-remember"> Se souvenir de mon association</label>
       </div>
       <div class="err-msg" id="la-err"></div>
+      <div class="note-new" style="margin-top:12px">Votre association n'apparaît pas dans la liste ? Contactez le service des sports : <a href="mailto:sports@ville-corbas.fr">sports@ville-corbas.fr</a></div>
       <div class="modal-btns">
         <button type="button" class="btn btn-secondary" onclick="fermerM('asso')">Annuler</button>
         <button type="submit" class="btn btn-primary" id="la-go" style="display:none">Valider</button>
@@ -483,6 +600,95 @@
         <button type="submit" class="btn btn-primary">Remplacer</button>
       </div>
       <button type="button" class="btn-lnk" onclick="effacerMdp()">Ou effacer le mot de passe (l'association en recréera un à sa prochaine connexion)</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal-usager">
+  <div class="modal-box">
+    <h3 id="lu-titre">Accès</h3>
+    <p>Connectez-vous pour réserver une salle municipale.</p>
+    <form onsubmit="event.preventDefault();validerUsager();" autocomplete="off">
+      <div class="mf"><label>Nom d'utilisateur ou adresse mail</label><input type="text" id="lu-ident" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <div class="mf"><label>Mot de passe</label><input type="password" id="lu-mdp" autocomplete="off" placeholder="Votre mot de passe"></div>
+      <label class="voir-mdp"><input type="checkbox" onchange="toggleVoir(this,['lu-mdp'])"> Voir les caractères</label>
+      <div class="err-msg" id="lu-err"></div>
+      <div class="modal-btns">
+        <button type="button" class="btn btn-secondary" onclick="fermerM('usager')">Annuler</button>
+        <button type="submit" class="btn btn-primary">Se connecter</button>
+      </div>
+      <button type="button" class="btn-lnk" onclick="ouvrirOubli()">Mot de passe oublié ?</button>
+    </form>
+    <div class="sep-ou">Première visite ?</div>
+    <button type="button" class="btn btn-or" style="width:100%" onclick="ouvrirInscription()">Créer un compte</button>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal-oubli">
+  <div class="modal-box">
+    <h3>Mot de passe oublié</h3>
+    <p>Indiquez votre nom d'utilisateur ou votre adresse mail : un lien pour choisir un nouveau mot de passe sera envoyé à l'adresse mail de votre compte.</p>
+    <form onsubmit="event.preventDefault();envoyerOubli();" autocomplete="off">
+      <div class="mf"><input type="text" id="ou-ident" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Nom d'utilisateur ou mail"></div>
+      <div class="err-msg" id="ou-err"></div><div class="ok-msg" id="ou-ok"></div>
+      <div class="modal-btns">
+        <button type="button" class="btn btn-secondary" onclick="fermerM('oubli')">Fermer</button>
+        <button type="submit" class="btn btn-primary" id="ou-go">Envoyer le lien</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal-nouveau">
+  <div class="modal-box">
+    <h3>Choisir un nouveau mot de passe</h3>
+    <p>Saisissez votre nouveau mot de passe deux fois (8 caractères minimum).</p>
+    <form onsubmit="event.preventDefault();validerNouveauMdp();" autocomplete="off">
+      <div class="mf"><label>Nouveau mot de passe</label><input type="password" id="nv-mdp" autocomplete="off"></div>
+      <div class="mf"><label>Confirmer</label><input type="password" id="nv-mdp2" autocomplete="off"></div>
+      <label class="voir-mdp"><input type="checkbox" onchange="toggleVoir(this,['nv-mdp','nv-mdp2'])"> Voir les caractères</label>
+      <div class="err-msg" id="nv-err"></div>
+      <div class="modal-btns">
+        <button type="button" class="btn btn-secondary" onclick="fermerM('nouveau')">Annuler</button>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal-fiche">
+  <div class="modal-box large">
+    <h3 id="fi-titre">Fiche</h3>
+    <p id="fi-sous"></p>
+    <form onsubmit="event.preventDefault();enregistrerFiche();" autocomplete="off" novalidate>
+      <div class="grille-champs" id="fi-champs"></div>
+      <div id="fi-mdp-zone" style="display:none">
+        <div class="mf"><label>Mot de passe (facultatif)</label><input type="password" id="fi-mdp" autocomplete="off" placeholder="Laisser vide : l'usager utilisera « mot de passe oublié »"></div>
+      </div>
+      <div class="err-msg" id="fi-err"></div>
+      <div class="modal-btns">
+        <button type="button" class="btn btn-secondary" onclick="fermerM('fiche')">Annuler</button>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal-umdp">
+  <div class="modal-box">
+    <h3>Mot de passe du compte</h3>
+    <p>Le nouveau mot de passe remplace l'ancien (que personne ne peut lire). Communiquez-le à l'usager.</p>
+    <div class="asso-nom-box" id="um-nom"></div>
+    <form onsubmit="event.preventDefault();validerUmdp();" autocomplete="off">
+      <div class="mf"><label>Nouveau mot de passe</label><input type="password" id="um-mdp" autocomplete="off" placeholder="8 caractères minimum"></div>
+      <div class="mf"><label>Confirmer</label><input type="password" id="um-mdp2" autocomplete="off"></div>
+      <label class="voir-mdp"><input type="checkbox" onchange="toggleVoir(this,['um-mdp','um-mdp2'])"> Voir les caractères</label>
+      <div class="err-msg" id="um-err"></div>
+      <div class="modal-btns">
+        <button type="button" class="btn btn-secondary" onclick="fermerM('umdp')">Annuler</button>
+        <button type="submit" class="btn btn-primary">Remplacer</button>
+      </div>
+      <button type="button" class="btn-lnk" onclick="effacerUmdp()">Ou effacer le mot de passe (l'usager devra passer par « mot de passe oublié »)</button>
     </form>
   </div>
 </div>
@@ -631,7 +837,7 @@ async function entrerAdmin(){
   try{ await FU.chargerSaisons(); }catch(e){ toast('Erreur de chargement des saisons : '+e.message,'err'); }
   majMenus();
   const h=(location.hash||'').replace('#','');
-  if(['saisons','assos','docs','mails','code'].includes(h)) adminNav(h);
+  if(['saisons','assos','ent','part','docs','mails','code'].includes(h)) adminNav(h);
 }
 
 // ---------- Mot de passe de l'association connectée ----------
@@ -640,9 +846,10 @@ async function changerMonMdp(){
   const s=FU.lireSession(); if(!s) return;
   const old=document.getElementById('chg-old').value, n=document.getElementById('chg-new').value, c=document.getElementById('chg-new2').value;
   document.getElementById('chg-err').classList.remove('on');
-  if(n.length<MDP_MIN) return errM('chg-err','Nouveau mot de passe trop court ('+MDP_MIN+' caractères minimum).');
+  const usager=['entreprise','particulier'].includes(s.role), min=usager?8:MDP_MIN;
+  if(n.length<min) return errM('chg-err','Nouveau mot de passe trop court ('+min+' caractères minimum).');
   if(n!==c) return errM('chg-err','Les deux nouveaux mots de passe ne correspondent pas.');
-  try{ await FU.rpc('ft_changer_mon_mdp',{p_token:s.token,p_ancien:old,p_nouveau:n}); }catch(e){ return errM('chg-err',e.message); }
+  try{ await FU.rpc(usager?'ft_usager_changer_mdp':'ft_changer_mon_mdp',{p_token:s.token,p_ancien:old,p_nouveau:n}); }catch(e){ return errM('chg-err',e.message); }
   fermerM('chg'); toast('✅ Mot de passe modifié','ok');
 }
 
@@ -658,6 +865,8 @@ function adminNav(sec){
   if(sec==='accueil') majMenus();
   if(sec==='saisons') renderSaisons();
   if(sec==='assos') renderAssos();
+  if(sec==='ent') renderUsagers('entreprise');
+  if(sec==='part') renderUsagers('particulier');
   if(sec==='docs') renderDocs();
   if(sec==='mails') renderMails();
   window.scrollTo(0,0);
@@ -928,6 +1137,279 @@ preparerChampsMdp();
 document.querySelectorAll('.modal-ov').forEach(m=>m.addEventListener('mousedown',e=>{ if(e.target===m) m.classList.remove('on'); }));
 
 // ===== Démarrage : reprend la session de l'onglet si elle est encore valide =====
+// =====================================================================
+// COMPTES ENTREPRISE / PARTICULIER (réservation des salles municipales)
+// =====================================================================
+const PROFILS = {
+  entreprise:  { nom:'Entreprise',  titre:'Accès Entreprise',  icone:'🏢' },
+  particulier: { nom:'Particulier', titre:'Accès Particulier', icone:'👤' }
+};
+// Champs de la fiche, dans l'ordre d'affichage
+function champsProfil(profil){
+  if(profil==='entreprise') return [
+    {k:'identifiant', l:"Nom du représentant", aide:"Ce sera votre nom d'utilisateur.", req:1},
+    {k:'entreprise', l:"Nom de l'entreprise", req:1},
+    {k:'telephone', l:"Téléphone du représentant", t:'tel', req:1},
+    {k:'mail', l:"Mail du représentant", t:'email', aide:"Reçoit les liens « mot de passe oublié ».", req:1},
+    {k:'siret', l:"Numéro SIRET", aide:"14 chiffres.", req:1, mode:'numeric'},
+    {k:'tel_entreprise', l:"Téléphone de l'entreprise", t:'tel', req:1},
+    {k:'adresse', l:"Siège de l'entreprise (adresse)", req:1, plein:1},
+    {k:'mail_entreprise', l:"Mail de l'entreprise", t:'email', req:1, plein:1},
+    {k:'remarque', l:"Remarque", ta:1, plein:1}
+  ];
+  return [
+    {k:'identifiant', l:"Nom et prénom", aide:"Ce sera votre nom d'utilisateur.", req:1},
+    {k:'telephone', l:"Téléphone", t:'tel', req:1},
+    {k:'mail', l:"Adresse mail", t:'email', aide:"Reçoit les liens « mot de passe oublié ».", req:1, plein:1},
+    {k:'adresse', l:"Adresse", req:1, plein:1},
+    {k:'remarque', l:"Remarque", ta:1, plein:1}
+  ];
+}
+function htmlChamps(profil, prefix, v){
+  v=v||{};
+  return champsProfil(profil).map(c=>`<div class="mf${c.plein?' plein':''}">
+    <label for="${prefix}-${c.k}">${esc(c.l)}${c.req?' *':''}</label>
+    ${c.ta?`<textarea id="${prefix}-${c.k}" maxlength="2000">${esc(v[c.k]||'')}</textarea>`
+          :`<input id="${prefix}-${c.k}" type="${c.t||'text'}" ${c.mode?`inputmode="${c.mode}"`:''} maxlength="200" value="${esc(v[c.k]||'')}" autocomplete="off">`}
+    ${c.aide?`<div class="aide-champ">${esc(c.aide)}</div>`:''}
+  </div>`).join('');
+}
+function lireChamps(profil, prefix){
+  const o={}; champsProfil(profil).forEach(c=>{ o[c.k]=(document.getElementById(prefix+'-'+c.k).value||'').trim(); }); return o;
+}
+// Contrôle rapide côté navigateur (la base refait toutes les vérifications)
+function verifChamps(profil, o){
+  for(const c of champsProfil(profil)) if(c.req && !o[c.k]) return 'Champ obligatoire : '+c.l+'.';
+  const mailOk=m=>/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(m);
+  if(!mailOk(o.mail)) return 'Adresse mail invalide.';
+  if(profil==='entreprise'){
+    if(!/^\d{14}$/.test(o.siret.replace(/\s/g,''))) return 'Le numéro SIRET doit comporter 14 chiffres.';
+    if(!mailOk(o.mail_entreprise)) return "Adresse mail de l'entreprise invalide.";
+  }
+  return '';
+}
+
+// ---------- Connexion ----------
+let PROFIL=null;
+function ouvrirConnexionUsager(profil){
+  PROFIL=profil;
+  ouvrirM('usager');
+  document.getElementById('lu-titre').textContent=PROFILS[profil].icone+' '+PROFILS[profil].titre;
+  document.getElementById('lu-ident').value='';
+  setTimeout(()=>document.getElementById('lu-ident').focus(),80);
+}
+async function validerUsager(){
+  const ident=document.getElementById('lu-ident').value.trim(), mdp=document.getElementById('lu-mdp').value;
+  document.getElementById('lu-err').classList.remove('on');
+  if(!ident || !mdp) return errM('lu-err',"Indiquez votre nom d'utilisateur (ou mail) et votre mot de passe.");
+  let r=null;
+  try{ r=await FU.rpc('ft_usager_connexion',{p_profil:PROFIL,p_identifiant:ident,p_mdp:mdp}); }catch(e){ return errM('lu-err',e.message); }
+  if(!r || !r.token){ errM('lu-err',(r&&r.erreur)||'Connexion impossible.'); return; }
+  FU.ecrireSession({token:r.token, role:r.role, nom:r.nom});
+  fermerM('usager');
+  entrerUsager();
+}
+function entrerUsager(){
+  const s=FU.lireSession(); const p=PROFILS[s.role]||PROFILS.particulier;
+  document.getElementById('usr-badge').textContent=p.nom;
+  document.getElementById('usr-nom-hdr').textContent=s.nom||'';
+  document.getElementById('usr-bonjour').textContent='Bonjour '+(s.nom||'')+' !';
+  montrer('ecran-usager');
+}
+
+// ---------- Création de compte (2 étapes) ----------
+let INSC=null;
+function ouvrirInscription(){
+  fermerM('usager');
+  const p=PROFILS[PROFIL];
+  document.getElementById('insc-titre').textContent=p.icone+' Créer votre compte '+p.nom.toLowerCase();
+  document.getElementById('insc-champs').innerHTML=htmlChamps(PROFIL,'insc',{});
+  ['insc-err1','insc-err2'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  INSC=null; inscEtape1();
+  montrer('ecran-inscription');
+}
+function inscEtape1(){
+  document.getElementById('insc-f1').style.display=''; document.getElementById('insc-f2').style.display='none';
+  document.getElementById('insc-e1').classList.add('on'); document.getElementById('insc-e2').classList.remove('on');
+}
+function inscEtape2(){
+  const o=lireChamps(PROFIL,'insc'); const err=verifChamps(PROFIL,o);
+  document.getElementById('insc-err1').classList.remove('on');
+  if(err) return errM('insc-err1',err);
+  INSC=o;
+  document.getElementById('insc-recap').textContent="Nom d'utilisateur : "+o.identifiant;
+  ['insc-mdp','insc-mdp2'].forEach(id=>{ const i=document.getElementById(id); i.value=''; masquer(i,true); });
+  document.getElementById('insc-err2').classList.remove('on');
+  document.getElementById('insc-f1').style.display='none'; document.getElementById('insc-f2').style.display='';
+  document.getElementById('insc-e1').classList.remove('on'); document.getElementById('insc-e2').classList.add('on');
+  window.scrollTo(0,0); setTimeout(()=>document.getElementById('insc-mdp').focus(),80);
+}
+async function inscCreer(){
+  const m=document.getElementById('insc-mdp').value, m2=document.getElementById('insc-mdp2').value;
+  document.getElementById('insc-err2').classList.remove('on');
+  if(m.length<8) return errM('insc-err2','Mot de passe trop court (8 caractères minimum).');
+  if(m!==m2) return errM('insc-err2','Les deux mots de passe ne correspondent pas.');
+  const go=document.getElementById('insc-go'); go.disabled=true;
+  let r=null;
+  try{ r=await FU.rpc('ft_usager_inscrire',{p_profil:PROFIL,p_infos:INSC,p_mdp:m}); }
+  catch(e){ go.disabled=false; if(/mot de passe/i.test(e.message)) return errM('insc-err2',e.message); inscEtape1(); return errM('insc-err1',e.message); }
+  go.disabled=false;
+  FU.ecrireSession({token:r.token, role:r.role, nom:r.nom});
+  toast('✅ Compte créé : bienvenue !','ok');
+  entrerUsager();
+}
+
+// ---------- Mot de passe oublié ----------
+function ouvrirOubli(){
+  const v=document.getElementById('lu-ident').value.trim();
+  fermerM('usager'); ouvrirM('oubli');
+  document.getElementById('ou-ok').classList.remove('on');
+  document.getElementById('ou-ident').value=v;
+  document.getElementById('ou-go').disabled=false;
+}
+async function envoyerOubli(){
+  const ident=document.getElementById('ou-ident').value.trim();
+  document.getElementById('ou-err').classList.remove('on'); document.getElementById('ou-ok').classList.remove('on');
+  if(!ident) return errM('ou-err',"Indiquez votre nom d'utilisateur ou votre mail.");
+  const go=document.getElementById('ou-go'); go.disabled=true;
+  try{
+    const res=await fetch(FU_URL+'/functions/v1/fusiontest-compte',{method:'POST',
+      headers:{'Content-Type':'application/json','apikey':FU_KEY,'Authorization':'Bearer '+FU_KEY},
+      body:JSON.stringify({profil:PROFIL,identifiant:ident})});
+    const out=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(out.erreur||'Service indisponible');
+    okM('ou-ok',"Si un compte correspond, un mail vient d'être envoyé à son adresse. Le lien est valable 1 heure. Pensez à regarder dans vos courriers indésirables.");
+  }catch(e){ go.disabled=false; errM('ou-err','Envoi impossible : '+e.message); }
+}
+let JETON_RESET='';
+async function validerNouveauMdp(){
+  const m=document.getElementById('nv-mdp').value, m2=document.getElementById('nv-mdp2').value;
+  document.getElementById('nv-err').classList.remove('on');
+  if(m.length<8) return errM('nv-err','Mot de passe trop court (8 caractères minimum).');
+  if(m!==m2) return errM('nv-err','Les deux mots de passe ne correspondent pas.');
+  let r=null;
+  try{ r=await FU.rpc('ft_usager_reinitialiser',{p_jeton:JETON_RESET,p_nouveau:m}); }catch(e){ return errM('nv-err',e.message); }
+  JETON_RESET=''; history.replaceState(null,'','index.html');
+  FU.ecrireSession({token:r.token, role:r.role, nom:r.nom});
+  fermerM('nouveau'); toast('✅ Mot de passe enregistré','ok');
+  entrerUsager();
+}
+window.addEventListener('load',()=>{
+  const j=new URLSearchParams(location.search).get('reset');
+  if(j){ JETON_RESET=j; ouvrirM('nouveau'); }
+});
+
+// ---------- Mon compte ----------
+let FICHE=null;   // {mode:'moi'|'creer'|'modifier', profil, id}
+async function ouvrirMonCompte(){
+  const s=FU.lireSession(); let u=null;
+  try{ u=await FU.rpc('ft_mon_compte',{p_token:s.token}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  FICHE={mode:'moi', profil:u.profil, id:u.id};
+  ouvrirFiche('👤 Mon compte','Compte créé le '+u.cree+'. Modifiez vos coordonnées puis enregistrez.',u.profil,u,false);
+}
+function ouvrirFiche(titre,sous,profil,vals,avecMdp){
+  ouvrirM('fiche');
+  document.getElementById('fi-titre').textContent=titre;
+  document.getElementById('fi-sous').textContent=sous;
+  document.getElementById('fi-champs').innerHTML=htmlChamps(profil,'fi',vals);
+  document.getElementById('fi-mdp-zone').style.display=avecMdp?'':'none';
+}
+async function enregistrerFiche(){
+  const o=lireChamps(FICHE.profil,'fi'); const err=verifChamps(FICHE.profil,o);
+  document.getElementById('fi-err').classList.remove('on');
+  if(err) return errM('fi-err',err);
+  try{
+    if(FICHE.mode==='moi'){
+      const u=await FU.rpc('ft_mon_compte_maj',{p_token:tok(),p_infos:o});
+      const s=FU.lireSession(); s.nom=u.identifiant; FU.ecrireSession(s); entrerUsager();
+    } else if(FICHE.mode==='creer'){
+      const m=document.getElementById('fi-mdp').value;
+      if(m && m.length<8) return errM('fi-err','Mot de passe trop court (8 caractères minimum).');
+      await FU.rpc('ft_usager_admin',{p_token:tok(),p_action:'creer',p_id:null,p_profil:FICHE.profil,p_infos:o,p_mdp:m||null});
+    } else {
+      await FU.rpc('ft_usager_admin',{p_token:tok(),p_action:'modifier',p_id:FICHE.id,p_infos:o});
+    }
+  }catch(e){ return errM('fi-err',e.message); }
+  fermerM('fiche'); toast('✅ Fiche enregistrée','ok');
+  if(FICHE.mode!=='moi') renderUsagers(FICHE.profil);
+}
+
+// ---------- Administrateur : listes des comptes ----------
+let USAGERS={entreprise:[],particulier:[]}, FILTRE={entreprise:'',particulier:''};
+async function renderUsagers(profil){
+  const box=document.getElementById(profil==='entreprise'?'ent-body':'part-body');
+  const p=PROFILS[profil];
+  box.innerHTML='<div class="chargement">Chargement…</div>';
+  try{ USAGERS[profil]=await FU.rpc('ft_usagers_liste',{p_token:tok(),p_profil:profil})||[]; }
+  catch(e){ box.innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
+  box.innerHTML=`<div class="section-title">${p.icone} ${p.nom==='Entreprise'?'Entreprises':'Particuliers'}</div>
+    <p class="section-sub">Comptes créés par les ${profil==='entreprise'?'entreprises':'particuliers'} pour réserver les salles municipales. Les mots de passe ne sont jamais lisibles : vous pouvez les remplacer ou les effacer.</p>
+    <div class="set-section">
+      <div class="inline-f" style="margin-bottom:14px;align-items:center">
+        <input class="recherche" type="search" placeholder="Rechercher (nom, mail, téléphone${profil==='entreprise'?', entreprise, SIRET':''})" value="${esc(FILTRE[profil])}" oninput="FILTRE['${profil}']=this.value;tableUsagers('${profil}')">
+        <button class="btn btn-primary btn-sm" onclick="nouvelUsager('${profil}')">＋ Créer un compte</button>
+      </div>
+      <div id="tab-${profil}"></div>
+    </div>`;
+  tableUsagers(profil);
+}
+function tableUsagers(profil){
+  const f=norm(FILTRE[profil]);
+  const l=USAGERS[profil].filter(u=>!f || norm([u.identifiant,u.mail,u.telephone,u.entreprise,u.siret].join(' ')).includes(f));
+  const ent=profil==='entreprise';
+  document.getElementById('tab-'+profil).innerHTML = !USAGERS[profil].length
+    ? '<p class="vide">Aucun compte pour le moment.</p>'
+    : `<p style="font-size:12.5px;color:var(--gris2);margin-bottom:8px">${l.length} compte${l.length>1?'s':''}${f?' trouvé'+(l.length>1?'s':''):''}</p>
+      <div class="tb-wrap"><table class="tb"><thead><tr><th>Nom d'utilisateur</th>${ent?'<th>Entreprise</th><th>SIRET</th>':''}<th>Téléphone</th><th>Mail</th><th>Créé le</th><th>Mot de passe</th><th></th></tr></thead><tbody>
+      ${l.map(u=>`<tr>
+        <td><b>${esc(u.identifiant)}</b>${u.remarque?`<div style="font-size:11.5px;color:var(--gris2);white-space:pre-line">${esc(u.remarque)}</div>`:''}</td>
+        ${ent?`<td>${esc(u.entreprise)}</td><td>${esc(u.siret)}</td>`:''}
+        <td><a href="tel:${esc(u.telephone)}">${esc(u.telephone)}</a></td>
+        <td><a href="mailto:${esc(u.mail)}">${esc(u.mail)}</a></td>
+        <td>${esc(u.cree)}</td>
+        <td>${u.a_mdp?'<span class="tag-ok">✓ défini</span>':'<span class="tag-warn">aucun</span>'}</td>
+        <td><div class="usr-actions">
+          <button class="btn btn-secondary btn-sm" onclick="ficheUsager('${profil}',${u.id})">✏️ Fiche</button>
+          <button class="btn btn-secondary btn-sm" onclick="ouvrirUmdp('${profil}',${u.id})">🔑 Mot de passe</button>
+          <button class="btn btn-danger btn-sm" onclick="retirerUsager('${profil}',${u.id})">🗑️ Supprimer</button>
+        </div></td></tr>`).join('')}
+      </tbody></table></div>`;
+}
+function nouvelUsager(profil){
+  FICHE={mode:'creer', profil, id:null};
+  ouvrirFiche(PROFILS[profil].icone+' Nouveau compte '+PROFILS[profil].nom.toLowerCase(),"Créez le compte à la place de l'usager.",profil,{},true);
+}
+function ficheUsager(profil,id){
+  const u=USAGERS[profil].find(x=>x.id===id); if(!u) return;
+  FICHE={mode:'modifier', profil, id};
+  ouvrirFiche('✏️ '+u.identifiant,'Compte créé le '+u.cree+'.',profil,u,false);
+}
+let UMDP=null;
+function ouvrirUmdp(profil,id){
+  const u=USAGERS[profil].find(x=>x.id===id); if(!u) return;
+  UMDP={profil,id}; ouvrirM('umdp');
+  document.getElementById('um-nom').textContent=u.identifiant;
+}
+async function validerUmdp(){
+  const m=document.getElementById('um-mdp').value, m2=document.getElementById('um-mdp2').value;
+  document.getElementById('um-err').classList.remove('on');
+  if(m.length<8) return errM('um-err','Mot de passe trop court (8 caractères minimum).');
+  if(m!==m2) return errM('um-err','Les deux mots de passe ne correspondent pas.');
+  try{ await FU.rpc('ft_usager_admin',{p_token:tok(),p_action:'mdp',p_id:UMDP.id,p_mdp:m}); }catch(e){ return errM('um-err',e.message); }
+  fermerM('umdp'); toast('✅ Mot de passe remplacé','ok'); renderUsagers(UMDP.profil);
+}
+async function effacerUmdp(){
+  if(!confirm("Effacer le mot de passe ? L'usager devra passer par « mot de passe oublié » pour en choisir un.")) return;
+  try{ await FU.rpc('ft_usager_admin',{p_token:tok(),p_action:'mdp',p_id:UMDP.id,p_mdp:''}); }catch(e){ return errM('um-err',e.message); }
+  fermerM('umdp'); toast('Mot de passe effacé','ok'); renderUsagers(UMDP.profil);
+}
+async function retirerUsager(profil,id){
+  const u=USAGERS[profil].find(x=>x.id===id); if(!u) return;
+  if(!confirm('Supprimer le compte « '+u.identifiant+' » ? Il ne pourra plus se connecter.')) return;
+  try{ await FU.rpc('ft_usager_admin',{p_token:tok(),p_action:'retirer',p_id:id}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  toast('Compte supprimé','ok'); renderUsagers(profil);
+}
+
 window.addEventListener('load',async()=>{
   if(new URLSearchParams(location.search).get('expire')) toast('Votre session a expiré : reconnectez-vous','warn');
   const s=FU.lireSession();
@@ -935,6 +1417,7 @@ window.addEventListener('load',async()=>{
   let r=null; try{ r=await FU.rpc('ft_session_info',{p_token:s.token}); }catch(e){}
   if(!r || !r.valide){ FU.ecrireSession(null); return; }
   if(r.role==='asso'){ s.nom=r.nom; FU.ecrireSession(s); entrerAsso(); }
+  else if(r.role==='entreprise' || r.role==='particulier'){ s.role=r.role; s.nom=r.nom; FU.ecrireSession(s); entrerUsager(); }
   else entrerAdmin();
 });
 </script>

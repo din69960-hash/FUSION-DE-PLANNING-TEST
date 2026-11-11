@@ -53,7 +53,7 @@ const FU = {
     if(!r || !r.valide || (role && r.role !== role && !(Array.isArray(role) && role.includes(r.role)))){
       FU.ecrireSession(null); location.href = 'index.html?expire=1'; return null;
     }
-    s.role = r.role; if(r.role === 'asso') s.nom = r.nom;
+    s.role = r.role; if(r.nom) s.nom = r.nom;
     FU.ecrireSession(s);
     return s;
   },
