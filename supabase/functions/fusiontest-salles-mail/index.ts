@@ -22,6 +22,8 @@ const dateFr = (d: string) => {
   const x = new Date(d + "T12:00:00");
   return x.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" });
 };
+const eur = (v: unknown) => v === null || v === undefined || v === "" ? "—" : `${Number(v).toLocaleString("fr-FR")} €`;
+const ORIGINE: Record<string, [string, string]> = { asso: ["association de Corbas", "association extérieure"], entreprise: ["entreprise de Corbas", "entreprise extérieure"], particulier: ["habitant de Corbas", "hors Corbas"] };
 const euros = (t: unknown) => t === null || t === undefined ? "communiqué par le service des sports" : Number(t) === 0 ? "gratuit" : `${Number(t).toLocaleString("fr-FR")} €`;
 
 Deno.serve(async (req) => {
@@ -46,8 +48,15 @@ Deno.serve(async (req) => {
     ${ligne("Date", esc(quand))}
     ${ligne("Nature", esc(nature))}
     ${r.nb_personnes ? ligne("Personnes", esc(r.nb_personnes)) : ""}
-    ${ligne("Tarif", esc(euros(r.tarif)))}
+    ${r.corbassien === null || r.corbassien === undefined ? "" : ligne("Origine", esc((ORIGINE[r.profil] ?? ORIGINE.particulier)[r.corbassien ? 0 : 1]))}
+    ${ligne("Location", esc(euros(r.tarif)))}
+    ${r.caution_menage !== null || r.caution_reparation !== null ? ligne("Cautions", `ménage ${esc(eur(r.caution_menage))} · réparation ${esc(eur(r.caution_reparation))}`) : ""}
   </table>`;
+  const veille = r.veille ? dateFr(r.veille) : "";
+  const cautions = r.caution_menage !== null || r.caution_reparation !== null
+    ? `<p>🗝️ <b>Il faudra passer au service des sports le ${esc(veille)}</b> (veille de l'événement) pour remettre les chèques de caution :
+       caution ménage de <b>${esc(eur(r.caution_menage))}</b> et caution réparation de <b>${esc(eur(r.caution_reparation))}</b>.</p>` : "";
+  const lienPay = r.pay_jeton ? `${SITE}paiement.html?r=${r.id}&k=${r.pay_jeton}` : "";
   const msg = r.message ? `<p style="background:#f4f7fb;border-left:4px solid #1a3a5c;padding:10px 14px;white-space:pre-line">${esc(r.message)}</p>` : "";
 
   let sujet = "", corps = "";
@@ -60,10 +69,13 @@ Deno.serve(async (req) => {
       break;
     case "validee": {
       const ech = r.echeance ? new Date(r.echeance + "T12:00:00").toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" }) : "";
+      const sous = Number(prep.delai) === 7 ? "une semaine" : `${prep.delai} jours`;
       sujet = "Votre demande de salle est validée — paiement à effectuer";
-      corps = `<p>Bonjour,</p><p>Votre demande de réservation est <b>validée</b>. La date vous est réservée en option.</p>${detail}${msg}
-        <p><b>Pour confirmer la réservation, vous devez procéder au paiement avant le ${esc(ech)}</b> (délai de ${esc(prep.delai)} jours).
-        Sans paiement dans ce délai, la réservation est annulée automatiquement et la date redevient libre.</p>`;
+      corps = `<p>Bonjour,</p><p>Votre dossier est complet : votre demande de réservation est <b>validée</b>. La date vous est réservée en option.</p>${detail}${msg}
+        <p style="background:#fff4e6;border-left:4px solid #f08c1a;padding:10px 14px"><b>Vous devez faire votre paiement sous ${esc(sous)} (avant le ${esc(ech)}), sans quoi votre réservation sera annulée.</b></p>
+        ${lienPay ? `<p style="margin:18px 0"><a href="${lienPay}" style="background:#f08c1a;color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:8px;display:inline-block">💳 Payer ${esc(euros(r.tarif))} en ligne</a></p>
+        <p style="font-size:12px;color:#5a6b85">Si le bouton ne fonctionne pas : ${lienPay}</p>` : ""}
+        ${cautions}`;
       break;
     }
     case "pieces":
@@ -78,7 +90,7 @@ Deno.serve(async (req) => {
     case "reservee":
       sujet = "Votre réservation de salle est confirmée";
       corps = `<p>Bonjour,</p><p>Votre réservation est <b>confirmée</b>.</p>${detail}${msg}
-        <p>Le service des sports vous contactera pour la remise des clés, les états des lieux d'entrée et de sortie et le chèque de caution.</p>`;
+        ${cautions || "<p>Le service des sports vous contactera pour la remise des clés et les états des lieux.</p>"}`;
       break;
     case "annulee":
       sujet = "Votre réservation de salle est annulée";

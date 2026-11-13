@@ -875,11 +875,12 @@ async function changerMonMdp(){
 async function majAlerteSalles(){
   const s=FU.lireSession(); if(!s||s.role!=='admin') return;
   let r; try{ r=await FU.rpc('ft_resa_a_traiter',{p_token:s.token}); }catch(e){ return; }
-  const n=r.nouvelles||0, pc=r.pieces||0, pa=r.paiement||0;
+  const n=r.nouvelles||0, pc=r.pieces||0, pa=r.paiement||0, py=r.payees||0;
   const bandeau=document.getElementById('alerte-salles');
-  bandeau.classList.toggle('on', n>0);
-  document.getElementById('alerte-salles-txt').textContent = n===1 ? '1 nouvelle demande de salle à traiter' : n+' nouvelles demandes de salle à traiter';
-  const sous=[]; if(pc) sous.push(pc+' en attente de pièces'); if(pa) sous.push(pa+' en attente de paiement');
+  bandeau.classList.toggle('on', n>0 || py>0);
+  document.getElementById('alerte-salles-txt').textContent = n ? (n===1 ? '1 nouvelle demande de salle à traiter' : n+' nouvelles demandes de salle à traiter')
+    : (py===1 ? '💳 1 location payée en ligne cette semaine' : '💳 '+py+' locations payées en ligne cette semaine');
+  const sous=[]; if(n && py) sous.push('💳 '+py+' payée'+(py>1?'s':'')+' en ligne cette semaine'); if(pc) sous.push(pc+' en attente de pièces'); if(pa) sous.push(pa+' en attente de paiement');
   document.getElementById('alerte-salles-sous').textContent=sous.join(' · ');
   ['badge-salles-nav','badge-salles-carte'].forEach(id=>{ const b=document.getElementById(id); b.textContent=n; b.style.display=n?'inline':'none'; });
 }

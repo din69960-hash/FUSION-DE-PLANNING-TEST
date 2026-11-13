@@ -18,7 +18,7 @@
   :root{
     --bleu:#1a3a5c; --bleu2:#2563a8; --or:#c8972a; --or2:#f0b429; --clair:#f4f7fb; --blanc:#fff;
     --gris:#e2e8f0; --gris2:#64748b; --rouge:#c0392b; --vert:#1a7a4a; --r:10px; --r2:18px;
-    --c-libre:#22a05a; --c-demande:#2f74d0; --c-option:#f08c1a; --c-reserve:#d33b2c; --c-hors:#d5dbe3;
+    --c-libre:#22a05a; --c-demande:#f2c230; --c-option:#f08c1a; --c-reserve:#d33b2c; --c-hors:#d5dbe3;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:var(--clair);color:var(--bleu);min-height:100vh;}
@@ -138,7 +138,7 @@
   .jour .num{font-weight:800;font-size:13px;display:flex;justify-content:space-between;align-items:center;}
   .jour .num small{font-weight:700;font-size:10px;color:var(--gris2);}
   .barre{flex:1;min-height:12px;border-radius:5px;font-size:10px;line-height:12px;color:#fff;padding:1px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-weight:700;}
-  .e-libre{background:var(--c-libre);} .e-demande{background:var(--c-demande);} .e-option{background:var(--c-option);}
+  .e-libre{background:var(--c-libre);} .e-demande{background:var(--c-demande);color:#4a3a00;} .e-option{background:var(--c-option);}
   .e-reserve,.e-bloque{background:var(--c-reserve);} .e-hors{background:var(--c-hors);color:#6b7685;}
   .barre.mien{box-shadow:inset 0 0 0 2px #111;}
   .jour.aujourdhui{border-color:var(--or);border-width:2.5px;}
@@ -175,6 +175,22 @@
   .toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
   .sw.on .toggle{background:var(--vert);} .sw.on .toggle::after{left:23px;}
   .prof-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+
+  /* Questionnaire d'orientation */
+  .orient{background:#fff;border:2px solid var(--bleu2);border-radius:var(--r2);padding:22px;margin-bottom:18px;max-width:680px;}
+  .orient h3{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;margin-bottom:4px;}
+  .orient-recap{display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#eef4fc;border:1px solid #bcd3f1;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:14px;}
+  .orient-recap b{color:var(--bleu);}
+  .salle-choix{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .salle-choix button{border:2px solid var(--gris);background:#fff;border-radius:14px;padding:10px 14px;cursor:pointer;font-family:inherit;text-align:left;color:var(--bleu);min-width:200px;}
+  .salle-choix button.on{border-color:var(--bleu);background:#eef4fc;box-shadow:inset 0 0 0 1px var(--bleu);}
+  .salle-choix small{display:block;color:var(--gris2);font-size:12px;margin-top:2px;}
+  .tarif-tb td,.tarif-tb th{text-align:center;} .tarif-tb td:first-child,.tarif-tb th:first-child{text-align:left;}
+  .tarif-tb input[type=number]{max-width:96px;}
+  .grand-ok{text-align:center;padding:10px 0;}
+  .grand-ok .ico{font-size:52px;margin-bottom:6px;}
+  .grand-ok p{font-size:16px;line-height:1.5;margin:8px 0;}
+  .paye{display:inline-block;background:#effaf3;border:1px solid #bbe5cb;color:var(--vert);border-radius:20px;font-size:11.5px;font-weight:700;padding:2px 9px;margin-left:6px;}
 
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bleu);color:#fff;padding:12px 22px;border-radius:30px;font-size:14px;font-weight:500;opacity:0;transition:.3s;z-index:2000;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:92vw;text-align:center;}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -245,7 +261,7 @@
       <div class="admin-content">
         <div id="a-demandes" class="page">
           <div class="section-title">📥 Demandes de réservation</div>
-          <p class="section-sub">Vérifiez les pièces, puis validez, demandez des pièces ou refusez. Une demande validée avec un tarif passe en <b style="color:var(--c-option)">orange</b> jusqu'au paiement ; gratuite, elle passe directement en <b style="color:var(--c-reserve)">rouge</b>.</p>
+          <p class="section-sub">Une demande déposée est en <b style="color:#b38a00">jaune</b>. Vérifiez les pièces et les montants, puis validez : l'usager reçoit un mail avec le lien de paiement (à régler sous le délai fixé) et la date passe en <b style="color:var(--c-option)">orange</b>. Dès le paiement, elle passe en <b style="color:var(--c-reserve)">rouge</b> et vous êtes prévenu par mail. Gratuite, elle passe directement en rouge.</p>
           <div class="filtres" id="a-filtres"></div>
           <div id="a-demandes-liste"><div class="chargement">Chargement…</div></div>
         </div>
@@ -276,7 +292,7 @@
         </div>
         <div id="a-reglages" class="page">
           <div class="section-title">⚙️ Règles par profil</div>
-          <p class="section-sub">Pour chaque profil : ouverture des réservations, date limite, délai de paiement, natures de demande avec leur tarif, les pièces exigées et la convention à télécharger.</p>
+          <p class="section-sub">Pour chaque profil : ouverture des réservations, délai de paiement, délai minimum et durée de visibilité du planning, natures de demande avec les pièces exigées et la convention à télécharger.</p>
           <div class="prof-tabs" id="rg-tabs"></div>
           <div id="rg-corps"></div>
           <div class="set-section">
@@ -335,7 +351,8 @@
     <div class="grille2">
       <div class="mf"><label>Nom de la salle</label><input type="text" id="sa-nom"></div>
       <div class="mf"><label>Adresse</label><input type="text" id="sa-adresse"></div>
-      <div class="mf"><label>Capacité</label><input type="text" id="sa-capacite" placeholder="Ex : 120 personnes debout, 80 assises"></div>
+      <div class="mf"><label>Capacité (texte affiché)</label><input type="text" id="sa-capacite" placeholder="Ex : 120 personnes debout, 80 assises"></div>
+      <div class="mf"><label>Capacité maximale (nombre)</label><input type="number" id="sa-capmax" min="1" placeholder="Ex : 120 — la salle n'est plus proposée au-delà"></div>
       <div class="mf"><label>Lien vidéo YouTube</label><input type="url" id="sa-youtube" placeholder="https://youtu.be/…"></div>
       <div class="mf plein"><label>Descriptif</label><textarea id="sa-desc"></textarea></div>
       <div class="mf plein"><label>Photo</label>
@@ -347,9 +364,21 @@
       </div>
       <div class="mf plein"><label>Périodes réservables</label><div class="coches" id="sa-periodes"></div></div>
       <div class="mf plein"><label class="coche"><input type="checkbox" id="sa-actif"> Salle visible et réservable</label></div>
+      <div class="mf plein"><label class="coche"><input type="checkbox" id="sa-weekend"> Un seul événement par week-end (une demande le vendredi, le samedi ou le dimanche ferme tout le week-end)</label></div>
     </div>
     <div class="set-section" style="padding:16px">
-      <h4>Conditions affichées à chaque profil</h4>
+      <h4>Disponibilité selon le jour</h4>
+      <p class="aide">Cochez ce qui peut être réservé chaque jour de la semaine. Les colonnes correspondent aux périodes réservables cochées plus haut.</p>
+      <div class="tb-wrap"><table class="tb tarif-tb" id="sa-dispo"></table></div>
+    </div>
+    <div class="set-section" style="padding:16px">
+      <h4>Tarifs et cautions selon le demandeur et la nature</h4>
+      <p class="aide">Montants en euros. Location : <b>0</b> = gratuit, <b>vide</b> = montant fixé par le service à la validation. Décochez « Proposée » si la salle n'est pas louée pour cette nature : elle n'apparaît alors pas à l'usager.</p>
+      <div class="prof-tabs" id="sa-tarif-tabs"></div>
+      <div class="tb-wrap"><table class="tb tarif-tb" id="sa-tarifs"></table></div>
+    </div>
+    <div class="set-section" style="padding:16px">
+      <h4>Informations affichées à chaque profil</h4>
       <div class="prof-tabs" id="sa-cond-tabs"></div>
       <div class="grille2" id="sa-cond"></div>
     </div>
@@ -376,6 +405,48 @@
   <div class="modal-box large"><button class="fermer-x" onclick="fermerVideo()">×</button><h3 id="vd-titre"></h3><div id="vd-corps"></div></div>
 </div>
 
+<!-- Demande enregistrée -->
+<div class="modal-ov" id="modal-ok" onclick="if(event.target===this){fermerM('ok');usagerNav('mes');}">
+  <div class="modal-box"><button class="fermer-x" onclick="fermerM('ok');usagerNav('mes')">×</button>
+    <div class="grand-ok"><div class="ico">📨</div>
+      <h3 style="padding:0">Votre demande est enregistrée</h3>
+      <p>Elle va être traitée par nos services <b>sous 15 jours à 1 mois</b>.</p>
+      <p style="font-size:14px;color:var(--gris2)">En attendant, la date apparaît en <b style="color:#b38a00">jaune</b> sur le planning. Si le dossier est complet, vous recevrez un mail avec le lien pour payer la location.</p>
+      <button class="btn btn-primary" style="margin-top:10px;flex:none;padding:12px 26px" onclick="fermerM('ok');usagerNav('mes')">Voir mes demandes</button>
+    </div></div>
+</div>
+
+<!-- Réservation saisie par l'administrateur -->
+<div class="modal-ov" id="modal-aresa">
+  <div class="modal-box"><button class="fermer-x" onclick="fermerM('aresa')">×</button>
+    <h3>Réservation par le service</h3>
+    <p class="sous">Possible à toute date, y compris à moins d'un mois (réservation exceptionnelle). Le créneau doit être libre.</p>
+    <div class="note bleu" id="ar-recap"></div>
+    <div class="grille2">
+      <div class="mf"><label>Période</label><select id="ar-periode"></select></div>
+      <div class="mf"><label>Profil du demandeur</label><select id="ar-profil" onchange="arMaj()"><option value="asso">Association</option><option value="entreprise">Entreprise</option><option value="particulier">Particulier</option></select></div>
+      <div class="mf"><label>Nature</label><select id="ar-nature" onchange="arTarif()"></select></div>
+      <div class="mf"><label>Origine</label><select id="ar-corbas" onchange="arTarif()"><option value="true">De Corbas</option><option value="false">Extérieur</option></select></div>
+      <div class="mf plein"><label>Nom du demandeur</label><input type="text" id="ar-nom" placeholder="Association, entreprise ou nom et prénom"></div>
+      <div class="mf"><label>Mail (facultatif)</label><input type="email" id="ar-mail" placeholder="Pour envoyer le lien de paiement"></div>
+      <div class="mf"><label>Téléphone</label><input type="tel" id="ar-tel"></div>
+      <div class="mf"><label>Nombre de personnes</label><input type="number" id="ar-nb" min="1"></div>
+      <div class="mf"><label>Location (€)</label><input type="number" id="ar-tarif" min="0" step="0.01" placeholder="Selon la grille"></div>
+      <div class="mf"><label>Caution ménage (€)</label><input type="number" id="ar-cm" min="0" step="0.01"></div>
+      <div class="mf"><label>Caution réparation (€)</label><input type="number" id="ar-cr" min="0" step="0.01"></div>
+      <div class="mf plein"><label>Remarque</label><textarea id="ar-rem"></textarea></div>
+      <div class="mf plein"><label>État</label><div class="coches">
+        <label class="coche"><input type="radio" name="ar-etat" value="valider" checked> Validée tout de suite (attente de paiement, ou réservée si gratuite)</label>
+        <label class="coche"><input type="radio" name="ar-etat" value="demande"> Demande à traiter (jaune)</label></div></div>
+    </div>
+    <div class="err-msg" id="ar-err"></div>
+    <div class="btns">
+      <button type="button" class="btn btn-secondary" onclick="fermerM('aresa')">Annuler</button>
+      <button type="button" class="btn btn-primary" id="ar-go" onclick="arEnregistrer()">Enregistrer la réservation</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -387,8 +458,8 @@ const PROFILS = {asso:'Association', entreprise:'Entreprise', particulier:'Parti
 const PROFILS_PL = {asso:'Associations', entreprise:'Entreprises', particulier:'Particuliers'};
 const CRENEAUX = [['matin','Matin'],['apres_midi','Après-midi'],['soir','Soir']];
 const PERIODES = {matin:'Matin', apres_midi:'Après-midi', soir:'Soir', journee:'Journée entière', weekend:'Week-end (samedi + dimanche)'};
-const ETATS = {libre:'Disponible', demande:'Demande en cours', option:'Validée, en attente de paiement', reserve:'Indisponible', bloque:'Indisponible', hors:'Non réservable'};
-const STATUTS = {demande:['Demande en cours','var(--c-demande)'], pieces:['Pièces à compléter','var(--c-demande)'], option:['Validée — paiement attendu','var(--c-option)'],
+const ETATS = {libre:'Disponible', demande:'Demande en cours de traitement', option:'Validée, en attente de paiement', reserve:'Indisponible', bloque:'Indisponible', hors:'Non réservable'};
+const STATUTS = {demande:['Demande en cours de traitement','var(--c-demande)'], pieces:['Pièces à compléter','var(--c-demande)'], option:['Validée — paiement attendu','var(--c-option)'],
   reservee:['Réservée','var(--c-reserve)'], refusee:['Refusée','#8a94a3'], annulee:['Annulée','#8a94a3'], expiree:['Annulée (délai dépassé)','#8a94a3']};
 const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
@@ -410,7 +481,34 @@ const dateFr = s => s ? dDate(s).toLocaleDateString('fr-FR') : '';
 const dateLongue = s => { const d=dDate(s); return JOURS[d.getDay()]+' '+d.getDate()+' '+MOIS[d.getMonth()]+' '+d.getFullYear(); };
 const euros = t => t===null||t===undefined||t==='' ? 'Tarif communiqué par le service des sports' : Number(t)===0 ? 'Gratuit' : Number(t).toLocaleString('fr-FR')+' €';
 const taille = o => o>1048576 ? (Math.round(o/104857.6)/10)+' Mo' : Math.max(1,Math.round((o||0)/1024))+' Ko';
-const chipStatut = st => { const s=STATUTS[st]||[st,'#888']; return `<span class="chip" style="background:${s[1]}">${esc(s[0])}</span>`; };
+const chipStatut = st => { const s=STATUTS[st]||[st,'#888']; return `<span class="chip" style="background:${s[1]};${['demande','pieces'].includes(st)?'color:#4a3a00':''}">${esc(s[0])}</span>`; };
+const montant = v => v===null||v===undefined||v==='' ? '' : Number(v).toLocaleString('fr-FR')+' €';
+const PAY_PAGE = 'paiement.html';
+const lienPaiement = r => r.pay_jeton ? new URL(PAY_PAGE+'?r='+r.id+'&k='+r.pay_jeton, location.href).href : '';
+const ORIGINE = {
+  asso:['Association de Corbas','Association extérieure à Corbas'],
+  entreprise:['Entreprise de Corbas (siège ou établissement)','Entreprise extérieure à Corbas'],
+  particulier:["J'habite Corbas","J'habite hors de Corbas"]
+};
+const origineTxt = (prof,c) => c===null||c===undefined ? '' : (ORIGINE[prof]||ORIGINE.particulier)[c?0:1];
+// Tarif d'une salle pour un profil, une nature et une origine (même règle que la base)
+function tarifSalle(s, prof, nat, corbas){
+  const all = ROLE==='admin' ? ((s.tarifs||{})[prof]||{}) : (s.tarifs||{});
+  const t = all[nat.code] || {};
+  const v = k => t[k]===null||t[k]===undefined||t[k]==='' ? null : Number(t[k]);
+  const loc = v(corbas===false?'ext':'corbas');
+  return {ouvert: t.ouvert!==false, location: loc!==null ? loc : (nat.tarif===null||nat.tarif===undefined||nat.tarif===''?null:Number(nat.tarif)), menage:v('menage'), reparation:v('reparation')};
+}
+// Le créneau (matin, après-midi, soir) est-il proposé ce jour-là ?
+function periodesDuJour(s, d){
+  const j=String(dDate(d).getDay()); const dispo=s.dispo||{};
+  return (s.periodes||[]).filter(p=>!(j in dispo) || (dispo[j]||[]).includes(p));
+}
+function creneauOuvert(s, d, c){
+  const per=periodesDuJour(s,d);
+  return per.includes(c) || per.includes('journee') || (per.includes('weekend') && dDate(d).getDay()===6)
+    || (c && dDate(d).getDay()===0 && periodesDuJour(s, ajout(d,-1)).includes('weekend'));
+}
 function slug(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,40) || 'nature'; }
 function idYoutube(u){ const m=String(u||'').match(/(?:youtu\.be\/|v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/); return m?m[1]:null; }
 
@@ -478,22 +576,74 @@ function usagerNav(sec){
   ['visite','planning','mes'].forEach(x=>{ document.getElementById('og-'+x).classList.toggle('on',x===sec); document.getElementById('u-'+x).classList.toggle('on',x===sec); });
   history.replaceState(null,'','salles.html#'+sec);
   const p=monProfil();
-  document.getElementById('u-sous').textContent = ROLE==='asso' ? 'Réservez une salle municipale pour un moment festif, une assemblée générale, une vente ou une réunion.'
+  document.getElementById('u-sous').textContent = ROLE==='asso' ? 'Réservez une salle municipale pour une réunion, une assemblée générale ou une manifestation.'
     : ROLE==='entreprise' ? 'Réservez une salle municipale pour une assemblée générale, une vente ou une réunion.'
     : 'Réservez une salle municipale pour un anniversaire, un mariage, un baptême…';
-  document.getElementById('u-etat').innerHTML = !p.ouvert ? '<div class="note rouge">🔒 Les réservations sont fermées pour le moment. Vous pouvez consulter les salles et le planning.</div>'
-    : p.limite ? `<div class="note vert">🔓 Réservations possibles jusqu'au <b>${dateFr(p.limite)}</b>.</div>` : '';
+  document.getElementById('u-etat').innerHTML = !p.ouvert ? '<div class="note rouge">🔒 Les réservations sont fermées pour le moment. Vous pouvez consulter les salles.</div>'
+    : `<div class="note bleu">📅 Les demandes se font <b>au moins ${p.delai_min_jours} jours à l'avance</b> (à partir du ${dateFr(p.debut)}) et jusqu'à ${p.horizon_mois} mois à l'avance${(p.natures||[]).some(n=>n.horizon_mois&&n.horizon_mois!=p.horizon_mois)?' (' + p.natures.filter(n=>n.horizon_mois&&n.horizon_mois!=p.horizon_mois).map(n=>esc(n.libelle).toLowerCase()+' : '+n.horizon_mois+' mois').join(', ')+')':''}.</div>`;
   if(sec==='visite') renderVisite();
   if(sec==='planning') renderPlanning('u-planning');
   if(sec==='mes') renderMes();
   window.scrollTo(0,0);
 }
 
-function conditionsHtml(c){
-  c=c||{};
-  const l=[['Tarif de location',c.tarif],['Caution ménage',c.caution_menage],['Caution réparation',c.caution_reparation],['Matériel disponible',c.materiel],['Bon à savoir',c.infos]].filter(x=>x[1]&&String(x[1]).trim());
-  if(!l.length) return '';
-  return `<div class="cond"><h5>Conditions ${ROLE==='admin'?'':'pour les '+PROFILS_PL[ROLE].toLowerCase()}</h5><dl>${l.map(x=>`<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join('')}</dl></div>`;
+// ---------- Questionnaire d'orientation (nature, nombre de personnes, Corbas ou extérieur) ----------
+let ORIENT = null;
+function lireOrient(){
+  try{ ORIENT=JSON.parse(sessionStorage.getItem('ft_orient_'+ROLE)||'null'); }catch(e){ ORIENT=null; }
+  if(ORIENT && !(monProfil().natures||[]).some(n=>n.code===ORIENT.nature)) ORIENT=null;
+  return ORIENT;
+}
+const natureOrient = () => ORIENT ? (monProfil().natures||[]).find(n=>n.code===ORIENT.nature) : null;
+function renderOrient(box){
+  const p=monProfil(), o=ORIENT||{};
+  box.innerHTML=`<div class="orient">
+    <h3>Votre événement</h3>
+    <p class="aide" style="font-size:14px">Pour vous orienter au mieux, nous avons besoin de précisions sur votre événement : vous ne verrez que les salles qui lui conviennent, avec le tarif qui vous concerne.</p>
+    <div class="mf"><label>Nature</label><select id="or-nature" onchange="document.getElementById('or-prec-z').style.display=((monProfil().natures||[]).find(n=>n.code===this.value)||{}).precision?'block':'none'">
+      <option value="">— Choisissez —</option>${(p.natures||[]).map(n=>`<option value="${esc(n.code)}" ${o.nature===n.code?'selected':''}>${esc(n.libelle)}</option>`).join('')}</select></div>
+    <div class="mf" id="or-prec-z" style="display:${((p.natures||[]).find(n=>n.code===o.nature)||{}).precision?'block':'none'}"><label>Précisez</label><input type="text" id="or-prec" value="${esc(o.precision||'')}" placeholder="Ex : communion, départ en retraite…"></div>
+    <div class="mf" style="max-width:260px"><label>Nombre de personnes</label><input type="number" id="or-nb" min="1" inputmode="numeric" value="${esc(o.nb||'')}"></div>
+    <div class="mf"><label>Vous êtes</label><div class="coches">
+      ${[true,false].map(c=>`<label class="coche"><input type="radio" name="or-corbas" value="${c}" ${o.corbas===c?'checked':''}> ${esc(origineTxt(ROLE,c))}</label>`).join('')}
+    </div></div>
+    <div class="err-msg" id="or-err"></div>
+    <div class="btns"><button class="btn btn-primary" onclick="validerOrient()">Voir les salles et les dates disponibles →</button></div>
+  </div>`;
+}
+function validerOrient(){
+  const nat=document.getElementById('or-nature').value, nb=parseInt(document.getElementById('or-nb').value,10);
+  const c=document.querySelector('input[name=or-corbas]:checked'); const n=(monProfil().natures||[]).find(x=>x.code===nat);
+  if(!n) return errM('or-err','Choisissez la nature de votre événement.');
+  if(n.precision && !document.getElementById('or-prec').value.trim()) return errM('or-err','Précisez la nature de votre événement.');
+  if(!nb || nb<1) return errM('or-err','Indiquez le nombre de personnes attendues.');
+  if(!c) return errM('or-err','Indiquez si vous êtes de Corbas ou de l\'extérieur.');
+  ORIENT={nature:nat, precision:document.getElementById('or-prec').value.trim(), nb, corbas:c.value==='true'};
+  sessionStorage.setItem('ft_orient_'+ROLE, JSON.stringify(ORIENT));
+  CAL.mois=null; renderPlanning('u-planning');
+}
+function modifierOrient(){ ORIENT=null; sessionStorage.removeItem('ft_orient_'+ROLE); renderPlanning('u-planning'); }
+// Salles qui conviennent : nature proposée et capacité suffisante
+function sallesEligibles(){
+  const n=natureOrient(); if(!n) return [];
+  return SALLES.filter(s=>tarifSalle(s,ROLE,n,ORIENT.corbas).ouvert && (!s.capacite_max || ORIENT.nb<=s.capacite_max));
+}
+function fenetre(){ const p=monProfil(), n=natureOrient(); return {debut:p.debut, fin:(n&&n.fin)||p.limite||null}; }
+
+// ---------- Visite des salles ----------
+function conditionsHtml(s){
+  const c=s.conditions||{};
+  const l=[['Matériel disponible',c.materiel],['Bon à savoir',c.infos]].filter(x=>x[1]&&String(x[1]).trim());
+  const nat=(monProfil().natures||[]).map(n=>({n, tc:tarifSalle(s,ROLE,n,true), te:tarifSalle(s,ROLE,n,false)})).filter(x=>x.tc.ouvert);
+  const fmt=v=>v===null?'Sur devis':v===0?'Gratuit':montant(v);
+  const cau=nat.find(x=>x.tc.menage!==null||x.tc.reparation!==null);
+  let h='';
+  if(nat.length) h+=`<div class="cond"><h5>Tarifs pour les ${PROFILS_PL[ROLE].toLowerCase()}</h5>
+    <table class="tb" style="font-size:13px"><tr><th>Nature</th><th>De Corbas</th><th>Extérieur</th></tr>
+    ${nat.map(x=>`<tr><td>${esc(x.n.libelle)}</td><td><b>${fmt(x.tc.location)}</b></td><td><b>${fmt(x.te.location)}</b></td></tr>`).join('')}</table>
+    ${cau?`<div style="margin-top:8px;font-size:13px">Cautions (chèques remis la veille au service des sports) : ménage <b>${montant(cau.tc.menage)||'—'}</b> · réparation <b>${montant(cau.tc.reparation)||'—'}</b></div>`:''}</div>`;
+  if(l.length) h+=`<div class="cond"><dl>${l.map(x=>`<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join('')}</dl></div>`;
+  return h;
 }
 function renderVisite(){
   const box=document.getElementById('u-salles');
@@ -502,13 +652,13 @@ function renderVisite(){
     <div class="salle-photo">${s.photo?`<img src="${esc(s.photo)}" alt="${esc(s.nom)}" loading="lazy">`:'🏛️'}</div>
     <div class="salle-corps">
       <h3>${esc(s.nom)}</h3>
-      ${s.adresse||s.capacite?`<div class="salle-meta">${s.adresse?'📍 '+esc(s.adresse):''}${s.adresse&&s.capacite?' · ':''}${s.capacite?'👥 '+esc(s.capacite):''}</div>`:''}
+      ${s.adresse||s.capacite||s.capacite_max?`<div class="salle-meta">${s.adresse?'📍 '+esc(s.adresse):''}${s.adresse&&(s.capacite||s.capacite_max)?' · ':''}${s.capacite?'👥 '+esc(s.capacite):s.capacite_max?'👥 '+s.capacite_max+' personnes maximum':''}</div>`:''}
       ${s.descriptif?`<div class="salle-desc">${esc(s.descriptif)}</div>`:''}
-      ${conditionsHtml(s.conditions)}
-      <div class="salle-meta">Périodes : ${(s.periodes||[]).map(p=>PERIODES[p]).join(' · ')}</div>
+      ${conditionsHtml(s)}
+      <div class="salle-meta">Périodes : ${(s.periodes||[]).map(p=>PERIODES[p]).join(' · ')}${s.un_par_weekend?' · un seul événement par week-end':''}</div>
       <div class="salle-btns">
         ${idYoutube(s.youtube)?`<button class="btn btn-secondary btn-sm" onclick="voirVideo(${s.id})">▶️ Visite en vidéo</button>`:''}
-        <button class="btn btn-primary btn-sm" onclick="CAL.salle=${s.id};usagerNav('planning')">📆 Voir le planning</button>
+        <button class="btn btn-primary btn-sm" onclick="CAL.salle=${s.id};usagerNav('planning')">📆 Réserver cette salle</button>
       </div>
     </div></div>`).join('');
 }
@@ -524,9 +674,10 @@ function fermerVideo(){ document.getElementById('vd-corps').innerHTML=''; fermer
 // ---------- Planning (commun usagers / administrateur) ----------
 function moisDisponibles(){
   const auj=dDate(INFOS.aujourdhui); const liste=[];
-  let debut=new Date(auj.getFullYear(), auj.getMonth()-(ROLE==='admin'?2:0), 1);
-  let fin=new Date(auj.getFullYear(), auj.getMonth()+(ROLE==='admin'?14:12), 1);
-  if(ROLE!=='admin' && monProfil().limite){ const l=dDate(monProfil().limite); const fl=new Date(l.getFullYear(), l.getMonth(), 1); if(fl<fin) fin=fl; }
+  let debut, fin;
+  if(ROLE==='admin'){ debut=new Date(auj.getFullYear(), auj.getMonth()-2, 1); fin=new Date(auj.getFullYear(), auj.getMonth()+14, 1); }
+  else { const f=fenetre(); const d=dDate(f.debut); debut=new Date(d.getFullYear(), d.getMonth(), 1);
+    const e=f.fin?dDate(f.fin):new Date(auj.getFullYear(), auj.getMonth()+12, 1); fin=new Date(e.getFullYear(), e.getMonth(), 1); }
   if(fin<debut) fin=new Date(debut);
   for(let d=new Date(debut); d<=fin; d.setMonth(d.getMonth()+1)) liste.push(d.getFullYear()+'-'+pad(d.getMonth()+1));
   return liste;
@@ -534,15 +685,25 @@ function moisDisponibles(){
 function renderPlanning(cid){
   const box=document.getElementById(cid);
   if(!SALLES.length){ box.innerHTML=(ROLE==='admin'?'<div class="section-title">📆 Planning des salles</div>':'')+'<p class="vide">Aucune salle n\'est encore créée.</p>'; return; }
-  if(!SALLES.some(s=>s.id===CAL.salle)) CAL.salle=SALLES[0].id;
+  let liste=SALLES, entete='';
+  if(ROLE!=='admin'){
+    if(!lireOrient()){ renderOrient(box); return; }
+    const n=natureOrient(); liste=sallesEligibles(); const f=fenetre();
+    entete=`<div class="orient-recap"><span>Votre événement : <b>${esc(n.libelle)}${ORIENT.precision?' ('+esc(ORIENT.precision)+')':''}</b> · <b>${ORIENT.nb} personne${ORIENT.nb>1?'s':''}</b> · <b>${esc(origineTxt(ROLE,ORIENT.corbas))}</b></span>
+      <button class="lnk" onclick="modifierOrient()">Modifier</button></div>`;
+    if(!liste.length){ box.innerHTML=entete+`<div class="set-section"><p>Aucune salle ne correspond à cet événement${SALLES.some(s=>s.capacite_max&&ORIENT.nb>s.capacite_max)?' (capacité dépassée)':''}. Contactez le service des sports ou modifiez vos réponses.</p></div>`; return; }
+    if(!liste.some(s=>s.id===CAL.salle)) CAL.salle=liste[0].id;
+    entete+=`<div class="aide" style="font-size:13.5px">Dates proposées du <b>${dateFr(f.debut)}</b> au <b>${f.fin?dateFr(f.fin):'—'}</b>. Choisissez une salle, puis touchez une date verte.</div>
+      <div class="salle-choix">${liste.map(s=>{ const t=tarifSalle(s,ROLE,n,ORIENT.corbas);
+        return `<button class="${s.id===CAL.salle?'on':''}" onclick="CAL.salle=${s.id};renderPlanning('u-planning')"><b>${esc(s.nom)}</b><small>${t.location===null?'Tarif sur devis':t.location===0?'Gratuit':'Location '+montant(t.location)}${s.capacite_max?' · '+s.capacite_max+' pers. max':''}</small></button>`; }).join('')}</div>`;
+  } else if(!SALLES.some(s=>s.id===CAL.salle)) CAL.salle=SALLES[0].id;
   const mois=moisDisponibles(); if(!mois.includes(CAL.mois)) CAL.mois=mois[ROLE==='admin'?Math.min(2,mois.length-1):0];
-  box.innerHTML=`${ROLE==='admin'?'<div class="section-title">📆 Planning des salles</div><p class="section-sub">Le nom du réservant apparaît sur chaque date. Touchez un jour pour voir le détail ou le bloquer.</p>':''}
-    <div class="cal-barre">
+  box.innerHTML=`${ROLE==='admin'?'<div class="section-title">📆 Planning des salles</div><p class="section-sub">Le nom du réservant apparaît sur chaque date. Touchez un jour pour voir le détail, le bloquer ou saisir une réservation (même à moins d\'un mois).</p>':entete}
+    ${ROLE==='admin'?`<div class="cal-barre">
       <div class="mf"><label>Salle</label><select id="cal-salle" onchange="CAL.salle=Number(this.value);chargerMois()">${SALLES.map(s=>`<option value="${s.id}" ${s.id===CAL.salle?'selected':''}>${esc(s.nom)}${s.actif===false?' (masquée)':''}</option>`).join('')}</select></div>
-      ${ROLE!=='admin'?'<div class="aide" style="margin:0;flex:1;min-width:200px">Touchez une date pour voir les périodes libres et faire votre demande.</div>':''}
-    </div>
+    </div>`:''}
     <div class="mois-tabs" id="cal-mois">${mois.map(m=>{const [y,mm]=m.split('-').map(Number);return `<button class="mois-tab ${m===CAL.mois?'on':''}" data-m="${m}" onclick="CAL.mois='${m}';chargerMois()">${MOIS[mm-1].charAt(0).toUpperCase()+MOIS[mm-1].slice(1)} ${y}</button>`;}).join('')}</div>
-    <div class="legende"><span><i class="e-libre"></i>Disponible</span><span><i class="e-demande"></i>Demande en cours</span><span><i class="e-option"></i>Validée, attente de paiement</span><span><i class="e-reserve"></i>Indisponible</span><span><i class="e-hors"></i>Non réservable</span>${ROLE!=='admin'?'<span><i style="box-shadow:inset 0 0 0 2px #111;background:#fff"></i>Ma demande</span>':''}</div>
+    <div class="legende"><span><i class="e-libre"></i>Disponible</span><span><i class="e-demande"></i>Demande en cours de traitement</span><span><i class="e-option"></i>Validée, attente de paiement</span><span><i class="e-reserve"></i>Réservée / indisponible</span><span><i class="e-hors"></i>Non réservable</span>${ROLE!=='admin'?'<span><i style="box-shadow:inset 0 0 0 2px #111;background:#fff"></i>Ma demande</span>':''}</div>
     <div class="cal" id="cal-zone"><div class="chargement">Chargement…</div></div>`;
   chargerMois();
 }
@@ -558,9 +719,11 @@ async function chargerMois(){
 }
 function etatCase(d,c){
   const x=CAL.cases[d+'|'+c]; if(x) return x;
+  const s=SALLES.find(z=>z.id===CAL.salle);
+  if(s && !creneauOuvert(s,d,c)) return {e:'hors'};
   if(ROLE==='admin') return {e:'libre'};
-  const p=monProfil();
-  if(d<=INFOS.aujourdhui || (p.limite && d>p.limite)) return {e:'hors'};
+  const f=fenetre();
+  if(d<f.debut || (f.fin && d>f.fin)) return {e:'hors'};
   return {e:'libre'};
 }
 function dessinerMois(){
@@ -586,15 +749,18 @@ function ouvrirJour(d){
     else if(ROLE==='admin' && x.mo) det=`<div style="font-size:13px;margin-top:3px">${esc(x.mo)}</div>`;
     if(x.m) det+='<div style="font-size:13px;margin-top:3px">C\'est votre demande.</div>';
     const act=ROLE==='admin'&&x.id?`<button class="btn btn-secondary btn-sm" onclick="fermerM('jour');ouvrirDemande(${x.id})">Ouvrir la demande</button>`:'';
-    return `<div class="creneau-ligne"><div><b>${l}</b>${det}</div><div style="display:flex;gap:8px;align-items:center"><span class="chip" style="background:${coul}">${esc(ETATS[x.e])}</span>${act}</div></div>`;
+    return `<div class="creneau-ligne"><div><b>${l}</b>${det}</div><div style="display:flex;gap:8px;align-items:center"><span class="chip" style="background:${coul};${x.e==='demande'?'color:#4a3a00':''}">${esc(ETATS[x.e])}</span>${act}</div></div>`;
   }).join('');
   if(ROLE==='admin'){
-    h+=`<div class="btns"><button class="btn btn-secondary" onclick="fermerM('jour');preparerBlocage('${d}')">⛔ Bloquer cette date</button></div>`;
-  } else {
     const libres=periodesLibres(s,d);
+    h+=`<div class="btns">${d>=INFOS.aujourdhui&&libres.length?`<button class="btn btn-primary" onclick="fermerM('jour');ouvrirAdminResa('${d}')">＋ Saisir une réservation</button>`:''}
+      <button class="btn btn-secondary" onclick="fermerM('jour');preparerBlocage('${d}')">⛔ Bloquer cette date</button></div>`;
+    if(d>=INFOS.aujourdhui && d<ajout(INFOS.aujourdhui,30) && libres.length) h+='<p class="aide" style="margin-top:8px">Moins d\'un mois : les usagers ne peuvent plus demander cette date, mais vous pouvez saisir une réservation exceptionnelle.</p>';
+  } else {
+    const libres=periodesLibres(s,d); const f=fenetre();
     if(!p.ouvert) h+='<div class="note rouge">🔒 Les réservations sont fermées pour le moment.</div>';
-    else if(d<=INFOS.aujourdhui) h+='<div class="note">Les réservations se font au plus tard la veille.</div>';
-    else if(p.limite && d>p.limite) h+=`<div class="note">Réservations possibles jusqu'au ${dateFr(p.limite)} seulement.</div>`;
+    else if(d<f.debut) h+=`<div class="note">Les demandes se font au moins ${p.delai_min_jours} jours à l'avance (à partir du ${dateFr(f.debut)}). Pour une urgence, contactez le service des sports.</div>`;
+    else if(f.fin && d>f.fin) h+=`<div class="note">Pour cet événement, les réservations sont possibles jusqu'au ${dateFr(f.fin)} seulement.</div>`;
     else if(!libres.length) h+='<div class="note">Aucune période libre ce jour-là pour cette salle.</div>';
     else h+=`<h4 style="font-family:Syne,sans-serif;margin:14px 0 8px">Réserver</h4><div class="btns" style="margin-top:0">${libres.map(pp=>`<button class="btn btn-success btn-sm" onclick="ouvrirResa('${d}','${pp}')">${PERIODES[pp]}</button>`).join('')}</div>`;
   }
@@ -602,11 +768,11 @@ function ouvrirJour(d){
   ouvrirM('jour');
 }
 function periodesLibres(s,d){
-  const p=monProfil(); const lib=c=>etatCase(d,c).e==='libre';
-  return (s.periodes||[]).filter(pp=>{
+  const lib=c=>etatCase(d,c).e==='libre'; const f=ROLE==='admin'?{}:fenetre();
+  return periodesDuJour(s,d).filter(pp=>{
     if(['matin','apres_midi','soir'].includes(pp)) return lib(pp);
     if(pp==='journee') return CRENEAUX.every(([c])=>lib(c));
-    if(pp==='weekend'){ if(dDate(d).getDay()!==6) return false; const dim=ajout(d,1); if(p.limite && dim>p.limite) return false;
+    if(pp==='weekend'){ if(dDate(d).getDay()!==6) return false; const dim=ajout(d,1); if(f.fin && dim>f.fin) return false;
       return CRENEAUX.every(([c])=>lib(c)) && CRENEAUX.every(([c])=>etatCase(dim,c).e==='libre'); }
     return false;
   });
@@ -615,27 +781,39 @@ function periodesLibres(s,d){
 // ---------- Formulaire de demande ----------
 function ouvrirResa(d,per){
   fermerM('jour');
-  const s=SALLES.find(x=>x.id===CAL.salle); const p=monProfil();
+  const s=SALLES.find(x=>x.id===CAL.salle); const n=natureOrient(); if(!n) return modifierOrient();
   RESA={salle:s, date:d, periode:per};
-  document.getElementById('rs-recap').innerHTML=`<b>${esc(s.nom)}</b><br>${esc(dateLongue(d))}${per==='weekend'?' et dimanche '+dDate(ajout(d,1)).getDate():''} — ${esc(PERIODES[per])}`;
-  document.getElementById('rs-nature').innerHTML='<option value="">— Choisissez —</option>'+(p.natures||[]).map(n=>`<option value="${esc(n.code)}">${esc(n.libelle)}</option>`).join('');
-  ['rs-precision','rs-nb','rs-rem','rs-mail','rs-tel'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('rs-recap').innerHTML=`<b>${esc(s.nom)}</b><br>${esc(dateLongue(d))}${per==='weekend'?' et dimanche '+dDate(ajout(d,1)).getDate():''} — ${esc(PERIODES[per])}<br>${esc(origineTxt(ROLE,ORIENT.corbas))}`;
+  const sel=document.getElementById('rs-nature');
+  sel.innerHTML=`<option value="${esc(n.code)}">${esc(n.libelle)}</option>`; sel.disabled=true;
+  ['rs-rem','rs-mail','rs-tel'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('rs-precision').value=ORIENT.precision||'';
+  document.getElementById('rs-nb').value=ORIENT.nb||'';
   document.getElementById('rs-contact').style.display = ROLE==='asso' ? 'contents' : 'none';
   if(ROLE==='asso'){ try{ const m=JSON.parse(localStorage.getItem('ft_contact_'+SES.nom)||'{}'); document.getElementById('rs-mail').value=m.mail||''; document.getElementById('rs-tel').value=m.tel||''; }catch(e){} }
   majNature(); ouvrirM('resa');
 }
-function natureChoisie(){ const c=document.getElementById('rs-nature').value; return (monProfil().natures||[]).find(n=>n.code===c)||null; }
+function natureChoisie(){ return natureOrient(); }
+function veilleOuvree(d){
+  // dernier jour ouvré avant l'événement (lundi → vendredi, hors jours fériés)
+  const fer=y=>{ const a=y%19,b=Math.floor(y/100),c=y%100,dd=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-dd-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451);
+    const p=new Date(y,Math.floor((h+l-7*m+114)/31)-1,((h+l-7*m+114)%31)+1); const pi=n=>{const x=new Date(p);x.setDate(x.getDate()+n);return iso(x);};
+    return [y+'-01-01',y+'-05-01',y+'-05-08',y+'-07-14',y+'-08-15',y+'-11-01',y+'-11-11',y+'-12-25',pi(1),pi(39),pi(50)]; };
+  let x=ajout(d,-1); while([0,6].includes(dDate(x).getDay()) || fer(dDate(x).getFullYear()).includes(x)) x=ajout(x,-1);
+  return x;
+}
 function majNature(){
   const n=natureChoisie();
   document.getElementById('rs-precision-zone').style.display = n&&n.precision ? 'block' : 'none';
   const cond=document.getElementById('rs-conditions'), pz=document.getElementById('rs-pieces');
   if(!n){ cond.innerHTML=''; pz.innerHTML=''; return; }
-  const c=RESA.salle.conditions||{};
+  const t=tarifSalle(RESA.salle,ROLE,n,ORIENT.corbas); const p=monProfil();
   cond.innerHTML=`<div class="cond" style="margin-bottom:12px"><h5>Conditions</h5><dl>
-      <dt>Location</dt><dd>${esc(euros(n.tarif))}</dd>
-      ${c.caution_menage?`<dt>Caution ménage</dt><dd>${esc(c.caution_menage)}</dd>`:''}
-      ${c.caution_reparation?`<dt>Caution réparation</dt><dd>${esc(c.caution_reparation)}</dd>`:''}
-      ${n.tarif!==0?`<dt>Paiement</dt><dd>dans les ${monProfil().delai_paiement} jours après la validation</dd>`:''}
+      <dt>Location</dt><dd>${t.location===null?'Montant communiqué par le service des sports':t.location===0?'Gratuit':montant(t.location)}</dd>
+      ${t.menage!==null?`<dt>Caution ménage</dt><dd>${montant(t.menage)}</dd>`:''}
+      ${t.reparation!==null?`<dt>Caution réparation</dt><dd>${montant(t.reparation)}</dd>`:''}
+      ${t.location!==0?`<dt>Paiement</dt><dd>en ligne, dans les ${p.delai_paiement} jours après la validation de votre dossier</dd>`:''}
+      ${t.menage!==null||t.reparation!==null?`<dt>Chèques de caution</dt><dd>à remettre au service des sports le ${esc(dateLongue(veilleOuvree(RESA.date)))}</dd>`:''}
     </dl>
     ${n.convention?`<div style="margin-top:10px"><button type="button" class="btn btn-or btn-sm" onclick="lireConvention('${ROLE}|${esc(n.code)}')">⬇️ Télécharger la convention (${esc(n.convention.nom)})</button><div class="aide" style="margin:6px 0 0">Complétez-la, signez-la et déposez-la avec vos pièces ci-dessous.</div></div>`:''}
   </div>`;
@@ -653,6 +831,9 @@ async function envoyerDemande(){
   document.getElementById('rs-err').classList.remove('on');
   if(!n) return errM('rs-err','Choisissez la nature de la demande.');
   if(n.precision && !document.getElementById('rs-precision').value.trim()) return errM('rs-err','Précisez la nature de votre demande.');
+  const nb=parseInt(document.getElementById('rs-nb').value,10);
+  if(!nb || nb<1) return errM('rs-err','Indiquez le nombre de personnes.');
+  if(RESA.salle.capacite_max && nb>RESA.salle.capacite_max) return errM('rs-err','Cette salle accueille '+RESA.salle.capacite_max+' personnes au maximum.');
   const mail=document.getElementById('rs-mail').value.trim(), tel=document.getElementById('rs-tel').value.trim();
   if(ROLE==='asso' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return errM('rs-err','Indiquez un mail de contact valide : les réponses du service des sports y seront envoyées.');
   const pieces=[];
@@ -662,31 +843,35 @@ async function envoyerDemande(){
   try{
     const prep=[]; for(const x of pieces){ const o=await preparerFichier(x.f); prep.push({libelle:x.libelle, ...o}); }
     const r=await FU.rpc('ft_resa_demander',{p_token:tok(), p_demande:{salle_id:RESA.salle.id, date:RESA.date, periode:RESA.periode, nature:n.code,
-      precision:document.getElementById('rs-precision').value, nb_personnes:document.getElementById('rs-nb').value, remarque:document.getElementById('rs-rem').value,
+      precision:document.getElementById('rs-precision').value, nb_personnes:String(nb), corbassien:String(ORIENT.corbas), remarque:document.getElementById('rs-rem').value,
       contact_mail:mail, contact_tel:tel}, p_pieces:prep});
     if(ROLE==='asso'){ try{ localStorage.setItem('ft_contact_'+SES.nom, JSON.stringify({mail,tel})); }catch(e){} }
     envoyerMail(r.id,'nouvelle');
-    fermerM('resa'); toast('✅ Demande envoyée : la date apparaît en bleu en attendant la réponse du service des sports','ok');
-    usagerNav('mes');
+    fermerM('resa'); ouvrirM('ok');
   }catch(e){ errM('rs-err', e.message); }
   finally{ btn.disabled=false; btn.textContent='Envoyer ma demande'; }
 }
 
 // ---------- Mes demandes ----------
+function cautionsTxt(r){
+  if(r.caution_menage===null && r.caution_reparation===null) return '';
+  return `<br>🗝️ Passez au service des sports le <b>${esc(dateLongue(r.veille))}</b> pour remettre les chèques de caution : ménage <b>${montant(r.caution_menage)||'—'}</b>, réparation <b>${montant(r.caution_reparation)||'—'}</b>.`;
+}
 async function renderMes(){
   const box=document.getElementById('u-mes-liste'); box.innerHTML='<div class="chargement">Chargement…</div>';
   let l=[]; try{ l=await FU.rpc('ft_resa_mes_demandes',{p_token:tok()})||[]; }catch(e){ box.innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
-  if(!l.length){ box.innerHTML='<div class="set-section"><p class="vide">Vous n\'avez encore fait aucune demande. Ouvrez le planning et touchez une date libre.</p></div>'; return; }
+  if(!l.length){ box.innerHTML='<div class="set-section"><p class="vide">Vous n\'avez encore fait aucune demande. Ouvrez « Planning & réservation » et répondez aux trois questions sur votre événement.</p></div>'; return; }
   box.innerHTML=l.map(r=>{
     let action='';
-    if(r.statut==='demande') action='<div class="note bleu">Votre demande est en attente de la réponse du service des sports.</div>';
+    if(r.statut==='demande') action='<div class="note" style="background:#fff9e0;border-color:#f2d36b;color:#6b5200">📨 Votre demande est enregistrée et va être traitée par nos services sous 15 jours à 1 mois.</div>';
     if(r.statut==='pieces') action=`<div class="note">📎 Le service des sports vous demande de compléter votre dossier :<br><b style="white-space:pre-line">${esc(r.message||'')}</b></div>`;
-    if(r.statut==='option') action=`<div class="note" style="background:#fff4e6;border-color:#f6c58a;color:#9a4d00">💳 <b>Pour confirmer la réservation, vous devez procéder au paiement avant le ${dateFr(r.echeance)}.</b> Sans paiement dans ce délai, la réservation est annulée automatiquement.${r.message?'<br>'+esc(r.message):''}</div>`;
-    if(r.statut==='reservee') action=`<div class="note vert">✅ Réservation confirmée. Le service des sports vous contactera pour les clés, les états des lieux et le chèque de caution.${r.message?'<br>'+esc(r.message):''}</div>`;
+    if(r.statut==='option') action=`<div class="note" style="background:#fff4e6;border-color:#f6c58a;color:#9a4d00">💳 <b>Votre dossier est validé. Vous devez faire votre paiement (${montant(r.tarif)}) avant le ${dateFr(r.echeance)}, sans quoi votre réservation sera annulée.</b>${cautionsTxt(r)}${r.message?'<br>'+esc(r.message):''}
+      ${r.pay_jeton?`<div style="margin-top:10px"><a class="btn btn-orange btn-sm" style="display:inline-block;text-decoration:none" href="${esc(lienPaiement(r))}">💳 Payer maintenant</a></div>`:''}</div>`;
+    if(r.statut==='reservee') action=`<div class="note vert">✅ Réservation confirmée${r.paye_le?' — paiement reçu le '+new Date(r.paye_le).toLocaleDateString('fr-FR'):''}.${cautionsTxt(r)}${r.message?'<br>'+esc(r.message):''}</div>`;
     if(['refusee','annulee'].includes(r.statut) && r.message) action=`<div class="note rouge">${esc(r.message)}</div>`;
     return `<div class="dem-card s-${r.statut}">
       <div class="dem-tete"><div><h4>${esc(r.salle)} — ${esc(dateLongue(r.date))}</h4>
-        <div class="dem-infos">${esc(PERIODES[r.periode])} · ${esc(r.nature_libelle)}${r.precision?' ('+esc(r.precision)+')':''} · ${esc(euros(r.tarif))}</div></div>${chipStatut(r.statut)}</div>
+        <div class="dem-infos">${esc(PERIODES[r.periode])} · ${esc(r.nature_libelle)}${r.precision?' ('+esc(r.precision)+')':''}${r.nb_personnes?' · '+r.nb_personnes+' pers.':''} · ${esc(euros(r.tarif))}</div></div>${chipStatut(r.statut)}</div>
       <div style="margin-top:10px">${action}</div>
       <div>${(r.pieces||[]).map(p=>`<span class="piece" onclick="lirePiece(${p.id})">📎 ${esc(p.libelle)} · ${esc(taille(p.taille))}</span>`).join('')}</div>
       <div class="btns">
@@ -748,8 +933,8 @@ function dessinerListe(){
   if(!l.length){ box.innerHTML='<div class="set-section"><p class="vide">Aucune demande.</p></div>'; return; }
   box.innerHTML=l.map(r=>`<div class="dem-card s-${r.statut}" style="cursor:pointer" onclick="ouvrirDemande(${r.id})">
     <div class="dem-tete"><div><h4>${esc(r.demandeur_nom)} <span style="font-size:12px;color:var(--gris2);font-family:'DM Sans'">· ${esc(PROFILS[r.profil])}</span></h4>
-      <div class="dem-infos">🏛️ ${esc(r.salle)} · 📅 ${esc(dateLongue(r.date))} · ${esc(PERIODES[r.periode])}<br>${esc(r.nature_libelle)}${r.precision?' ('+esc(r.precision)+')':''} · ${esc(euros(r.tarif))} · 📎 ${r.pieces.length} pièce(s)${r.statut==='option'?' · à payer avant le <b>'+dateFr(r.echeance)+'</b>':''}</div></div>
-      ${chipStatut(r.statut)}</div></div>`).join('');
+      <div class="dem-infos">🏛️ ${esc(r.salle)} · 📅 ${esc(dateLongue(r.date))} · ${esc(PERIODES[r.periode])}<br>${esc(r.nature_libelle)}${r.precision?' ('+esc(r.precision)+')':''}${r.corbassien!==null&&r.corbassien!==undefined?' · '+(r.corbassien?'Corbas':'Extérieur'):''}${r.nb_personnes?' · '+r.nb_personnes+' pers.':''} · ${esc(euros(r.tarif))} · 📎 ${r.pieces.length} pièce(s)${r.statut==='option'?' · à payer avant le <b>'+dateFr(r.echeance)+'</b>':''}${r.par_admin?' · saisie par le service':''}</div></div>
+      <div>${chipStatut(r.statut)}${r.paye_le?`<span class="paye">💳 ${r.paye_mode==='guichet'?'payé au service':'payé en ligne'}</span>`:''}</div></div></div>`).join('');
 }
 function ouvrirDemande(id){
   const r=DEMANDES.find(x=>x.id===id);
@@ -762,7 +947,10 @@ function ouvrirDemande(id){
   if(r.statut==='option') actions.push(`<button class="btn btn-danger" style="background:var(--c-reserve)" onclick="decider(${r.id},'payee')">💳 Paiement reçu → réservée</button>`);
   if(['demande','pieces','option'].includes(r.statut)) actions.push(`<button class="btn btn-secondary" onclick="decider(${r.id},'refuser')">✖️ Refuser</button>`);
   if(r.statut==='reservee') actions.push(`<button class="btn btn-secondary" onclick="decider(${r.id},'annuler')">Annuler la réservation</button>`);
-  const NOMS={demande:'Demande déposée',piece:'Pièce ajoutée',validee:'Validée',pieces:'Pièces demandées',refusee:'Refusée',reservee:'Réservée',annulee:'Annulée par le service',annulee_demandeur:'Annulée par le demandeur',expiree:'Annulée automatiquement'};
+  const NOMS={demande:'Demande déposée',piece:'Pièce ajoutée',validee:'Validée — lien de paiement envoyé',pieces:'Pièces demandées',refusee:'Refusée',reservee:'Réservée',annulee:'Annulée par le service',annulee_demandeur:'Annulée par le demandeur',expiree:'Annulée automatiquement',payee_en_ligne:'💳 Payée en ligne',montants:'Montants modifiés'};
+  const modifMontants=['demande','pieces','option'].includes(r.statut);
+  const champM=(id,lab,v)=>`<div class="mf" style="margin:0"><label>${lab}</label><input type="number" min="0" step="0.01" id="${id}" value="${v===null||v===undefined?'':v}" placeholder="—" ${modifMontants?'':'disabled'}></div>`;
+  const lien=lienPaiement(r);
   document.getElementById('dm-corps').innerHTML=`
     <h3>${esc(r.demandeur_nom)}</h3>
     <div style="margin-bottom:12px">${chipStatut(r.statut)} <span style="font-size:12.5px;color:var(--gris2);margin-left:6px">${esc(PROFILS[r.profil])} · demande n° ${r.id} du ${new Date(r.cree).toLocaleDateString('fr-FR')}</span></div>
@@ -770,13 +958,23 @@ function ouvrirDemande(id){
       <div class="cond"><h5>Réservation</h5><dl>
         <dt>Salle</dt><dd>${esc(r.salle)}</dd><dt>Date</dt><dd>${esc(dateLongue(r.date))}</dd><dt>Période</dt><dd>${esc(PERIODES[r.periode])}</dd>
         <dt>Nature</dt><dd>${esc(r.nature_libelle)}${r.precision?' ('+esc(r.precision)+')':''}</dd>
-        ${r.nb_personnes?`<dt>Personnes</dt><dd>${r.nb_personnes}</dd>`:''}<dt>Tarif</dt><dd>${esc(euros(r.tarif))}</dd>
-        ${r.echeance&&r.statut==='option'?`<dt>Paiement avant</dt><dd>${dateFr(r.echeance)}</dd>`:''}</dl></div>
+        ${r.nb_personnes?`<dt>Personnes</dt><dd>${r.nb_personnes}</dd>`:''}
+        ${r.corbassien!==null&&r.corbassien!==undefined?`<dt>Origine</dt><dd>${esc(origineTxt(r.profil,r.corbassien))}</dd>`:''}
+        <dt>Tarif</dt><dd>${esc(euros(r.tarif))}</dd>
+        ${r.echeance&&r.statut==='option'?`<dt>Paiement avant</dt><dd>${dateFr(r.echeance)}</dd>`:''}
+        ${r.paye_le?`<dt>Payée</dt><dd>le ${new Date(r.paye_le).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${r.paye_mode==='guichet'?'au service':r.paye_mode==='stripe'?'en ligne (Stripe)':'en ligne (démonstration)'}</dd>`:''}
+        <dt>Cautions</dt><dd>remise le ${esc(dateLongue(r.veille))}</dd></dl></div>
       <div class="cond"><h5>Contact</h5><dl>
         <dt>Mail</dt><dd>${r.contact_mail?`<a href="mailto:${esc(r.contact_mail)}">${esc(r.contact_mail)}</a>`:'—'}</dd>
         <dt>Téléphone</dt><dd>${r.contact_tel?`<a href="tel:${esc(r.contact_tel)}">${esc(r.contact_tel)}</a>`:'—'}</dd></dl>
         ${r.remarque?`<h5 style="margin-top:10px">Remarque</h5><div style="white-space:pre-line">${esc(r.remarque)}</div>`:''}</div>
     </div>
+    <h4 style="font-family:Syne,sans-serif;margin:16px 0 8px">Montants</h4>
+    <div class="grille2" style="grid-template-columns:repeat(3,1fr);align-items:end">
+      ${champM('dm-tarif','Location (€)',r.tarif)}${champM('dm-cm','Caution ménage (€)',r.caution_menage)}${champM('dm-cr','Caution réparation (€)',r.caution_reparation)}
+    </div>
+    ${modifMontants?`<div style="margin-top:8px"><button class="btn btn-secondary btn-sm" onclick="sauverMontants(${r.id})">💾 Enregistrer les montants</button> <span class="aide">Pré-remplis selon la grille de la salle ; ajustez si besoin avant de valider.</span></div>`:''}
+    ${lien?`<div class="note" style="margin-top:12px;background:#fff4e6;border-color:#f6c58a;color:#9a4d00">💳 Lien de paiement envoyé au demandeur : <a href="${esc(lien)}" target="_blank" rel="noopener">ouvrir</a> · <button class="lnk" onclick="navigator.clipboard.writeText('${esc(lien)}').then(()=>toast('Lien copié','ok'))">copier</button></div>`:''}
     <h4 style="font-family:Syne,sans-serif;margin:16px 0 4px">Pièces déposées</h4>
     <div>${r.pieces.length?r.pieces.map(p=>`<span class="piece" onclick="lirePiece(${p.id})">⬇️ ${esc(p.libelle)} — ${esc(p.nom||'')} · ${esc(taille(p.taille))}</span>`).join(''):'<span class="vide">Aucune pièce.</span>'}</div>
     ${actions.length?`<div class="mf" style="margin-top:16px"><label>Message au demandeur (pièces à compléter, motif du refus, consignes…)</label><textarea id="dm-msg" placeholder="Facultatif pour une validation"></textarea></div>
@@ -785,7 +983,16 @@ function ouvrirDemande(id){
     <div class="histo">${(r.historique||[]).map(h=>`<div><b>${new Date(h.at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</b> — ${esc(NOMS[h.action]||h.action)} (${esc(h.par)})${h.message?' : '+esc(h.message):''}</div>`).join('')}</div>`;
   ouvrirM('dem');
 }
+const valNum = id => { const v=document.getElementById(id).value; return v===''?'':String(Number(v)); };
+async function sauverMontants(id, silencieux){
+  try{ await FU.rpc('ft_resa_montants',{p_token:tok(),p_resa:id,p_montants:{tarif:valNum('dm-tarif'),caution_menage:valNum('dm-cm'),caution_reparation:valNum('dm-cr')}}); }
+  catch(e){ errM('dm-err',e.message); return false; }
+  const r=DEMANDES.find(x=>x.id===id); if(r){ r.tarif=valNum('dm-tarif')===''?null:Number(valNum('dm-tarif')); r.caution_menage=valNum('dm-cm')===''?null:Number(valNum('dm-cm')); r.caution_reparation=valNum('dm-cr')===''?null:Number(valNum('dm-cr')); }
+  if(!silencieux) toast('✅ Montants enregistrés','ok');
+  return true;
+}
 async function decider(id,action){
+  if(action==='valider' && document.getElementById('dm-tarif') && !(await sauverMontants(id,true))) return;
   const msg=(document.getElementById('dm-msg')||{}).value||'';
   if(action==='pieces' && !msg.trim()) return errM('dm-err','Indiquez dans le message les pièces à compléter.');
   if(action==='refuser' && !confirm('Refuser cette demande ? La date redeviendra libre.')) return;
@@ -827,50 +1034,133 @@ async function retirerBlocage(id){
   toast('Dates débloquées','ok'); renderBlocages();
 }
 
+// ---------- Réservation saisie par le service (y compris exceptionnelle à moins d'un mois) ----------
+let AR=null;
+function ouvrirAdminResa(d){
+  const s=SALLES.find(x=>x.id===CAL.salle); AR={salle:s, date:d};
+  document.getElementById('ar-recap').innerHTML=`<b>${esc(s.nom)}</b><br>${esc(dateLongue(d))}${d<ajout(INFOS.aujourdhui,30)?' — <b>réservation exceptionnelle (moins d\'un mois)</b>':''}`;
+  const libres=periodesLibres(s,d);
+  document.getElementById('ar-periode').innerHTML=libres.map(p=>`<option value="${p}">${PERIODES[p]}</option>`).join('');
+  ['ar-nom','ar-mail','ar-tel','ar-nb','ar-rem'].forEach(i=>document.getElementById(i).value='');
+  document.querySelector('input[name=ar-etat][value=valider]').checked=true;
+  arMaj(); ouvrirM('aresa');
+}
+function arMaj(){
+  const prof=document.getElementById('ar-profil').value; const p=INFOS.profils[prof]||{};
+  document.getElementById('ar-nature').innerHTML=(p.natures||[]).map(n=>`<option value="${esc(n.code)}">${esc(n.libelle)}</option>`).join('');
+  arTarif();
+}
+function arTarif(){
+  const prof=document.getElementById('ar-profil').value; const n=((INFOS.profils[prof]||{}).natures||[]).find(x=>x.code===document.getElementById('ar-nature').value);
+  if(!n) return;
+  const t=tarifSalle(AR.salle,prof,n,document.getElementById('ar-corbas').value==='true');
+  document.getElementById('ar-tarif').value=t.location===null?'':t.location;
+  document.getElementById('ar-cm').value=t.menage===null?'':t.menage;
+  document.getElementById('ar-cr').value=t.reparation===null?'':t.reparation;
+}
+async function arEnregistrer(){
+  const btn=document.getElementById('ar-go'); document.getElementById('ar-err').classList.remove('on');
+  const o={salle_id:AR.salle.id, date:AR.date, periode:document.getElementById('ar-periode').value, profil:document.getElementById('ar-profil').value,
+    nature:document.getElementById('ar-nature').value, corbassien:document.getElementById('ar-corbas').value, demandeur_nom:document.getElementById('ar-nom').value,
+    contact_mail:document.getElementById('ar-mail').value, contact_tel:document.getElementById('ar-tel').value, nb_personnes:document.getElementById('ar-nb').value,
+    tarif:valNum('ar-tarif'), caution_menage:valNum('ar-cm'), caution_reparation:valNum('ar-cr'), remarque:document.getElementById('ar-rem').value,
+    etat:document.querySelector('input[name=ar-etat]:checked').value};
+  if(!o.periode) return errM('ar-err','Aucune période libre ce jour-là.');
+  btn.disabled=true;
+  let r; try{ r=await FU.rpc('ft_resa_admin_creer',{p_token:tok(),p_demande:o}); }catch(e){ btn.disabled=false; return errM('ar-err',e.message); }
+  btn.disabled=false; fermerM('aresa');
+  if(r.evt && o.contact_mail.trim()){ toast('⏳ Enregistré, envoi du mail…'); const m=await envoyerMail(r.id,r.evt);
+    toast(m.envoye?'✅ Réservation enregistrée — mail envoyé':'✅ Réservation enregistrée — ⚠️ mail non envoyé'+(m.erreur?' : '+m.erreur:''), m.envoye?'ok':'warn'); }
+  else toast('✅ Réservation enregistrée','ok');
+  chargerMois();
+}
+
 // ---------- Salles ----------
-let SALLE_EDIT=null, COND_PROFIL='asso';
-const COND_CHAMPS=[['tarif','Tarif de location','Ex : 250 € la journée'],['caution_menage','Caution ménage','Ex : 150 €'],['caution_reparation','Caution réparation','Ex : 800 €'],['materiel','Matériel disponible','Ex : 20 tables, 120 chaises, cuisine équipée'],['infos','Bon à savoir','Ex : fin de la location à 2 h, parking de 40 places']];
+let SALLE_EDIT=null, COND_PROFIL='asso', TARIF_PROFIL='asso';
+const COND_CHAMPS=[['materiel','Matériel disponible','Ex : 20 tables, 120 chaises, cuisine équipée'],['infos','Bon à savoir','Ex : fin de la location à 2 h, parking de 40 places']];
 function renderSallesAdmin(){
   const box=document.getElementById('a-salles-liste');
   if(!SALLES.length){ box.innerHTML='<div class="set-section"><p class="vide">Aucune salle. Ajoutez la première.</p></div>'; return; }
   box.innerHTML='<div class="salles-grid">'+SALLES.map(s=>`<div class="salle-card" style="${s.actif?'':'opacity:.6'}">
     <div class="salle-photo" style="height:140px">${s.photo?`<img src="${esc(s.photo)}" alt="">`:'🏛️'}</div>
     <div class="salle-corps"><h3>${esc(s.nom)}${s.actif?'':' <span style="font-size:12px;color:var(--rouge)">(masquée)</span>'}</h3>
-      <div class="salle-meta">${(s.periodes||[]).map(p=>PERIODES[p]).join(' · ')}</div>
+      <div class="salle-meta">${(s.periodes||[]).map(p=>PERIODES[p]).join(' · ')}${s.capacite_max?' · '+s.capacite_max+' pers. max':''}${s.un_par_weekend?' · 1 événement par week-end':''}</div>
       <div class="salle-btns"><button class="btn btn-primary btn-sm" onclick="ouvrirSalle(${s.id})">✏️ Modifier</button>
       <button class="btn btn-secondary btn-sm" onclick="CAL.salle=${s.id};adminNav('planning')">📆 Planning</button>
       <button class="lnk red" onclick="supprimerSalle(${s.id})">Supprimer</button></div></div></div>`).join('')+'</div>';
 }
 function ouvrirSalle(id){
-  const s=id?JSON.parse(JSON.stringify(SALLES.find(x=>x.id===id))):{nom:'',periodes:['matin','apres_midi','soir','journee'],actif:true,conditions:{},enchainement:{}};
-  SALLE_EDIT=s; SALLE_EDIT.photoModifiee=false; COND_PROFIL='asso';
+  const s=id?JSON.parse(JSON.stringify(SALLES.find(x=>x.id===id))):{nom:'',periodes:['matin','apres_midi','soir','journee'],actif:true,conditions:{},enchainement:{},dispo:{},tarifs:{},un_par_weekend:true};
+  SALLE_EDIT=s; SALLE_EDIT.photoModifiee=false; COND_PROFIL='asso'; TARIF_PROFIL='asso';
+  SALLE_EDIT.conditions=s.conditions||{}; SALLE_EDIT.dispo=s.dispo||{}; SALLE_EDIT.tarifs=s.tarifs||{};
   document.getElementById('sa-titre').textContent=id?'Modifier la salle':'Nouvelle salle';
   [['sa-nom','nom'],['sa-adresse','adresse'],['sa-capacite','capacite'],['sa-youtube','youtube'],['sa-desc','descriptif']].forEach(([i,k])=>document.getElementById(i).value=s[k]||'');
+  document.getElementById('sa-capmax').value=s.capacite_max||'';
   document.getElementById('sa-actif').checked=s.actif!==false;
+  document.getElementById('sa-weekend').checked=s.un_par_weekend!==false;
   coches('sa-periodes',Object.entries(PERIODES),s.periodes||[]);
-  apercuPhoto(); dessinerCond();
+  document.getElementById('sa-periodes').onchange=()=>{ lireDispo(); dessinerDispo(); };
+  apercuPhoto(); dessinerCond(); dessinerDispo(); dessinerTarifs();
   const ench=s.enchainement||{};
   document.getElementById('sa-ench').innerHTML='<tr><th>Réservation le…</th><th>Bloque le soir même</th><th>Bloque le lendemain matin</th></tr>'+[1,2,3,4,5,6,0].map(j=>{ const e=ench[j]||{};
     return `<tr><td><b>${JOURS[j].charAt(0).toUpperCase()+JOURS[j].slice(1)}</b></td><td><input type="checkbox" data-j="${j}" data-k="soir" ${e.soir?'checked':''}></td><td><input type="checkbox" data-j="${j}" data-k="lendemain" ${e.lendemain?'checked':''}></td></tr>`; }).join('');
   ouvrirM('salle');
 }
+// Disponibilité par jour : un jour où tout est coché n'est pas enregistré (= toutes les périodes)
+function dessinerDispo(){
+  const per=cochees('sa-periodes'); const d=SALLE_EDIT.dispo||{};
+  document.getElementById('sa-dispo').innerHTML=`<tr><th>Jour</th>${per.map(p=>`<th>${esc(PERIODES[p].replace(' (samedi + dimanche)',''))}</th>`).join('')}</tr>`
+    +[1,2,3,4,5,6,0].map(j=>`<tr><td><b>${JOURS[j].charAt(0).toUpperCase()+JOURS[j].slice(1)}</b></td>${per.map(p=>{
+      if(p==='weekend' && j!==6) return '<td style="color:var(--gris2)">—</td>';
+      const on=!(String(j) in d) || (d[j]||[]).includes(p);
+      return `<td><input type="checkbox" data-j="${j}" data-p="${p}" ${on?'checked':''}></td>`; }).join('')}</tr>`).join('');
+}
+function lireDispo(){
+  const d={};
+  [0,1,2,3,4,5,6].forEach(j=>{
+    const cases=[...document.querySelectorAll(`#sa-dispo input[data-j="${j}"]`)]; if(!cases.length) return;
+    const on=cases.filter(i=>i.checked).map(i=>i.dataset.p);
+    if(on.length!==cases.length) d[j]=on;
+  });
+  SALLE_EDIT.dispo=d;
+}
+// Tarifs et cautions : profil × nature × Corbas / extérieur
+function dessinerTarifs(){
+  document.getElementById('sa-tarif-tabs').innerHTML=Object.entries(PROFILS_PL).map(([k,l])=>`<button type="button" class="filtre ${k===TARIF_PROFIL?'on':''}" onclick="lireTarifs();TARIF_PROFIL='${k}';dessinerTarifs()">${l}</button>`).join('');
+  const nat=(INFOS.profils[TARIF_PROFIL]||{}).natures||[]; const t=(SALLE_EDIT.tarifs||{})[TARIF_PROFIL]||{};
+  const v=x=>x===null||x===undefined?'':x;
+  document.getElementById('sa-tarifs').innerHTML=`<tr><th>Nature</th><th>Proposée</th><th>Location<br>Corbas</th><th>Location<br>extérieur</th><th>Caution<br>ménage</th><th>Caution<br>réparation</th></tr>`
+    +(nat.length?nat.map(n=>{ const x=t[n.code]||{};
+      return `<tr data-code="${esc(n.code)}"><td>${esc(n.libelle)}</td>
+        <td><input type="checkbox" data-k="ouvert" ${x.ouvert===false?'':'checked'}></td>
+        ${['corbas','ext','menage','reparation'].map(k=>`<td><input type="number" min="0" step="0.01" data-k="${k}" value="${v(x[k])}" placeholder="${(k==='corbas'||k==='ext')&&n.tarif!==null&&n.tarif!==undefined?n.tarif:'—'}"></td>`).join('')}</tr>`; }).join('')
+      :'<tr><td colspan="6" class="vide">Aucune nature pour ce profil (menu « Règles par profil »).</td></tr>');
+}
+function lireTarifs(){
+  const o={};
+  document.querySelectorAll('#sa-tarifs tr[data-code]').forEach(tr=>{ const x={};
+    tr.querySelectorAll('input').forEach(i=>{ if(i.dataset.k==='ouvert') x.ouvert=i.checked; else if(i.value!=='') x[i.dataset.k]=Number(i.value); });
+    o[tr.dataset.code]=x; });
+  SALLE_EDIT.tarifs=SALLE_EDIT.tarifs||{}; SALLE_EDIT.tarifs[TARIF_PROFIL]=o;
+}
 function lireCond(){ const c=SALLE_EDIT.conditions[COND_PROFIL]={}; COND_CHAMPS.forEach(([k])=>{ const v=document.getElementById('sa-c-'+k).value.trim(); if(v) c[k]=v; }); }
 function dessinerCond(){
   document.getElementById('sa-cond-tabs').innerHTML=Object.entries(PROFILS_PL).map(([k,l])=>`<button type="button" class="filtre ${k===COND_PROFIL?'on':''}" onclick="lireCond();COND_PROFIL='${k}';dessinerCond()">${l}</button>`).join('')
-    +(COND_PROFIL!=='asso'?`<button type="button" class="lnk" onclick="copierCond()">Copier les conditions des associations</button>`:'');
+    +(COND_PROFIL!=='asso'?`<button type="button" class="lnk" onclick="copierCond()">Copier les informations des associations</button>`:'');
   const c=(SALLE_EDIT.conditions||{})[COND_PROFIL]||{};
-  document.getElementById('sa-cond').innerHTML=COND_CHAMPS.map(([k,l,ph])=>`<div class="mf ${k==='materiel'||k==='infos'?'plein':''}"><label>${l}</label>${k==='materiel'||k==='infos'?`<textarea id="sa-c-${k}" placeholder="${esc(ph)}">${esc(c[k]||'')}</textarea>`:`<input type="text" id="sa-c-${k}" placeholder="${esc(ph)}" value="${esc(c[k]||'')}">`}</div>`).join('');
+  document.getElementById('sa-cond').innerHTML=COND_CHAMPS.map(([k,l,ph])=>`<div class="mf plein"><label>${l}</label><textarea id="sa-c-${k}" placeholder="${esc(ph)}">${esc(c[k]||'')}</textarea></div>`).join('');
 }
 function copierCond(){ SALLE_EDIT.conditions[COND_PROFIL]=JSON.parse(JSON.stringify(SALLE_EDIT.conditions.asso||{})); dessinerCond(); }
 function apercuPhoto(){ document.getElementById('sa-photo-apercu').innerHTML=SALLE_EDIT.photo?`<img src="${esc(SALLE_EDIT.photo)}" style="width:100%;height:100%;object-fit:cover">`:'Aucune photo'; }
 async function choisirPhoto(input){ const f=input.files[0]; if(!f) return; try{ SALLE_EDIT.photo=await reduireImage(f,1400,0.8); SALLE_EDIT.photoModifiee=true; apercuPhoto(); }catch(e){ toast(e.message,'err'); } input.value=''; }
 function retirerPhoto(){ SALLE_EDIT.photo=''; SALLE_EDIT.photoModifiee=true; apercuPhoto(); }
 async function enregistrerSalle(){
-  lireCond();
+  lireCond(); lireDispo(); lireTarifs();
   const ench={}; document.querySelectorAll('#sa-ench input').forEach(i=>{ (ench[i.dataset.j]=ench[i.dataset.j]||{})[i.dataset.k]=i.checked; });
   const o={id:SALLE_EDIT.id||null, nom:document.getElementById('sa-nom').value, adresse:document.getElementById('sa-adresse').value, capacite:document.getElementById('sa-capacite').value,
+    capacite_max:document.getElementById('sa-capmax').value, un_par_weekend:document.getElementById('sa-weekend').checked,
     youtube:document.getElementById('sa-youtube').value.trim(), descriptif:document.getElementById('sa-desc').value, periodes:cochees('sa-periodes'),
-    actif:document.getElementById('sa-actif').checked, conditions:SALLE_EDIT.conditions, enchainement:ench};
+    actif:document.getElementById('sa-actif').checked, conditions:SALLE_EDIT.conditions, enchainement:ench, dispo:SALLE_EDIT.dispo, tarifs:SALLE_EDIT.tarifs};
   if(o.youtube && !idYoutube(o.youtube)) return errM('sa-err','Le lien YouTube n\'est pas reconnu (ex : https://youtu.be/xxxxxxxxxxx).');
   if(SALLE_EDIT.photoModifiee || !SALLE_EDIT.id) o.photo=SALLE_EDIT.photo||'';
   try{ const id=await FU.rpc('ft_salle_sauver',{p_token:tok(),p_salle:o}); CAL.salle=Number(id); await rechargerSalles(); }catch(e){ return errM('sa-err',e.message); }
@@ -905,16 +1195,23 @@ function dessinerReglages(){
         <p class="aide" id="rg-apercu" style="margin-top:6px">${r.limite_jours?'Aujourd\'hui : jusqu\'au '+dateFr(ajout(INFOS.aujourdhui,Number(r.limite_jours))):''}</p>`:''}
       <p class="aide">Les ${PROFILS_PL[RG_PROFIL].toLowerCase()} voient le planning jusqu'à cette date, avec toutes les dates prises (quel que soit le profil qui a réservé), sans les noms.</p>
       <h4 style="margin-top:14px">Délai de paiement</h4>
-      <div class="inline-f" style="max-width:360px"><div class="mf"><label>Jours après la validation</label><input type="number" min="1" value="${r.delai_paiement||15}" oninput="RG.delai_paiement=this.value"></div></div>
-      <p class="aide" style="margin-top:6px">Passé ce délai sans paiement, la réservation est annulée automatiquement et la date redevient libre.</p>
+      <div class="inline-f" style="max-width:360px"><div class="mf"><label>Jours après la validation</label><input type="number" min="1" value="${r.delai_paiement||7}" oninput="RG.delai_paiement=this.value"></div></div>
+      <p class="aide" style="margin-top:6px">Passé ce délai sans paiement, la réservation est annulée automatiquement et la date redevient libre. Le mail de validation l'indique (7 jours = « sous une semaine »).</p>
+      <h4 style="margin-top:14px">Fenêtre de réservation</h4>
+      <div class="inline-f" style="max-width:560px">
+        <div class="mf"><label>Délai minimum (jours)</label><input type="number" min="1" value="${r.delai_min_jours||30}" oninput="RG.delai_min_jours=this.value"></div>
+        <div class="mf"><label>Visible jusqu'à (mois)</label><input type="number" min="1" value="${r.horizon_mois||6}" oninput="RG.horizon_mois=this.value"></div>
+      </div>
+      <p class="aide" style="margin-top:6px">Aucune demande possible à moins de ce délai (le planning n'affiche rien avant) ; le planning va jusqu'à ce nombre de mois, sauf durée propre à une nature (colonne « Visible (mois) » ci-dessous, ex. 12 pour un mariage). L'administrateur peut toujours saisir une réservation exceptionnelle.</p>
     </div>
     <div class="set-section">
       <h4>Natures de demande, tarifs, pièces et convention</h4>
-      <p class="aide">Tarif : laissez vide si le service le communique au cas par cas, 0 si c'est gratuit (une demande gratuite validée passe directement en « réservée »). Pièces : une par ligne. La convention est proposée au téléchargement dans le formulaire.</p>
-      <div class="tb-wrap"><table class="tb"><tr><th style="min-width:150px">Nature</th><th style="width:100px">Tarif (€)</th><th style="min-width:190px">Pièces exigées</th><th>À préciser</th><th style="min-width:170px">Convention</th><th></th></tr>
+      <p class="aide">Les montants (location Corbas / extérieur, cautions) se règlent dans la fiche de chaque salle. « Tarif par défaut » ne sert que si la salle n'a pas de montant pour cette nature (vide = fixé par le service, 0 = gratuit). Pièces : une par ligne.</p>
+      <div class="tb-wrap"><table class="tb"><tr><th style="min-width:150px">Nature</th><th style="width:90px">Tarif par défaut (€)</th><th style="width:80px">Visible (mois)</th><th style="min-width:190px">Pièces exigées</th><th>À préciser</th><th style="min-width:170px">Convention</th><th></th></tr>
       ${r.natures.map((n,i)=>`<tr>
         <td><input type="text" value="${esc(n.libelle)}" oninput="RG.natures[${i}].libelle=this.value"></td>
         <td><input type="number" min="0" step="0.01" value="${n.tarif===null||n.tarif===undefined?'':n.tarif}" placeholder="—" oninput="RG.natures[${i}].tarif=this.value===''?null:Number(this.value)"></td>
+        <td><input type="number" min="1" value="${n.horizon_mois||''}" placeholder="${r.horizon_mois||6}" oninput="RG.natures[${i}].horizon_mois=this.value===''?null:Number(this.value)"></td>
         <td><textarea oninput="RG.natures[${i}].pieces=this.value.split('\\n').map(x=>x.trim()).filter(Boolean)">${esc((n.pieces||[]).join('\n'))}</textarea></td>
         <td style="text-align:center"><input type="checkbox" ${n.precision?'checked':''} onchange="RG.natures[${i}].precision=this.checked" title="Le demandeur doit préciser (ex : « Autre »)"></td>
         <td>${n.convention?`<span class="piece" onclick="lireConvention('${RG_PROFIL}|${esc(n.code)}')">📄 ${esc(n.convention.nom)}</span><br><button class="lnk red" onclick="retirerConvention('${esc(n.code)}')">Retirer</button>`:''}
@@ -933,7 +1230,9 @@ function ajouterNature(){
 }
 async function sauverProfil(){
   const o={ouvert:RG.ouvert, limite_mode:RG.limite_mode, limite_date:RG.limite_date||'', limite_jours:RG.limite_jours===null||RG.limite_jours===undefined?'':String(RG.limite_jours),
-    delai_paiement:String(RG.delai_paiement||''), natures:RG.natures.map(n=>({code:n.code, libelle:String(n.libelle||'').trim(), tarif:n.tarif===''||n.tarif===undefined?null:n.tarif, pieces:n.pieces||[], precision:!!n.precision}))};
+    delai_paiement:String(RG.delai_paiement||''), delai_min_jours:String(RG.delai_min_jours||''), horizon_mois:String(RG.horizon_mois||''),
+    natures:RG.natures.map(n=>{ const o={code:n.code, libelle:String(n.libelle||'').trim(), tarif:n.tarif===''||n.tarif===undefined?null:n.tarif, pieces:n.pieces||[], precision:!!n.precision};
+      if(n.horizon_mois) o.horizon_mois=Number(n.horizon_mois); return o; })};
   try{ await FU.rpc('ft_resa_profil_sauver',{p_token:tok(),p_profil:RG_PROFIL,p_reglages:o}); INFOS=await FU.rpc('ft_resa_infos',{p_token:tok()}); }
   catch(e){ return errM('rg-err',e.message); }
   toast('✅ Règles enregistrées','ok'); chargerProfil(RG_PROFIL);

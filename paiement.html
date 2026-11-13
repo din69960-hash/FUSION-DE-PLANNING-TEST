@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a3a5c">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<title>Paiement de la location — Salles municipales de Corbas</title>
+<script src="commun.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap');
+  :root{--bleu:#1a3a5c;--bleu2:#2563a8;--or2:#f0b429;--clair:#f4f7fb;--gris:#e2e8f0;--gris2:#64748b;--rouge:#c0392b;--vert:#1a7a4a;--orange:#f08c1a;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--clair);color:var(--bleu);min-height:100vh;}
+  header{background:var(--bleu);color:#fff;padding:16px 22px;font-family:'Syne',sans-serif;font-weight:800;font-size:17px;}
+  header span{color:var(--or2);}
+  main{max-width:560px;margin:0 auto;padding:24px 16px 60px;}
+  .carte{background:#fff;border:1px solid var(--gris);border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:0 4px 18px rgba(26,58,92,.06);}
+  h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;}
+  .sous{color:var(--gris2);font-size:14px;margin-bottom:16px;line-height:1.5;}
+  dl{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:14.5px;}
+  dt{color:var(--gris2);} dd{font-weight:700;}
+  .montant{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;text-align:center;margin:14px 0 4px;}
+  .note{border-radius:10px;padding:11px 13px;font-size:13.5px;line-height:1.5;margin:12px 0;}
+  .note.orange{background:#fff4e6;border:1px solid #f6c58a;color:#9a4d00;}
+  .note.bleu{background:#eef4fc;border:1px solid #bcd3f1;color:#1d4f8f;}
+  .note.vert{background:#effaf3;border:1px solid #bbe5cb;color:var(--vert);}
+  .note.rouge{background:#fff5f5;border:1px solid #fecaca;color:var(--rouge);}
+  .demo{background:repeating-linear-gradient(45deg,#fff8e1,#fff8e1 10px,#fff1c4 10px,#fff1c4 20px);border:2px dashed #e0a800;border-radius:14px;padding:16px;margin-top:14px;}
+  .demo h3{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:#8a6500;margin-bottom:10px;}
+  label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gris2);margin:10px 0 4px;}
+  input{width:100%;padding:11px 12px;border:2px solid var(--gris);border-radius:10px;font-size:16px;font-family:inherit;color:var(--bleu);background:#fff;}
+  .ligne{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  button{width:100%;margin-top:16px;padding:14px;border:none;border-radius:12px;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;cursor:pointer;background:var(--orange);color:#fff;}
+  button:disabled{opacity:.6;cursor:wait;}
+  .ok{text-align:center;}
+  .ok .ico{font-size:58px;}
+  .petit{font-size:12px;color:var(--gris2);text-align:center;margin-top:10px;line-height:1.5;}
+  .secu{display:flex;gap:6px;justify-content:center;align-items:center;font-size:12px;color:var(--gris2);margin-top:10px;}
+</style>
+</head>
+<body>
+<header>🏛️ <span>Salles</span> Corbas — Paiement</header>
+<main><div id="zone"><div class="carte">Chargement…</div></div></main>
+<script>
+const E = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const P = new URLSearchParams(location.search);
+const R = P.get('r'), K = P.get('k'), RETOUR = P.get('retour');
+const PERIODES = {matin:'Matin', apres_midi:'Après-midi', soir:'Soir', journee:'Journée entière', weekend:'Week-end (samedi + dimanche)'};
+const dLong = s => new Date(s+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const eur = v => v===null||v===undefined ? '—' : Number(v).toLocaleString('fr-FR',{minimumFractionDigits:Number(v)%1?2:0})+' €';
+let INFO = null, MODE = '';
+
+async function appel(action, extra){
+  const r = await fetch(FU_URL+'/functions/v1/fusiontest-paiement', {method:'POST',
+    headers:{'Content-Type':'application/json','apikey':FU_KEY,'Authorization':'Bearer '+FU_KEY}, body:JSON.stringify({action, r:R, k:K, ...(extra||{})})});
+  const o = await r.json().catch(()=>({erreur:'Réponse illisible'}));
+  if(!r.ok && !o.resa) throw new Error(o.erreur || 'Erreur '+r.status);
+  return o;
+}
+const zone = h => document.getElementById('zone').innerHTML = h;
+function recap(x){
+  return `<dl>
+    <dt>Salle</dt><dd>${E(x.salle)}</dd>${x.adresse?`<dt>Adresse</dt><dd>${E(x.adresse)}</dd>`:''}
+    <dt>Date</dt><dd>${E(dLong(x.date))}</dd><dt>Période</dt><dd>${E(PERIODES[x.periode]||x.periode)}</dd>
+    <dt>Nature</dt><dd>${E(x.nature_libelle)}</dd><dt>Réservé par</dt><dd>${E(x.demandeur_nom)}</dd>
+    <dt>N° de réservation</dt><dd>${E(x.id)}</dd></dl>`;
+}
+function cautions(x){
+  if(x.caution_menage===null && x.caution_reparation===null) return '';
+  return `<div class="note bleu">🗝️ <b>Il faudra passer au service des sports le ${E(dLong(x.veille))}</b> (veille de l'événement) pour remettre les chèques de caution :
+    ménage <b>${eur(x.caution_menage)}</b> et réparation <b>${eur(x.caution_reparation)}</b>.</div>`;
+}
+function ecranPaye(x){
+  zone(`<div class="carte ok"><div class="ico">✅</div><h1>Paiement reçu</h1>
+    <p class="sous">Votre réservation est <b>confirmée</b>. Un mail de confirmation vous est envoyé, et le service des sports est prévenu.</p>
+    ${x.paye_mode==='simulation'?'<div class="note orange">Paiement de démonstration : aucun argent n\'a été prélevé.</div>':''}</div>
+    <div class="carte">${recap(x)}<div class="montant" style="font-size:24px">${eur(x.tarif)} payés</div>${cautions(x)}</div>`);
+}
+function ecranPayer(x){
+  const ech = x.echeance ? new Date(x.echeance+'T12:00:00').toLocaleDateString('fr-FR') : '';
+  let action;
+  if(MODE==='simulation'){
+    action = `<div class="demo"><h3>⚠️ Paiement de démonstration</h3>
+      <p style="font-size:13.5px;line-height:1.5;margin-bottom:6px">Site test : <b>aucun argent n'est prélevé</b>, aucune vraie carte n'est demandée. Le parcours est identique au futur paiement réel.</p>
+      <label>Numéro de carte (fictif)</label><input value="4242 4242 4242 4242" inputmode="numeric" id="cb">
+      <div class="ligne"><div><label>Expiration</label><input value="12/30"></div><div><label>Cryptogramme</label><input value="123"></div></div>
+      <button id="go" onclick="simuler()">Payer ${eur(x.tarif)}</button></div>`;
+  } else {
+    action = `<button id="go" onclick="payer()">💳 Payer ${eur(x.tarif)} par carte</button>
+      <div class="secu">🔒 Paiement sécurisé par Stripe : vos données bancaires ne passent pas par ce site.</div>`;
+  }
+  zone(`${RETOUR==='annule'?'<div class="note rouge">Paiement abandonné. Vous pouvez recommencer ci-dessous.</div>':''}
+    <div class="carte"><h1>Paiement de votre location</h1>
+    <p class="sous">Votre dossier a été validé par le service des sports. Réglez la location pour confirmer la réservation.</p>
+    ${recap(x)}<div class="montant">${eur(x.tarif)}</div>
+    <div class="note orange">⏳ <b>À payer avant le ${E(ech)}</b>, sans quoi la réservation sera annulée et la date proposée à d'autres.</div>
+    ${action}<div id="err"></div></div>
+    <div class="carte">${cautions(x)}<p class="petit">Une question ? Service des sports de la Ville de Corbas.</p></div>`);
+}
+function erreur(t){ document.getElementById('err').innerHTML = `<div class="note rouge">❌ ${E(t)}</div>`; }
+async function simuler(){
+  const b = document.getElementById('go'); b.disabled = true; b.textContent = '⏳ Paiement en cours…';
+  await new Promise(r => setTimeout(r, 1200));
+  try{ await appel('simuler'); const o = await appel('infos'); ecranPaye(o.resa); }
+  catch(e){ b.disabled = false; b.textContent = 'Payer '+eur(INFO.tarif); erreur(e.message); }
+}
+async function payer(){
+  const b = document.getElementById('go'); b.disabled = true; b.textContent = '⏳ Ouverture du paiement sécurisé…';
+  try{ const o = await appel('payer'); if(o.url) location.href = o.url; else throw new Error(o.erreur || 'Paiement indisponible'); }
+  catch(e){ b.disabled = false; b.textContent = '💳 Payer '+eur(INFO.tarif)+' par carte'; erreur(e.message); }
+}
+async function demarrer(){
+  if(!R || !K){ zone('<div class="carte"><h1>Lien incomplet</h1><p class="sous">Utilisez le lien reçu par mail ou le bouton « Payer maintenant » de votre espace.</p></div>'); return; }
+  try{
+    let o = await appel('infos'); MODE = o.mode; INFO = o.resa;
+    // retour de Stripe : la confirmation arrive quelques secondes après
+    for(let i=0; RETOUR==='ok' && INFO.statut==='option' && i<10; i++){
+      zone('<div class="carte ok"><div class="ico">⏳</div><h1>Confirmation du paiement…</h1><p class="sous">Quelques secondes.</p></div>');
+      await new Promise(r => setTimeout(r, 2000)); o = await appel('infos'); INFO = o.resa;
+    }
+    if(INFO.statut==='reservee') return ecranPaye(INFO);
+    if(INFO.statut==='option') return ecranPayer(INFO);
+    const txt = {expiree:'Le délai de paiement est dépassé : la réservation a été annulée automatiquement.', annulee:'Cette réservation a été annulée.', refusee:'Cette demande a été refusée.'}[INFO.statut] || 'Cette réservation n\'attend pas de paiement.';
+    zone(`<div class="carte"><h1>Paiement impossible</h1><div class="note rouge">${E(txt)}</div>${recap(INFO)}<p class="petit">Contactez le service des sports pour toute question.</p></div>`);
+  }catch(e){ zone(`<div class="carte"><h1>Lien de paiement invalide</h1><p class="sous">${E(e.message)}</p></div>`); }
+}
+demarrer();
+</script>
+</body>
+</html>
