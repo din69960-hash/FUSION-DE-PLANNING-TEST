@@ -558,3 +558,10 @@ update public.ft_salles x set capacite_max = coalesce(x.capacite_max, nullif(reg
       'menage', 150, 'reparation', 800)) from jsonb_array_elements(p.natures) n))
     from public.ft_resa_profils p)
 where not x.supprime and x.tarifs = '{}'::jsonb;
+
+-- Associations : PV de la dernière assemblée générale obligatoire pour toutes les natures
+update public.ft_resa_profils set natures = (
+  select jsonb_agg(case when coalesce(x->'pieces','[]'::jsonb) ? 'PV de la dernière assemblée générale' then x
+    else x || jsonb_build_object('pieces', coalesce(x->'pieces','[]'::jsonb) || '["PV de la dernière assemblée générale"]'::jsonb) end)
+  from jsonb_array_elements(natures) x)
+where profil = 'asso';
