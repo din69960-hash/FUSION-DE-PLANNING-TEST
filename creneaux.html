@@ -751,7 +751,7 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
     <div class="hdr-right">
       <select class="hdr-saison" id="hdr-saison-admin" onchange="changerSaisonPage(this.value)" title="Saison"></select>
       <span class="role-badge admin">Administrateur</span>
-      <button class="btn-menu" onclick="location.href='index.html'">← Menu administrateur</button>
+      <button class="btn-menu" onclick="location.href='index.html#g-creneaux'">← Menu administrateur</button>
       <button class="btn-logout" onclick="logout()">Déconnexion</button>
     </div>
   </header>
@@ -953,6 +953,9 @@ function login(role){
   } else {
     document.getElementById('app-admin').classList.add('on');
     loadLock(); loadDash();
+    // Lien direct depuis le menu administrateur (creneaux.html#plannings, #taux, #bilan, #lieux, #settings)
+    const h=(location.hash||'').replace('#','');
+    if(['plannings','taux','bilan','lieux','settings'].includes(h)) adminNav(h);
   }
 }
 function logout(){ FU.deconnexion(); }

@@ -847,7 +847,7 @@ tr.sem-odd .sem-add{color:#1565C0;border-color:#1565C0;background:#fff;}
   <div class="topbar blue"><h1>🔐 Manifestations — Administrateur</h1>
     <div class="tb-actions">
       <select class="hdr-saison" onchange="changerSaison(this.value)" title="Saison"></select>
-      <button class="btn-menu" onclick="location.href='index.html'">← Menu administrateur</button>
+      <button class="btn-menu" onclick="location.href='index.html#g-manif'">← Menu administrateur</button>
       <button class="btn-back" onclick="deconnexion()">Déconnexion</button>
     </div>
   </div>
@@ -2718,7 +2718,15 @@ async function initSupabase(){
   subscribeRealtime();
   majVerrou(); majSaisonUI();
   if(currentUser.role==='asso'){ go('pg-asso-menu'); majMenuAsso(); }
-  else go('pg-admin');
+  else ouvrirDepuisLien();
+}
+// Lien direct depuis le menu administrateur (manifestations.html#planning, #saisir, #bilan…)
+function ouvrirDepuisLien(){
+  const h=(location.hash||'').replace('#',''); history.replaceState(null,'',location.pathname);
+  go('pg-admin');
+  if(h==='planning') ouvrirPlanningAdmin();
+  else if(h==='saisir') ouvrirFormulaire();
+  else if(['bilan','extraction','bilan-site','verrou','lieux'].includes(h)) go('pg-'+h);
 }
 initSupabase();
 

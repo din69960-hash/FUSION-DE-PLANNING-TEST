@@ -158,6 +158,15 @@
   .menu-card.grand .icon{font-size:42px;}
   .menu-card.grand h3{font-size:19px;}
   .menu-card.discret{border-style:dashed;}
+  .menu-card.grand .sous-liste{font-size:12.5px;color:var(--gris2);margin-top:10px;line-height:1.6;}
+  .groupe-sous{font-size:14px;color:var(--gris2);margin:-6px 0 18px;}
+  .nav-grp{font-weight:700;}
+  .nav-item .fl{float:right;opacity:.5;}
+  .menu-grid.compact{gap:10px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+  .menu-grid.compact .menu-card{flex-direction:row;align-items:center;gap:14px;padding:14px 16px;}
+  .menu-grid.compact .menu-card .icon{font-size:26px;margin:0;flex:none;}
+  .menu-grid.compact .menu-card h3{font-size:15.5px;margin-bottom:2px;}
+  .menu-grid.compact .menu-card .badge-coin{top:10px;right:10px;}
 
   /* ===== ADMIN ===== */
   .admin-wrap{display:grid;grid-template-columns:230px 1fr;gap:24px;align-items:start;}
@@ -388,20 +397,12 @@
   <div class="app-body" style="max-width:1240px">
     <div class="admin-wrap">
       <div class="admin-sidebar">
-        <div class="sidebar-lbl">Plannings</div>
         <div class="nav-item on" id="nav-accueil" onclick="adminNav('accueil')">🏠 Accueil</div>
-        <div class="nav-item" onclick="allerVers('creneaux.html')">📅 Créneaux à l'année ↗</div>
-        <div class="nav-item" onclick="allerVers('manifestations.html')">🏆 Manifestations ↗</div>
-        <div class="nav-item" onclick="allerVers('salles.html#demandes')">🏛️ Salles municipales<span class="badge-rouge" id="badge-salles-nav" style="display:none"></span></div>
         <div class="nav-sep"></div>
-        <div class="sidebar-lbl">Réglages communs</div>
-        <div class="nav-item" id="nav-saisons" onclick="adminNav('saisons')">🗓️ Saisons &amp; ouverture</div>
-        <div class="nav-item" id="nav-assos" onclick="adminNav('assos')">🏃 Associations</div>
-        <div class="nav-item" id="nav-ent" onclick="adminNav('ent')">🏢 Entreprises</div>
-        <div class="nav-item" id="nav-part" onclick="adminNav('part')">👤 Particuliers</div>
-        <div class="nav-item" id="nav-docs" onclick="adminNav('docs')">📄 Documents à télécharger</div>
-        <div class="nav-item" id="nav-mails" onclick="adminNav('mails')">✉️ Adresses mail</div>
-        <div class="nav-item" id="nav-code" onclick="adminNav('code')">🔐 Code administrateur</div>
+        <div class="nav-item nav-grp" id="nav-g-creneaux" onclick="adminNav('g-creneaux')">📅 Créneaux annuels</div>
+        <div class="nav-item nav-grp" id="nav-g-manif" onclick="adminNav('g-manif')">🏆 Manifestations</div>
+        <div class="nav-item nav-grp" id="nav-g-salles" onclick="adminNav('g-salles')">🏛️ Salles municipales<span class="badge-rouge" id="badge-salles-nav" style="display:none"></span></div>
+        <div class="nav-item nav-grp" id="nav-g-reglage" onclick="adminNav('g-reglage')">⚙️ Réglage administrateur</div>
       </div>
       <div class="admin-content">
 
@@ -415,46 +416,41 @@
           </div>
           <div class="saison-bar" id="admin-saison-bar"></div>
           <div class="menu-grid">
-            <div class="menu-card grand" onclick="allerVers('creneaux.html')">
+            <div class="menu-card grand" onclick="adminNav('g-creneaux')">
               <div class="icon">📅</div>
-              <h3>Créneaux à l'année</h3>
-              <p>Plannings par équipement, taux d'occupation, bilan des heures, équipements &amp; salles.</p>
+              <h3>Gestion des créneaux annuels</h3>
+              <p>Salles municipales et équipements sportifs.</p>
+              <div class="sous-liste">Plannings · taux d'occupation · bilan des heures · équipements &amp; salles</div>
               <span class="etat" id="admin-etat-cr"></span>
             </div>
-            <div class="menu-card grand" onclick="allerVers('manifestations.html')">
+            <div class="menu-card grand" onclick="adminNav('g-manif')">
               <div class="icon">🏆</div>
-              <h3>Planning des manifestations</h3>
-              <p>Planning mensuel, demandes des associations, traitement, bilans et extractions.</p>
+              <h3>Gestion des manifestations</h3>
+              <p>Équipements sportifs.</p>
+              <div class="sous-liste">Planning · saisie d'une demande · bilans · extraction · inscriptions</div>
               <span class="etat" id="admin-etat-ma"></span>
             </div>
-            <div class="menu-card grand" onclick="allerVers('salles.html#demandes')">
+            <div class="menu-card grand" onclick="adminNav('g-salles')">
               <div class="icon">🏛️</div>
               <span class="badge-coin" id="badge-salles-carte" style="display:none"></span>
-              <h3>Salles municipales</h3>
-              <p>Demandes de réservation, planning des salles, dates bloquées, fiches des salles et règles par profil.</p>
+              <h3>Gestion des salles municipales</h3>
+              <p>Location aux associations, entreprises et particuliers.</p>
+              <div class="sous-liste">Demandes · planning · dates bloquées · fiches des salles · règles · comptes</div>
             </div>
-            <div class="menu-card" onclick="adminNav('saisons')">
-              <div class="icon">🗓️</div>
-              <h3>Saisons &amp; ouverture</h3>
-              <p>Ouvrir ou fermer chaque saisie indépendamment, créer la saison suivante.</p>
-            </div>
-            <div class="menu-card" onclick="adminNav('assos')">
-              <div class="icon">🏃</div>
-              <h3>Associations</h3>
-              <p>La liste unique des deux plannings : ajouter, renommer, mots de passe.</p>
-            </div>
-            <div class="menu-card" onclick="adminNav('docs')">
-              <div class="icon">📄</div>
-              <h3>Documents à télécharger</h3>
-              <p>Officialisation de la demande, demande de matériel.</p>
-            </div>
-            <div class="menu-card" onclick="adminNav('mails')">
-              <div class="icon">✉️</div>
-              <h3>Adresses mail</h3>
-              <p>Destinataire des mails automatiques, suivi des envois.</p>
+            <div class="menu-card grand" onclick="adminNav('g-reglage')">
+              <div class="icon">⚙️</div>
+              <h3>Réglage administrateur</h3>
+              <p>Ce qui sert à tous les plannings.</p>
+              <div class="sous-liste">Saisons &amp; ouverture · associations · documents · adresses mail · code</div>
             </div>
           </div>
         </div>
+
+        <!-- Menus (contenu construit par dessinerGroupe) -->
+        <div id="adm-g-creneaux" class="page"></div>
+        <div id="adm-g-manif" class="page"></div>
+        <div id="adm-g-salles" class="page"></div>
+        <div id="adm-g-reglage" class="page"></div>
 
         <!-- Saisons -->
         <div id="adm-saisons" class="page">
@@ -855,7 +851,7 @@ async function entrerAdmin(){
   try{ await FU.chargerSaisons(); }catch(e){ toast('Erreur de chargement des saisons : '+e.message,'err'); }
   majMenus(); majAlerteSalles();
   const h=(location.hash||'').replace('#','');
-  if(['saisons','assos','ent','part','docs','mails','code'].includes(h)) adminNav(h);
+  if(['saisons','assos','ent','part','docs','mails','code'].includes(h) || GROUPES[h]) adminNav(h);
 }
 
 // ---------- Mot de passe de l'association connectée ----------
@@ -882,7 +878,7 @@ async function majAlerteSalles(){
     : (py===1 ? '💳 1 location payée en ligne cette semaine' : '💳 '+py+' locations payées en ligne cette semaine');
   const sous=[]; if(n && py) sous.push('💳 '+py+' payée'+(py>1?'s':'')+' en ligne cette semaine'); if(pc) sous.push(pc+' en attente de pièces'); if(pa) sous.push(pa+' en attente de paiement');
   document.getElementById('alerte-salles-sous').textContent=sous.join(' · ');
-  ['badge-salles-nav','badge-salles-carte'].forEach(id=>{ const b=document.getElementById(id); b.textContent=n; b.style.display=n?'inline':'none'; });
+  ['badge-salles-nav','badge-salles-carte','badge-salles-grp'].forEach(id=>{ const b=document.getElementById(id); if(!b) return; b.textContent=n; b.style.display=n?'inline':'none'; });
 }
 setInterval(()=>{ if(document.getElementById('adm-accueil')?.classList.contains('on') && !document.hidden) majAlerteSalles(); }, 60000);
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden && document.getElementById('adm-accueil')?.classList.contains('on')) majAlerteSalles(); });
@@ -890,9 +886,58 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden && docume
 // =====================================================================
 // ADMINISTRATION COMMUNE
 // =====================================================================
+// Les quatre menus de l'administrateur : [icône, titre, description, action]
+const GROUPES={
+  'g-creneaux':{icone:'📅', titre:'Gestion des créneaux annuels', sous:'Salles municipales et équipements sportifs', items:[
+    ['📊','Tableau de bord','Saison en cours, dernières saisies des associations.',"allerVers('creneaux.html')"],
+    ['📅','Plannings','Planning de chaque équipement, jour par jour.',"allerVers('creneaux.html#plannings')"],
+    ['📈',"Taux d'occupation",'Occupation des équipements par créneau.',"allerVers('creneaux.html#taux')"],
+    ['📒','Bilan des heures','Heures attribuées par association.',"allerVers('creneaux.html#bilan')"],
+    ['🏟️','Équipements & salles','Ajouter, renommer ou retirer un équipement.',"allerVers('creneaux.html#lieux')"],
+    ['🔒','Ouverture de la saisie & couleurs','Ouvrir ou fermer la saisie des créneaux, couleurs des associations.',"allerVers('creneaux.html#settings')"]]},
+  'g-manif':{icone:'🏆', titre:'Gestion des manifestations', sous:'Équipements sportifs', items:[
+    ['📝','Planning des manifestations','Tous les mois, toutes les cellules ; en jaune, les lignes modifiées par une association.',"allerVers('manifestations.html#planning')"],
+    ['🧾','Saisir une manifestation','Pour une demande reçue par téléphone ou par mail.',"allerVers('manifestations.html#saisir')"],
+    ['📊','Bilan par association','Synthèse des impacts par association.',"allerVers('manifestations.html#bilan')"],
+    ['🗺️','Bilan par site','Manifestations par équipement.',"allerVers('manifestations.html#bilan-site')"],
+    ['📥','Extraction','Télécharger le planning par mois, par activité ou le bilan.',"allerVers('manifestations.html#extraction')"],
+    ['🔒','Ouvrir / fermer les inscriptions','Indépendant des créneaux annuels.',"allerVers('manifestations.html#verrou')"],
+    ['📍','Autres lieux des manifestations','Lieux hors équipements sportifs proposés dans le planning.',"allerVers('manifestations.html#lieux')"],
+    ['🗑️','Remettre à zéro','Vider le planning de la saison affichée (sur la page des manifestations).',"allerVers('manifestations.html')"]]},
+  'g-salles':{icone:'🏛️', titre:'Gestion des salles municipales', sous:'Location aux associations, entreprises et particuliers', items:[
+    ['📥','Demandes de réservation','Valider, demander des pièces, refuser, paiement reçu.',"allerVers('salles.html#demandes')",'badge-salles-grp'],
+    ['📆','Planning des salles','Le nom du réservant sur chaque date ; réservation exceptionnelle.',"allerVers('salles.html#planning')"],
+    ['⛔','Dates bloquées','Travaux, élections, manifestation municipale…',"allerVers('salles.html#blocages')"],
+    ['🏛️','Fiches des salles','Photo, vidéo, capacité, jours, tarifs et cautions.',"allerVers('salles.html#salles')"],
+    ['⚙️','Règles par profil','Ouverture, délais, natures, pièces, conventions, mail au service.',"allerVers('salles.html#reglages')"],
+    ['🏢','Comptes entreprises','Créer, modifier, mot de passe.',"adminNav('ent')"],
+    ['👤','Comptes particuliers','Créer, modifier, mot de passe.',"adminNav('part')"]]},
+  'g-reglage':{icone:'⚙️', titre:'Réglage administrateur', sous:'Ce qui sert à tous les plannings', items:[
+    ['🗓️','Saisons & ouverture','Créer la saison suivante, ouvrir ou fermer chaque saisie.',"adminNav('saisons')"],
+    ['🏃','Associations','La liste unique de tous les plannings : ajouter, renommer, mots de passe.',"adminNav('assos')"],
+    ['📄','Documents à télécharger','Officialisation de la demande, demande de matériel.',"adminNav('docs')"],
+    ['✉️','Adresses mail','Destinataire des mails automatiques, suivi des envois.',"adminNav('mails')"],
+    ['🔐','Code administrateur','Le code qui ouvre toute l\'administration.',"adminNav('code')"]]}
+};
+// Page → menu auquel elle appartient (pour le surlignage et le retour)
+const GROUPE_DE={ent:'g-salles', part:'g-salles', saisons:'g-reglage', assos:'g-reglage', docs:'g-reglage', mails:'g-reglage', code:'g-reglage'};
+function dessinerGroupe(g){
+  const G=GROUPES[g]; const el=document.getElementById('adm-'+g); if(!G||!el) return;
+  el.innerHTML=`<div class="section-title">${G.icone} ${G.titre}</div><p class="groupe-sous">${G.sous}</p>
+    <div class="menu-grid compact">${G.items.map(([ic,t,d,act,badge])=>`<div class="menu-card" onclick="${act}"><div class="icon">${ic}</div>
+      ${badge?`<span class="badge-coin" id="${badge}" style="display:none"></span>`:''}<div><h3>${t.replace(/&/g,'&amp;')}</h3><p>${d}</p></div></div>`).join('')}</div>`;
+  if(g==='g-salles') majAlerteSalles();
+}
+function retourGroupe(sec){
+  const g=GROUPE_DE[sec]; const p=document.getElementById('adm-'+sec); if(!g||!p) return;
+  let b=p.querySelector('.retour-groupe');
+  if(!b){ b=document.createElement('button'); b.className='lnk retour-groupe'; b.style.cssText='margin-bottom:12px;display:inline-block'; p.prepend(b); }
+  b.textContent='← '+GROUPES[g].titre; b.onclick=()=>adminNav(g);
+}
 function adminNav(sec){
   document.querySelectorAll('#ecran-admin .nav-item').forEach(n=>n.classList.remove('on'));
-  document.getElementById('nav-'+sec)?.classList.add('on');
+  document.getElementById('nav-'+(GROUPE_DE[sec]||sec))?.classList.add('on');
+  if(GROUPES[sec]) dessinerGroupe(sec); else retourGroupe(sec);
   document.querySelectorAll('#ecran-admin .page').forEach(p=>p.classList.remove('on'));
   document.getElementById('adm-'+sec)?.classList.add('on');
   history.replaceState(null,'',sec==='accueil'?'index.html':'index.html#'+sec);
