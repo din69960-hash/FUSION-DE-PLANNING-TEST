@@ -21,3 +21,11 @@ Copie de test du site FUSION-DE-PLANNING, pour développer la réservation des s
 - Admin : montants modifiables avant validation, réservation exceptionnelle à moins d'un mois, paiement au guichet ou en ligne.
 - Paiement : `paiement.html` + fonction `fusiontest-paiement`. Sans clé Stripe : paiement de démonstration (aucun argent). Avec `STRIPE_SECRET_KEY` (sk_test_…) et `STRIPE_WEBHOOK_SECRET` : vrai parcours Stripe en mode test. Après paiement : mail au demandeur et au service, réservation confirmée.
 - Base : `supabase/salles_v2.sql` (migration `ft_salles_v2`).
+
+## Étape 5 — Délibération des salles (élections 2026) (15/11/2026)
+
+- Salles : Salle des Chênes, Salle La Clairière, Salle de réception du Complexe des Taillis, Salle de la Pagode, Salle des Fêtes.
+- Cautions du règlement : Taillis et Fêtes 640 € (dégâts) / 160 € (ménage).
+- Nature « Réunion électorale (liste candidate) » pour associations et particuliers : gratuite, en soirée, jours propres à chaque salle (Chênes lun/mar/jeu/ven, Clairière jeu/ven, Taillis ven, Pagode lun/ven, Fêtes jeu/ven), une demande par mois et par demandeur.
+- Fiche salle (admin) : colonnes « Jours proposés » et « Créneau » par nature ; règles par profil : colonne « Max / mois / demandeur ».
+- Base : `supabase/salles_v3.sql` (migration `ft_salles_v3`).

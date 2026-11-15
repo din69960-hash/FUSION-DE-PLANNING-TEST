@@ -502,7 +502,23 @@ function tarifSalle(s, prof, nat, corbas){
 // Le créneau (matin, après-midi, soir) est-il proposé ce jour-là ?
 function periodesDuJour(s, d){
   const j=String(dDate(d).getDay()); const dispo=s.dispo||{};
-  return (s.periodes||[]).filter(p=>!(j in dispo) || (dispo[j]||[]).includes(p));
+  let per=(s.periodes||[]).filter(p=>!(j in dispo) || (dispo[j]||[]).includes(p));
+  const r=restrictionNature(s);
+  if(r){ if(Array.isArray(r.jours) && !r.jours.includes(Number(j))) return [];
+    if(Array.isArray(r.periodes)) per=per.filter(p=>r.periodes.includes(p)); }
+  return per;
+}
+// Jours / créneaux propres à la nature choisie dans cette salle (ex. réunion électorale : soirée, certains jours)
+function restrictionNature(s){
+  if(ROLE==='admin' || typeof natureOrient!=='function') return null; const n=natureOrient(); if(!n) return null;
+  const t=(s.tarifs||{})[n.code]||{}; return (Array.isArray(t.jours)||Array.isArray(t.periodes)) ? t : null;
+}
+const JOURS_COURTS=['dim','lun','mar','mer','jeu','ven','sam'];
+function restrictionTxt(t){
+  if(!t || (!Array.isArray(t.jours)&&!Array.isArray(t.periodes))) return '';
+  const j=Array.isArray(t.jours)?[1,2,3,4,5,6,0].filter(x=>t.jours.includes(x)).map(x=>JOURS_COURTS[x]).join(', '):'';
+  const p=Array.isArray(t.periodes)?t.periodes.map(x=>(PERIODES[x]||x).toLowerCase()).join(', '):'';
+  return [j,p].filter(Boolean).join(' · ');
 }
 function creneauOuvert(s, d, c){
   const per=periodesDuJour(s,d);
@@ -640,7 +656,7 @@ function conditionsHtml(s){
   let h='';
   if(nat.length) h+=`<div class="cond"><h5>Tarifs pour les ${PROFILS_PL[ROLE].toLowerCase()}</h5>
     <table class="tb" style="font-size:13px"><tr><th>Nature</th><th>De Corbas</th><th>Extérieur</th></tr>
-    ${nat.map(x=>`<tr><td>${esc(x.n.libelle)}</td><td><b>${fmt(x.tc.location)}</b></td><td><b>${fmt(x.te.location)}</b></td></tr>`).join('')}</table>
+    ${nat.map(x=>`<tr><td>${esc(x.n.libelle)}${restrictionTxt((s.tarifs||{})[x.n.code])?'<br><small style="color:var(--gris2)">'+esc(restrictionTxt((s.tarifs||{})[x.n.code]))+'</small>':''}</td><td><b>${fmt(x.tc.location)}</b></td><td><b>${fmt(x.te.location)}</b></td></tr>`).join('')}</table>
     ${cau?`<div style="margin-top:8px;font-size:13px">Cautions (chèques remis la veille au service des sports) : ménage <b>${montant(cau.tc.menage)||'—'}</b> · réparation <b>${montant(cau.tc.reparation)||'—'}</b></div>`:''}</div>`;
   if(l.length) h+=`<div class="cond"><dl>${l.map(x=>`<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join('')}</dl></div>`;
   return h;
@@ -695,7 +711,8 @@ function renderPlanning(cid){
     if(!liste.some(s=>s.id===CAL.salle)) CAL.salle=liste[0].id;
     entete+=`<div class="aide" style="font-size:13.5px">Dates proposées du <b>${dateFr(f.debut)}</b> au <b>${f.fin?dateFr(f.fin):'—'}</b>. Choisissez une salle, puis touchez une date verte.</div>
       <div class="salle-choix">${liste.map(s=>{ const t=tarifSalle(s,ROLE,n,ORIENT.corbas);
-        return `<button class="${s.id===CAL.salle?'on':''}" onclick="CAL.salle=${s.id};renderPlanning('u-planning')"><b>${esc(s.nom)}</b><small>${t.location===null?'Tarif sur devis':t.location===0?'Gratuit':'Location '+montant(t.location)}${s.capacite_max?' · '+s.capacite_max+' pers. max':''}</small></button>`; }).join('')}</div>`;
+        const rt=restrictionTxt(restrictionNature(s));
+        return `<button class="${s.id===CAL.salle?'on':''}" onclick="CAL.salle=${s.id};renderPlanning('u-planning')"><b>${esc(s.nom)}</b><small>${t.location===null?'Tarif sur devis':t.location===0?'Gratuit':'Location '+montant(t.location)}${s.capacite_max?' · '+s.capacite_max+' pers. max':''}${rt?' · '+esc(rt):''}</small></button>`; }).join('')}</div>`;
   } else if(!SALLES.some(s=>s.id===CAL.salle)) CAL.salle=SALLES[0].id;
   const mois=moisDisponibles(); if(!mois.includes(CAL.mois)) CAL.mois=mois[ROLE==='admin'?Math.min(2,mois.length-1):0];
   box.innerHTML=`${ROLE==='admin'?'<div class="section-title">📆 Planning des salles</div><p class="section-sub">Le nom du réservant apparaît sur chaque date. Touchez un jour pour voir le détail, le bloquer ou saisir une réservation (même à moins d\'un mois).</p>':entete}
@@ -1129,17 +1146,22 @@ function dessinerTarifs(){
   document.getElementById('sa-tarif-tabs').innerHTML=Object.entries(PROFILS_PL).map(([k,l])=>`<button type="button" class="filtre ${k===TARIF_PROFIL?'on':''}" onclick="lireTarifs();TARIF_PROFIL='${k}';dessinerTarifs()">${l}</button>`).join('');
   const nat=(INFOS.profils[TARIF_PROFIL]||{}).natures||[]; const t=(SALLE_EDIT.tarifs||{})[TARIF_PROFIL]||{};
   const v=x=>x===null||x===undefined?'':x;
-  document.getElementById('sa-tarifs').innerHTML=`<tr><th>Nature</th><th>Proposée</th><th>Location<br>Corbas</th><th>Location<br>extérieur</th><th>Caution<br>ménage</th><th>Caution<br>réparation</th></tr>`
-    +(nat.length?nat.map(n=>{ const x=t[n.code]||{};
+  document.getElementById('sa-tarifs').innerHTML=`<tr><th>Nature</th><th>Proposée</th><th>Location<br>Corbas</th><th>Location<br>extérieur</th><th>Caution<br>ménage</th><th>Caution<br>réparation</th><th>Jours proposés</th><th>Créneau</th></tr>`
+    +(nat.length?nat.map(n=>{ const x=t[n.code]||{}; const jr=Array.isArray(x.jours)?x.jours:[0,1,2,3,4,5,6];
       return `<tr data-code="${esc(n.code)}"><td>${esc(n.libelle)}</td>
         <td><input type="checkbox" data-k="ouvert" ${x.ouvert===false?'':'checked'}></td>
-        ${['corbas','ext','menage','reparation'].map(k=>`<td><input type="number" min="0" step="0.01" data-k="${k}" value="${v(x[k])}" placeholder="${(k==='corbas'||k==='ext')&&n.tarif!==null&&n.tarif!==undefined?n.tarif:'—'}"></td>`).join('')}</tr>`; }).join('')
-      :'<tr><td colspan="6" class="vide">Aucune nature pour ce profil (menu « Règles par profil »).</td></tr>');
+        ${['corbas','ext','menage','reparation'].map(k=>`<td><input type="number" min="0" step="0.01" data-k="${k}" value="${v(x[k])}" placeholder="${(k==='corbas'||k==='ext')&&n.tarif!==null&&n.tarif!==undefined?n.tarif:'—'}"></td>`).join('')}
+        <td style="white-space:nowrap">${[1,2,3,4,5,6,0].map(j=>`<label title="${JOURS[j]}" style="display:inline-flex;flex-direction:column;align-items:center;font-size:10px;margin-right:2px">${JOURS_COURTS[j].charAt(0).toUpperCase()}<input type="checkbox" data-j="${j}" ${jr.includes(j)?'checked':''}></label>`).join('')}</td>
+        <td><select data-k="periodes"><option value="">Toutes</option>${['matin','apres_midi','soir'].map(pp=>`<option value="${pp}" ${Array.isArray(x.periodes)&&x.periodes.length===1&&x.periodes[0]===pp?'selected':''}>${esc(PERIODES[pp])} seul</option>`).join('')}</select></td></tr>`; }).join('')
+      :'<tr><td colspan="8" class="vide">Aucune nature pour ce profil (menu « Règles par profil »).</td></tr>');
 }
 function lireTarifs(){
   const o={};
   document.querySelectorAll('#sa-tarifs tr[data-code]').forEach(tr=>{ const x={};
-    tr.querySelectorAll('input').forEach(i=>{ if(i.dataset.k==='ouvert') x.ouvert=i.checked; else if(i.value!=='') x[i.dataset.k]=Number(i.value); });
+    tr.querySelectorAll('input[data-k]').forEach(i=>{ if(i.dataset.k==='ouvert') x.ouvert=i.checked; else if(i.value!=='') x[i.dataset.k]=Number(i.value); });
+    const jr=[...tr.querySelectorAll('input[data-j]')].filter(i=>i.checked).map(i=>Number(i.dataset.j));
+    if(jr.length<7) x.jours=jr;
+    const pe=tr.querySelector('select[data-k=periodes]'); if(pe && pe.value) x.periodes=[pe.value];
     o[tr.dataset.code]=x; });
   SALLE_EDIT.tarifs=SALLE_EDIT.tarifs||{}; SALLE_EDIT.tarifs[TARIF_PROFIL]=o;
 }
@@ -1207,11 +1229,12 @@ function dessinerReglages(){
     <div class="set-section">
       <h4>Natures de demande, tarifs, pièces et convention</h4>
       <p class="aide">Les montants (location Corbas / extérieur, cautions) se règlent dans la fiche de chaque salle. « Tarif par défaut » ne sert que si la salle n'a pas de montant pour cette nature (vide = fixé par le service, 0 = gratuit). Pièces : une par ligne.</p>
-      <div class="tb-wrap"><table class="tb"><tr><th style="min-width:150px">Nature</th><th style="width:90px">Tarif par défaut (€)</th><th style="width:80px">Visible (mois)</th><th style="min-width:190px">Pièces exigées</th><th>À préciser</th><th style="min-width:170px">Convention</th><th></th></tr>
+      <div class="tb-wrap"><table class="tb"><tr><th style="min-width:150px">Nature</th><th style="width:90px">Tarif par défaut (€)</th><th style="width:80px">Visible (mois)</th><th style="width:80px">Max / mois / demandeur</th><th style="min-width:190px">Pièces exigées</th><th>À préciser</th><th style="min-width:170px">Convention</th><th></th></tr>
       ${r.natures.map((n,i)=>`<tr>
         <td><input type="text" value="${esc(n.libelle)}" oninput="RG.natures[${i}].libelle=this.value"></td>
         <td><input type="number" min="0" step="0.01" value="${n.tarif===null||n.tarif===undefined?'':n.tarif}" placeholder="—" oninput="RG.natures[${i}].tarif=this.value===''?null:Number(this.value)"></td>
         <td><input type="number" min="1" value="${n.horizon_mois||''}" placeholder="${r.horizon_mois||6}" oninput="RG.natures[${i}].horizon_mois=this.value===''?null:Number(this.value)"></td>
+        <td><input type="number" min="1" value="${n.max_par_mois||''}" placeholder="—" title="Ex : 1 réunion électorale par mois et par liste" oninput="RG.natures[${i}].max_par_mois=this.value===''?null:Number(this.value)"></td>
         <td><textarea oninput="RG.natures[${i}].pieces=this.value.split('\\n').map(x=>x.trim()).filter(Boolean)">${esc((n.pieces||[]).join('\n'))}</textarea></td>
         <td style="text-align:center"><input type="checkbox" ${n.precision?'checked':''} onchange="RG.natures[${i}].precision=this.checked" title="Le demandeur doit préciser (ex : « Autre »)"></td>
         <td>${n.convention?`<span class="piece" onclick="lireConvention('${RG_PROFIL}|${esc(n.code)}')">📄 ${esc(n.convention.nom)}</span><br><button class="lnk red" onclick="retirerConvention('${esc(n.code)}')">Retirer</button>`:''}
@@ -1232,7 +1255,7 @@ async function sauverProfil(){
   const o={ouvert:RG.ouvert, limite_mode:RG.limite_mode, limite_date:RG.limite_date||'', limite_jours:RG.limite_jours===null||RG.limite_jours===undefined?'':String(RG.limite_jours),
     delai_paiement:String(RG.delai_paiement||''), delai_min_jours:String(RG.delai_min_jours||''), horizon_mois:String(RG.horizon_mois||''),
     natures:RG.natures.map(n=>{ const o={code:n.code, libelle:String(n.libelle||'').trim(), tarif:n.tarif===''||n.tarif===undefined?null:n.tarif, pieces:n.pieces||[], precision:!!n.precision};
-      if(n.horizon_mois) o.horizon_mois=Number(n.horizon_mois); return o; })};
+      if(n.horizon_mois) o.horizon_mois=Number(n.horizon_mois); if(n.max_par_mois) o.max_par_mois=Number(n.max_par_mois); return o; })};
   try{ await FU.rpc('ft_resa_profil_sauver',{p_token:tok(),p_profil:RG_PROFIL,p_reglages:o}); INFOS=await FU.rpc('ft_resa_infos',{p_token:tok()}); }
   catch(e){ return errM('rg-err',e.message); }
   toast('✅ Règles enregistrées','ok'); chargerProfil(RG_PROFIL);
