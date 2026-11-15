@@ -283,9 +283,15 @@
     <div class="menu-grid">
       <div class="menu-card grand" onclick="allerVers('creneaux.html')">
         <div class="icon">📅</div>
-        <h3>Saisir vos créneaux à l'année</h3>
+        <h3>Saisir vos créneaux à l'année (équipements sportifs)</h3>
         <p>Vos entraînements réguliers de la saison, équipement par équipement. Consultez aussi le planning hebdomadaire.</p>
         <span class="etat" id="asso-etat-cr"></span>
+      </div>
+      <div class="menu-card grand" onclick="allerVers('creneaux.html?type=salles')">
+        <div class="icon">🗓️</div>
+        <h3>Vos créneaux réguliers en salles municipales</h3>
+        <p>Vos activités régulières de la saison (réunions, cours…) dans une salle municipale, salle par salle. Consultez aussi le planning hebdomadaire.</p>
+        <span class="etat" id="asso-etat-crs"></span>
       </div>
       <div class="menu-card grand" onclick="allerVers('manifestations.html')">
         <div class="icon">🏆</div>
@@ -295,7 +301,7 @@
       </div>
       <div class="menu-card grand" onclick="allerVers('salles.html#planning')">
         <div class="icon">🏛️</div>
-        <h3>Réserver une salle municipale</h3>
+        <h3>Réserver une salle municipale (événement ponctuel)</h3>
         <p>Moment festif, assemblée générale, vente, réunion : visitez les salles, consultez le planning et suivez vos demandes.</p>
       </div>
       <div class="menu-card discret" onclick="ouvrirChgMdp()">
@@ -399,7 +405,8 @@
       <div class="admin-sidebar">
         <div class="nav-item on" id="nav-accueil" onclick="adminNav('accueil')">🏠 Accueil</div>
         <div class="nav-sep"></div>
-        <div class="nav-item nav-grp" id="nav-g-creneaux" onclick="adminNav('g-creneaux')">📅 Créneaux annuels</div>
+        <div class="nav-item nav-grp" id="nav-g-creneaux" onclick="adminNav('g-creneaux')">📅 Créneaux annuels — équipements</div>
+        <div class="nav-item nav-grp" id="nav-g-creneaux-salles" onclick="adminNav('g-creneaux-salles')">🗓️ Créneaux annuels — salles</div>
         <div class="nav-item nav-grp" id="nav-g-manif" onclick="adminNav('g-manif')">🏆 Manifestations</div>
         <div class="nav-item nav-grp" id="nav-g-salles" onclick="adminNav('g-salles')">🏛️ Salles municipales<span class="badge-rouge" id="badge-salles-nav" style="display:none"></span></div>
         <div class="nav-item nav-grp" id="nav-g-reglage" onclick="adminNav('g-reglage')">⚙️ Réglage administrateur</div>
@@ -418,10 +425,17 @@
           <div class="menu-grid">
             <div class="menu-card grand" onclick="adminNav('g-creneaux')">
               <div class="icon">📅</div>
-              <h3>Gestion des créneaux annuels</h3>
-              <p>Salles municipales et équipements sportifs.</p>
-              <div class="sous-liste">Plannings · taux d'occupation · bilan des heures · équipements &amp; salles</div>
+              <h3>Gestion des créneaux annuels — équipements sportifs</h3>
+              <p>Entraînements réguliers des associations dans les gymnases et complexes.</p>
+              <div class="sous-liste">Plannings · taux d'occupation · bilan des heures · équipements &amp; espaces</div>
               <span class="etat" id="admin-etat-cr"></span>
+            </div>
+            <div class="menu-card grand" onclick="adminNav('g-creneaux-salles')">
+              <div class="icon">🗓️</div>
+              <h3>Gestion des créneaux annuels — salles municipales</h3>
+              <p>Créneaux réguliers des associations dans les salles municipales. Ils rendent ces dates indisponibles à la location.</p>
+              <div class="sous-liste">Plannings · taux d'occupation · bilan des heures · ouverture de la saisie</div>
+              <span class="etat" id="admin-etat-crs"></span>
             </div>
             <div class="menu-card grand" onclick="adminNav('g-manif')">
               <div class="icon">🏆</div>
@@ -448,6 +462,7 @@
 
         <!-- Menus (contenu construit par dessinerGroupe) -->
         <div id="adm-g-creneaux" class="page"></div>
+        <div id="adm-g-creneaux-salles" class="page"></div>
         <div id="adm-g-manif" class="page"></div>
         <div id="adm-g-salles" class="page"></div>
         <div id="adm-g-reglage" class="page"></div>
@@ -820,7 +835,7 @@ function barreSaison(cid, role){
   const etat=(o,t)=>`<span class="etat ${o?'ouvert':'ferme'}">${o?'🔓':'🔒'} ${t} : ${o?'ouvert':'fermé'}</span>`;
   el.innerHTML=`<label for="${cid}-sel">Saison</label>
     <select id="${cid}-sel" onchange="changerSaison(this.value)">${FU.saisons.map(s=>`<option value="${s.annee}" ${s.annee===FU.saison?'selected':''}>${FU.libelleSaison(s.annee)}</option>`).join('')}</select>
-    ${inf?etat(inf.creneaux_ouvert,'Créneaux')+etat(inf.manif_ouvert,'Manifestations'):''}
+    ${inf?etat(inf.creneaux_ouvert,'Créneaux équipements')+etat(inf.creneaux_salles_ouvert,'Créneaux salles')+etat(inf.manif_ouvert,'Manifestations'):''}
     ${role==='admin'?'<button class="lnk" onclick="adminNav(\'saisons\')">Ouvrir / fermer…</button>':''}`;
 }
 function changerSaison(an){ FU.choisirSaison(an); majMenus(); }
@@ -830,10 +845,12 @@ function majMenus(){
   if(s && s.role==='asso'){
     barreSaison('asso-saison-bar','asso');
     etat('asso-etat-cr',inf.creneaux_ouvert,'🔓 Saisie ouverte · '+FU.libelleSaison(),'🔒 Saisie fermée — consultation');
+    etat('asso-etat-crs',inf.creneaux_salles_ouvert,'🔓 Saisie ouverte · '+FU.libelleSaison(),'🔒 Saisie fermée — consultation');
     etat('asso-etat-ma',inf.manif_ouvert,'🔓 Inscriptions ouvertes · '+FU.libelleSaison(),'🔒 Inscriptions fermées — consultation');
   } else {
     barreSaison('admin-saison-bar','admin');
     etat('admin-etat-cr',inf.creneaux_ouvert,'🔓 Ouvert aux associations','🔒 Fermé aux associations');
+    etat('admin-etat-crs',inf.creneaux_salles_ouvert,'🔓 Ouvert aux associations','🔒 Fermé aux associations');
     etat('admin-etat-ma',inf.manif_ouvert,'🔓 Ouvert aux associations','🔒 Fermé aux associations');
   }
 }
@@ -888,13 +905,20 @@ document.addEventListener('visibilitychange',()=>{ if(!document.hidden && docume
 // =====================================================================
 // Les quatre menus de l'administrateur : [icône, titre, description, action]
 const GROUPES={
-  'g-creneaux':{icone:'📅', titre:'Gestion des créneaux annuels', sous:'Salles municipales et équipements sportifs', items:[
+  'g-creneaux':{icone:'📅', titre:'Gestion des créneaux annuels — équipements sportifs', sous:'Gymnases et complexes sportifs, avec leurs espaces', items:[
     ['📊','Tableau de bord','Saison en cours, dernières saisies des associations.',"allerVers('creneaux.html')"],
     ['📅','Plannings','Planning de chaque équipement, jour par jour.',"allerVers('creneaux.html#plannings')"],
     ['📈',"Taux d'occupation",'Occupation des équipements par créneau.',"allerVers('creneaux.html#taux')"],
     ['📒','Bilan des heures','Heures attribuées par association.',"allerVers('creneaux.html#bilan')"],
     ['🏟️','Équipements & salles','Ajouter, renommer ou retirer un équipement.',"allerVers('creneaux.html#lieux')"],
     ['🔒','Ouverture de la saisie & couleurs','Ouvrir ou fermer la saisie des créneaux, couleurs des associations.',"allerVers('creneaux.html#settings')"]]},
+  'g-creneaux-salles':{icone:'🗓️', titre:'Gestion des créneaux annuels — salles municipales', sous:'Créneaux réguliers des associations ; ils rendent ces dates indisponibles à la location', items:[
+    ['📊','Tableau de bord','Saison en cours, dernières saisies des associations.',"allerVers('creneaux.html?type=salles')"],
+    ['📅','Plannings','Planning de chaque salle, jour par jour.',"allerVers('creneaux.html?type=salles#plannings')"],
+    ['📈',"Taux d'occupation",'Occupation des salles par créneau.',"allerVers('creneaux.html?type=salles#taux')"],
+    ['📒','Bilan des heures','Heures attribuées par association en salles municipales.',"allerVers('creneaux.html?type=salles#bilan')"],
+    ['🔒','Ouverture de la saisie & couleurs','Ouvrir ou fermer la saisie des créneaux en salles, couleurs des associations.',"allerVers('creneaux.html?type=salles#settings')"],
+    ['🏛️','Fiches des salles','Les salles proposées sont celles des fiches (Gestion des salles municipales).',"allerVers('salles.html#salles')"]]},
   'g-manif':{icone:'🏆', titre:'Gestion des manifestations', sous:'Équipements sportifs', items:[
     ['📝','Planning des manifestations','Tous les mois, toutes les cellules ; en jaune, les lignes modifiées par une association.',"allerVers('manifestations.html#planning')"],
     ['🧾','Saisir une manifestation','Pour une demande reçue par téléphone ou par mail.',"allerVers('manifestations.html#saisir')"],
@@ -902,7 +926,6 @@ const GROUPES={
     ['🗺️','Bilan par site','Manifestations par équipement.',"allerVers('manifestations.html#bilan-site')"],
     ['📥','Extraction','Télécharger le planning par mois, par activité ou le bilan.',"allerVers('manifestations.html#extraction')"],
     ['🔒','Ouvrir / fermer les inscriptions','Indépendant des créneaux annuels.',"allerVers('manifestations.html#verrou')"],
-    ['📍','Autres lieux des manifestations','Lieux hors équipements sportifs proposés dans le planning.',"allerVers('manifestations.html#lieux')"],
     ['🗑️','Remettre à zéro','Vider le planning de la saison affichée (sur la page des manifestations).',"allerVers('manifestations.html')"]]},
   'g-salles':{icone:'🏛️', titre:'Gestion des salles municipales', sous:'Location aux associations, entreprises et particuliers', items:[
     ['📥','Demandes de réservation','Valider, demander des pièces, refuser, paiement reçu.',"allerVers('salles.html#demandes')",'badge-salles-grp'],
@@ -968,7 +991,11 @@ async function renderSaisons(){
       </div>
       <div class="sc-switches">
         <div class="sw ${s.creneaux_ouvert?'on':'off'}" onclick="basculer(${s.annee},'creneaux',${!s.creneaux_ouvert})" role="switch" aria-checked="${s.creneaux_ouvert}">
-          <div><b>📅 Créneaux à l'année</b><small>${s.creneaux_ouvert?'Ouvert : les associations peuvent saisir':'Fermé : consultation uniquement'}</small></div>
+          <div><b>📅 Créneaux à l'année (équipements)</b><small>${s.creneaux_ouvert?'Ouvert : les associations peuvent saisir':'Fermé : consultation uniquement'}</small></div>
+          <div class="toggle"></div>
+        </div>
+        <div class="sw ${s.creneaux_salles_ouvert?'on':'off'}" onclick="basculer(${s.annee},'creneaux_salles',${!s.creneaux_salles_ouvert})" role="switch" aria-checked="${s.creneaux_salles_ouvert}">
+          <div><b>🗓️ Créneaux en salles municipales</b><small>${s.creneaux_salles_ouvert?'Ouvert : les associations peuvent saisir':'Fermé : consultation uniquement'}</small></div>
           <div class="toggle"></div>
         </div>
         <div class="sw ${s.manif_ouvert?'on':'off'}" onclick="basculer(${s.annee},'manif',${!s.manif_ouvert})" role="switch" aria-checked="${s.manif_ouvert}">

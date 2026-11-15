@@ -29,3 +29,11 @@ Copie de test du site FUSION-DE-PLANNING, pour développer la réservation des s
 - Nature « Réunion électorale (liste candidate) » pour associations et particuliers : gratuite, en soirée, jours propres à chaque salle (Chênes lun/mar/jeu/ven, Clairière jeu/ven, Taillis ven, Pagode lun/ven, Fêtes jeu/ven), une demande par mois et par demandeur.
 - Fiche salle (admin) : colonnes « Jours proposés » et « Créneau » par nature ; règles par profil : colonne « Max / mois / demandeur ».
 - Base : `supabase/salles_v3.sql` (migration `ft_salles_v3`).
+
+## Étape 6 — Créneaux annuels en salles municipales (15/11/2026)
+
+- `creneaux.html?type=salles` : même outil que les créneaux des équipements (saisie, consultation, plannings, taux, bilan, ouverture), sur les salles des fiches (`ft_salles`), sans sous-espace. Créneaux rangés dans `ft_creneaux` avec `lieu = 'sm-<id>'`.
+- Ouverture séparée : `ft_saisons.creneaux_salles_ouvert` (module `creneaux_salles`). Réglages propres : `cfg_taux_salles`, `cfg_bilan_salles`.
+- Un créneau régulier rend « indisponible » la période correspondante (matin < 12 h, après-midi 12 h–18 h, soir > 18 h) chaque semaine de la saison (1/09 → 31/08) dans le planning des locations ponctuelles, et bloque les demandes.
+- Menus : administrateur « Créneaux annuels — salles », association « Vos créneaux réguliers en salles municipales ». Planning des manifestations : plus de choix « Salle municipale ».
+- Base : `supabase/creneaux_salles.sql` (migration `ft_creneaux_salles`).

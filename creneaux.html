@@ -601,6 +601,7 @@ input[data-mdp]{-webkit-text-security:disc;}
     font-size:12px; font-weight:700; color:var(--bleu2); margin-left:10px; vertical-align:middle; font-family:'DM Sans',sans-serif; }
   @media(max-width:760px){ .app-header{height:auto;padding:10px 14px;flex-wrap:wrap;gap:8px;} .hdr-right{flex-wrap:wrap;gap:8px;} .app-body{padding:18px 14px;} }
 input[data-mdp].mdp-vu{-webkit-text-security:none;}
+body.mode-salles .sub-espace, body.mode-salles .td-espace{display:none;}
 </style>
 </head>
 <body>
@@ -622,7 +623,7 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
 <!-- APP ASSO -->
 <div class="app" id="app-asso">
   <header class="app-header">
-    <div class="hdr-logo">🏟️ <span>Créneaux</span> à l'année</div>
+    <div class="hdr-logo" data-salles="🏛️ <span>Créneaux</span> en salles municipales">🏟️ <span>Créneaux</span> à l'année</div>
     <div class="hdr-right">
       <select class="hdr-saison" id="hdr-saison-asso" onchange="changerSaisonPage(this.value)" title="Saison"></select>
       <span class="role-badge">Association</span>
@@ -635,9 +636,9 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
 
     <!-- Menu -->
     <div id="p-menu" class="page on">
-      <div class="section-title">📅 Créneaux à l'année <span class="saison-info" id="menu-saison"></span></div>
+      <div class="section-title"><span data-salles="🏛️ Créneaux réguliers en salles municipales">📅 Créneaux à l'année</span> <span class="saison-info" id="menu-saison"></span></div>
       <div class="lock-notice on" id="lock-notice-menu" style="display:none;margin-bottom:18px">
-        🔒 La saisie des créneaux est fermée pour cette saison : vous pouvez consulter le planning.
+        🔒 <span data-salles="La saisie des créneaux en salles municipales est fermée pour cette saison : vous pouvez consulter le planning.">La saisie des créneaux est fermée pour cette saison : vous pouvez consulter le planning.</span>
       </div>
       <div class="asso-menu">
         <div class="menu-card" onclick="goPage('p-saisie')">
@@ -648,7 +649,7 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
         <div class="menu-card" onclick="goConsult()">
           <div class="icon">📅</div>
           <h3>Consulter le planning</h3>
-          <p>Visualisez tous les créneaux de l'équipement</p>
+          <p data-salles="Visualisez tous les créneaux de la salle">Visualisez tous les créneaux de l'équipement</p>
         </div>
         <div class="menu-card" onclick="location.href='index.html'" style="border-style:dashed">
           <div class="icon">↩️</div>
@@ -676,8 +677,8 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
             <div id="asso-name-wrap"><select id="asso-name"><option value="">Chargement des associations…</option></select></div>
           </div>
           <div class="form-group">
-            <label>Choisir votre équipement sportif</label>
-            <select id="asso-lieu" class="lieu-sel" data-first="— Choisir un équipement —" onchange="majEspaces();masquerAideLieu()">
+            <label data-salles="Choisir la salle municipale">Choisir votre équipement sportif</label>
+            <select id="asso-lieu" class="lieu-sel" data-first="— Choisir un équipement —" data-first-salles="— Choisir une salle —" onchange="majEspaces();masquerAideLieu()">
               <option value="">— Choisir un équipement —</option>
               <option value="alice_milliat">Espace sportif Alice Milliat</option>
               <option value="taillis">Complexe des Taillis</option>
@@ -685,7 +686,7 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
               <option value="falcot">Gymnase Jean Falcot</option>
               <option value="jaures">Gymnase Jean Jaurès</option>
             </select>
-            <div class="aide-lieu" id="aide-lieu" role="alert">⬆️ Veuillez d'abord choisir l'équipement ci-dessus</div>
+            <div class="aide-lieu" id="aide-lieu" role="alert" data-salles="⬆️ Veuillez d'abord choisir la salle ci-dessus">⬆️ Veuillez d'abord choisir l'équipement ci-dessus</div>
           </div>
         </div>
 
@@ -718,8 +719,8 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
       </div>
       <div class="filters">
         <div class="form-group">
-          <label>Équipement</label>
-          <select id="cf-lieu" class="lieu-sel" data-first="— Choisir un équipement —" onchange="loadConsult()">
+          <label data-salles="Salle">Équipement</label>
+          <select id="cf-lieu" class="lieu-sel" data-first="— Choisir un équipement —" data-first-salles="— Choisir une salle —" onchange="loadConsult()">
             <option value="">— Tous les équipements —</option>
             <option value="alice_milliat">Alice Milliat</option>
             <option value="taillis">Complexe des Taillis</option>
@@ -747,7 +748,7 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
 <!-- APP ADMIN -->
 <div class="app" id="app-admin">
   <header class="app-header">
-    <div class="hdr-logo">🏟️ <span>Créneaux</span> à l'année</div>
+    <div class="hdr-logo" data-salles="🏛️ <span>Créneaux</span> en salles municipales">🏟️ <span>Créneaux</span> à l'année</div>
     <div class="hdr-right">
       <select class="hdr-saison" id="hdr-saison-admin" onchange="changerSaisonPage(this.value)" title="Saison"></select>
       <span class="role-badge admin">Administrateur</span>
@@ -765,10 +766,10 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
         <div class="nav-item"    id="nav-taux"      onclick="adminNav('taux')">📈 Taux d'occupation</div>
         <div class="nav-item"    id="nav-bilan"     onclick="adminNav('bilan')">📒 Bilan des heures</div>
         <div class="nav-item"    id="nav-assos"     onclick="location.href='index.html#assos'">🏃 Associations ↗</div>
-        <div class="nav-item"    id="nav-lieux"     onclick="adminNav('lieux')">🏟️ Équipements &amp; salles</div>
+        <div class="nav-item"    id="nav-lieux"     onclick="adminNav('lieux')" data-salles="🏛️ Fiches des salles ↗">🏟️ Équipements &amp; salles</div>
         <div class="nav-item"    id="nav-settings"  onclick="adminNav('settings')">⚙️ Paramètres</div>
         <div class="nav-item"    onclick="location.href='index.html#saisons'">🗓️ Saisons &amp; ouverture ↗</div>
-        <div class="nav-item"    onclick="location.href='manifestations.html'">🏆 Manifestations ↗</div>
+        <div class="nav-item"    onclick="location.href='manifestations.html'" data-cache-salles="1">🏆 Manifestations ↗</div>
       </div>
 
       <div class="admin-content">
@@ -779,7 +780,7 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
           <div class="stats-grid">
             <div class="stat-card"><div class="stat-val" id="s-cren">—</div><div class="stat-lbl">Créneaux enregistrés</div></div>
             <div class="stat-card" style="border-color:var(--or)"><div class="stat-val" id="s-asso">—</div><div class="stat-lbl">Associations</div></div>
-            <div class="stat-card" style="border-color:var(--vert)"><div class="stat-val" id="s-lieux">5</div><div class="stat-lbl">Équipements</div></div>
+            <div class="stat-card" style="border-color:var(--vert)"><div class="stat-val" id="s-lieux">5</div><div class="stat-lbl" data-salles="Salles">Équipements</div></div>
             <div class="stat-card" style="border-color:var(--rouge)"><div class="stat-val" id="s-lock">🔓</div><div class="stat-lbl">Saisie des associations</div></div>
           </div>
           <div class="section-title" style="font-size:17px;margin-top:4px">Dernières saisies</div>
@@ -791,7 +792,7 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
           <div class="section-title">📅 Plannings</div>
           <div class="filters">
             <div class="form-group">
-              <label>Équipement</label>
+              <label data-salles="Salle">Équipement</label>
               <select id="adm-lieu" class="lieu-sel" data-first="— Choisir —" onchange="admLoadPlan()">
                 <option value="">— Choisir —</option>
                 <option value="alice_milliat">Alice Milliat</option>
@@ -812,13 +813,13 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
             <button class="btn btn-danger" onclick="deleteSelected()" style="flex:none;min-width:130px;padding:10px 16px">🗑️ Supprimer la sélection</button>
           </div>
           <p style="font-size:12px;color:var(--gris2);margin:-10px 0 16px">Cliquez sur un ou plusieurs créneaux de la grille pour les sélectionner, puis « Supprimer la sélection ».</p>
-          <div id="adm-plan-body"><div class="empty-state"><div class="icon">📋</div><p>Choisissez un équipement</p></div></div>
+          <div id="adm-plan-body"><div class="empty-state"><div class="icon">📋</div><p data-salles="Choisissez une salle">Choisissez un équipement</p></div></div>
         </div>
 
         <!-- Taux d'occupation -->
         <div id="adm-taux" class="page">
           <div class="section-title" style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
-            <span>📈 Taux d'occupation des équipements</span>
+            <span data-salles="📈 Taux d'occupation des salles municipales">📈 Taux d'occupation des équipements</span>
             <span style="display:flex;gap:8px">
               <button class="btn btn-secondary" style="flex:none;padding:8px 14px;font-size:12px" onclick="loadTaux(true)">🔄 Actualiser</button>
               <button class="btn btn-primary" style="flex:none;padding:8px 14px;font-size:12px" onclick="printEl('taux-print')">🖨️ Imprimer</button>
@@ -880,8 +881,8 @@ input[data-mdp].mdp-vu{-webkit-text-security:none;}
           </div>
 
           <div class="set-section">
-            <h4>🔒 Ouverture de la saisie des créneaux <span class="saison-info" id="lock-saison"></span></h4>
-            <p style="font-size:12px;color:var(--gris2);margin:-4px 0 12px">Indépendant des manifestations. Toutes les saisons se règlent aussi dans <a href="index.html#saisons">Saisons &amp; ouverture</a>.</p>
+            <h4><span data-salles="🔒 Ouverture de la saisie des créneaux en salles municipales">🔒 Ouverture de la saisie des créneaux</span> <span class="saison-info" id="lock-saison"></span></h4>
+            <p style="font-size:12px;color:var(--gris2);margin:-4px 0 12px"><span data-salles="Indépendant des créneaux des équipements sportifs.">Indépendant des manifestations.</span> Toutes les saisons se règlent aussi dans <a href="index.html#saisons">Saisons &amp; ouverture</a>.</p>
             <div id="lock-disp"></div>
             <div style="display:flex;gap:10px">
               <button class="btn btn-danger"  style="flex:none;min-width:120px;padding:10px 16px" onclick="setLock(true)">🔒 Fermer la saisie</button>
@@ -919,6 +920,35 @@ const S = {
 };
 
 const JOURS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+
+// ===== MODE « SALLES MUNICIPALES » (creneaux.html?type=salles) =====
+// Même outil que les créneaux des équipements sportifs, sur les salles municipales
+// (fiches du menu « Gestion des salles municipales »), sans sous-espace.
+// Les créneaux sont rangés avec lieu = 'sm-<id>' ; ils rendent les dates indisponibles
+// dans le planning des locations ponctuelles.
+const MODE_SALLES = new URLSearchParams(location.search).get('type')==='salles';
+const ESP_SALLE = 'Salle entière';
+const MENU_ADMIN = MODE_SALLES ? 'index.html#g-creneaux-salles' : 'index.html#g-creneaux';
+const estLieuSalle = l => String(l||'').startsWith('sm-');
+// Clé de réglage : taux et bilan propres aux salles
+const cfgCle = k => MODE_SALLES && (k==='taux'||k==='bilan') ? k+'_salles' : k;
+function appliquerTextesMode(){
+  if(!MODE_SALLES) return;
+  document.title='Créneaux en salles municipales — Corbas';
+  document.querySelectorAll('[data-salles]').forEach(e=>{ e.innerHTML=e.dataset.salles; });
+  document.querySelectorAll('[data-first-salles]').forEach(e=>{ e.dataset.first=e.dataset.firstSalles; });
+  document.querySelectorAll('[data-cache-salles]').forEach(e=>{ e.style.display='none'; });
+  document.querySelectorAll('button.btn-menu').forEach(b=>{ if(/Menu administrateur/.test(b.textContent)) b.onclick=()=>location.href=MENU_ADMIN; });
+  document.body.classList.add('mode-salles');
+}
+// Salles municipales → « lieux » de l'outil (un seul espace : la salle entière)
+async function chargerSallesMunicipales(){
+  const l=await FU.rpc('ft_salles_liste',{p_token:S.token});
+  CFG.lieux=(l||[]).map(x=>({id:'sm-'+x.id, nom:x.nom, espaces:[ESP_SALLE]}));
+  // une ligne de taux d'occupation par salle (les salles ajoutées depuis sont complétées)
+  CFG.taux.unites=(CFG.taux.unites||[]).filter(u=>CFG.lieux.some(x=>x.id===u.lieu));
+  CFG.lieux.forEach(x=>{ if(!CFG.taux.unites.some(u=>u.lieu===x.id)) CFG.taux.unites.push({nom:x.nom, lieu:x.id, espaces:[ESP_SALLE]}); });
+}
 
 const ESPACES = {
   alice_milliat: ['Mezzanine','Grande salle'],
@@ -992,6 +1022,7 @@ function goConsult(){
   renderEmptyConsult();
 }
 function adminNav(sec){
+  if(MODE_SALLES && sec==='lieux'){ location.href='salles.html#salles'; return; }
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
   document.getElementById('nav-'+sec)?.classList.add('on');
   document.querySelectorAll('#app-admin .page').forEach(p=>p.classList.remove('on'));
@@ -1007,7 +1038,7 @@ function adminNav(sec){
 async function loadLock(){
   try{ await FU.chargerSaisons(); }catch(e){}
   const inf=FU.infoSaison();
-  S.locked = !(inf && inf.creneaux_ouvert);
+  S.locked = !(inf && (MODE_SALLES ? inf.creneaux_salles_ouvert : inf.creneaux_ouvert));
   applyLock();
 }
 function applyLock(){
@@ -1031,7 +1062,7 @@ function renderLockStatus(){
   </div>`;
 }
 async function setLock(v){
-  try{ await rpc('ft_saison_ouvrir',{p_token:S.token,p_annee:FU.saison,p_module:'creneaux',p_ouvert:!v}); }
+  try{ await rpc('ft_saison_ouvrir',{p_token:S.token,p_annee:FU.saison,p_module:MODE_SALLES?'creneaux_salles':'creneaux',p_ouvert:!v}); }
   catch(e){ toast('Erreur : '+e.message,'err'); return; }
   S.locked=v; applyLock();
   toast(v?'🔒 Saisie des créneaux fermée ('+FU.libelleSaison()+')':'🔓 Saisie des créneaux ouverte ('+FU.libelleSaison()+')', v?'warn':'ok');
@@ -1076,7 +1107,7 @@ function buildThead(){
   // row 1 : jours
   r1.innerHTML = '<th rowspan="2" style="min-width:90px;background:#0f2b46">Créneau</th>';
   JOURS.forEach(j=>{
-    r1.innerHTML += `<th colspan="3" class="th-jour">${j}</th>`;
+    r1.innerHTML += `<th colspan="${MODE_SALLES?2:3}" class="th-jour">${j}</th>`;
   });
   // row 2 : sous-entêtes
   r2.innerHTML = '';
@@ -1109,6 +1140,7 @@ function appendRow(n){
 }
 
 function buildEspace(c,j){
+  if(MODE_SALLES) return `<input type="hidden" class="sel-espace" id="esp-${c}-${j}" value="${ESP_SALLE}">`;
   return `<select class="sel-espace" id="esp-${c}-${j}"><option value="">—</option></select>`;
 }
 
@@ -1160,7 +1192,7 @@ function info(titre,html){
 function majEspaces(){
   const lieu = document.getElementById('asso-lieu').value;
   const esp = ESPACES[lieu]||[];
-  document.querySelectorAll('.sel-espace').forEach(sel=>{
+  document.querySelectorAll('select.sel-espace').forEach(sel=>{
     const cur=sel.value;
     sel.innerHTML='<option value="">—</option>'+
       esp.map(e=>`<option value="${e}" ${e===cur?'selected':''}>${e}</option>`).join('');
@@ -1196,7 +1228,7 @@ async function savePlanning(){
   const lieu = document.getElementById('asso-lieu').value;
   if(!assoName){ toast('Choisissez votre association dans la liste','err'); return; }
   if(S.role!=='asso' && !assoOptions().includes(assoName)){ toast('Association inconnue : choisissez-la dans la liste','err'); return; }
-  if(!lieu){ aideLieu({target:document.querySelector('#ptbody .sel-espace')||document.body,preventDefault(){},stopPropagation(){}}); toast('Choisissez votre équipement sportif','err'); return; }
+  if(!lieu){ aideLieu({target:document.querySelector('#ptbody .tp-input')||document.body,preventDefault(){},stopPropagation(){}}); toast(MODE_SALLES?'Choisissez la salle municipale':'Choisissez votre équipement sportif','err'); return; }
   // Chaque créneau avec un horaire doit avoir un espace de pratique
   const manquants=[];
   document.querySelectorAll('#ptbody .sel-espace').forEach(el=>el.classList.remove('manque'));
@@ -1216,13 +1248,21 @@ async function savePlanning(){
       `<span style="font-size:12.5px;color:var(--gris2)">Les cases concernées sont entourées en rouge.</span>`);
     return;
   }
+  if(MODE_SALLES){
+    const inc=[];
+    for(let c=1;c<=S.nbCren;c++) JOURS.forEach((jour,ji)=>{
+      const deb=document.getElementById(`inp-tp-${c}-${ji}-deb`)?.value, fin=document.getElementById(`inp-tp-${c}-${ji}-fin`)?.value;
+      if((deb||fin) && (!deb||!fin||hm(fin)<=hm(deb))) inc.push(`Créneau ${c} – ${jour}`);
+    });
+    if(inc.length){ info('Horaire incomplet','Indiquez une heure de début et une heure de fin (après le début) pour :<ul class="info-liste">'+inc.map(m=>`<li><b>${esc(m)}</b></li>`).join('')+'</ul>'); return; }
+  }
   const rows=[];
   for(let c=1;c<=S.nbCren;c++){
     JOURS.forEach((jour,ji)=>{
       const espace = document.getElementById(`esp-${c}-${ji}`)?.value;
       const debut  = document.getElementById(`inp-tp-${c}-${ji}-deb`)?.value;
       const fin    = document.getElementById(`inp-tp-${c}-${ji}-fin`)?.value;
-      if(espace||debut||fin) rows.push({
+      if(MODE_SALLES ? (debut||fin) : (espace||debut||fin)) rows.push({
         association:assoName, lieu, lieu_label:LIEU_LABELS[lieu]||lieu,
         creneau:c, jour, espace, heure_debut:debut, heure_fin:fin,
         created_at:new Date().toISOString()
@@ -1370,6 +1410,7 @@ async function fetchCreneaux(lieu){
     while(true){
       let q=sb.from('ft_creneaux').select('*').eq('saison',FU.saison).order('id').range(from,from+999);
       if(lieu) q=q.eq('lieu',lieu);
+      else q = MODE_SALLES ? q.like('lieu','sm-%') : q.not('lieu','like','sm-%');
       const {data,error}=await q;
       if(error) throw error;
       all=all.concat(data||[]);
@@ -1379,7 +1420,7 @@ async function fetchCreneaux(lieu){
     return all;
   }
   const d=JSON.parse(localStorage.getItem('cren')||'[]').map((r,i)=>({...r,id:r.id||('L'+i)}));
-  return lieu ? d.filter(r=>r.lieu===lieu) : d;
+  return lieu ? d.filter(r=>r.lieu===lieu) : d.filter(r=>estLieuSalle(r.lieu)===MODE_SALLES);
 }
 
 // Minutes occupées sur une journée, pour une liste d'espaces, dans une plage [deb,fin]
@@ -1414,6 +1455,10 @@ function printEl(id){
 // ===== CONFIGURATION PARTAGÉE (table settings, clés cfg_*) =====
 // =====================================================================
 function defTaux(){
+  if(MODE_SALLES) return { manifWE:false,
+    profils:[{ nom:'Taux d’occupation en journée complète (8h à 22h30)', plages:JOURS.map(()=>({actif:true,deb:'08:00',fin:'22:30'})) },
+             { nom:'Taux d’occupation en soirée (17h à 22h30)', plages:JOURS.map(()=>({actif:true,deb:'17:00',fin:'22:30'})) }],
+    unites:[], notes:'' };   // une ligne par salle, ajoutée au chargement des salles
   const T=ESPACES.taillis||[]; const E=k=>[...(ESPACES[k]||[])];
   const tInt=['Gymnase','Dojo karaté','Dojo judo'];
   const tExt=['Terrain de foot','Terrain pétanque',"Pas de tir à l'arc",'Espace tennis extérieur','Terrain boule lyonnaise'];
@@ -1456,7 +1501,10 @@ function normalizeCfg(k,v){
 }
 function applyCfgRow(key,value){
   if(!key || !key.startsWith('cfg_')) return false;
-  const k=key.slice(4); if(!(k in CFG)) return false;
+  let k=key.slice(4);
+  if(MODE_SALLES){ if(k==='lieux'||k==='taux'||k==='bilan') return false; if(k==='taux_salles'||k==='bilan_salles') k=k.replace('_salles',''); }
+  else if(k.endsWith('_salles')) return false;
+  if(!(k in CFG)) return false;
   const v=parseJSON(value); if(!v) return false;
   const n=normalizeCfg(k,v);
   if(JSON.stringify(n)===JSON.stringify(CFG[k])) return false;
@@ -1469,7 +1517,8 @@ async function saveCfg(k){
   const val=JSON.stringify(CFG[k]);
   if(sb){
     try{
-      await rpc('ft_reglage',{p_token:S.token,p_cle:'cfg_'+k,p_valeur:val});
+      if(MODE_SALLES && k==='lieux') return true;   // les salles se gèrent dans leurs fiches
+      await rpc('ft_reglage',{p_token:S.token,p_cle:'cfg_'+cfgCle(k),p_valeur:val});
       setSaveState('💾 Modifications enregistrées');
     }catch(e){ toast('Erreur d’enregistrement : '+e.message,'err'); setSaveState('⚠️ Non enregistré','err'); return false; }
   } else { localStorage.setItem('cfg_'+k,val); setSaveState('💾 Enregistré (test local)'); }
@@ -1693,6 +1742,7 @@ function allEsp(cid){
 const MANIF={payload:null, at:0, err:null, an:null};
 async function fetchManif(force){
   const an=Number(FU.saison);
+  if(MODE_SALLES){ MANIF.payload={mois:{}, annee:an}; MANIF.an=an; MANIF.at=Date.now(); return MANIF.payload; }
   if(!force && MANIF.payload && MANIF.an===an && Date.now()-MANIF.at<60000) return MANIF.payload;
   try{
     const {data,error}=await sb.from('ft_saisons').select('planning').eq('annee',an).single();
@@ -2399,9 +2449,9 @@ function exportTauxODS(){
   const T=CFG.taux, valid=(TX.crens||[]).filter(isValidCren);
   const parLieu=manifParLieu(computeBilan(TX.crens||[], bilanMrows()));
   const NC=14, G=new Grid(NC); let r=0;
-  G.put(r,0,{v:'Taux d’occupation des équipements sportifs — Ville de Corbas',st:TITLE},1,NC); G.height(r,0.9); r+=2;
+  G.put(r,0,{v:MODE_SALLES?'Taux d’occupation des salles municipales — Ville de Corbas':'Taux d’occupation des équipements sportifs — Ville de Corbas',st:TITLE},1,NC); G.height(r,0.9); r+=2;
   T.profils.forEach(p=>{
-    G.put(r,0,{v:`ÉQUIPEMENTS SPORTIFS VILLE DE CORBAS – ${p.nom}\n${plagesTxt(p)}`,st:{...HD,al:'start',sz:11}},1,NC); G.height(r,1.1); r++;
+    G.put(r,0,{v:`${MODE_SALLES?'SALLES MUNICIPALES':'ÉQUIPEMENTS SPORTIFS'} VILLE DE CORBAS – ${p.nom}\n${plagesTxt(p)}`,st:{...HD,al:'start',sz:11}},1,NC); G.height(r,1.1); r++;
     ['Lieux','Nbr d’espaces','Heures potentielles','Heures réelles','Taux 7 jours','Taux 6 jours','Taux 5 jours',...JOURS].forEach((h,i)=>G.put(r,i,{v:h,st:{...HD,bg:i>=7?'#1e4d82':'#2563a8',sz:9}}));
     G.height(r,0.9); r++;
     T.unites.forEach(u=>{
@@ -2527,7 +2577,7 @@ function renderTaux(){
   const parLieu=manifParLieu(computeBilan(TX.crens||[], bilanMrows()));
   let h='';
   T.profils.forEach(p=>{
-    h+=`<div class="tx-block"><div class="tx-h">ÉQUIPEMENTS SPORTIFS VILLE DE CORBAS – ${esc(p.nom)}<small>${esc(plagesTxt(p))}</small></div>
+    h+=`<div class="tx-block"><div class="tx-h">${MODE_SALLES?'SALLES MUNICIPALES':'ÉQUIPEMENTS SPORTIFS'} VILLE DE CORBAS – ${esc(p.nom)}<small>${esc(plagesTxt(p))}</small></div>
       <div style="overflow-x:auto;border:1px solid var(--gris);border-top:none;border-radius:0 0 var(--r) var(--r)"><table class="tx-table"><thead><tr>
         <th>Lieux</th><th>Nbr d’espaces<br>d’activités</th><th>Total d’heures<br>potentielles</th><th>Total d’heures<br>réelles</th>
         <th>Taux sur<br>7 jours</th><th>Taux sur<br>6 jours</th><th>Taux sur<br>5 jours</th>
@@ -2647,12 +2697,12 @@ function onRealtimeCreneaux(){
 }
 function onRealtimeSettings(payload){
   const r=payload.new||{};
-  if(r.cle && r.cle.startsWith('cfg_')){ if(applyCfgRow(r.cle,r.valeur)) refreshAfterCfg(r.cle.slice(4)); }
+  if(r.cle && r.cle.startsWith('cfg_')){ if(applyCfgRow(r.cle,r.valeur)) refreshAfterCfg(r.cle.slice(4).replace('_salles','')); }
 }
 function onRealtimeSaisons(payload){
   const r=payload.new||{};
   if(Number(r.annee)!==Number(FU.saison)) return;
-  const v=!r.creneaux_ouvert;
+  const v=!(MODE_SALLES ? r.creneaux_salles_ouvert : r.creneaux_ouvert);
   if(v!==S.locked){ S.locked=v; applyLock(); toast(v?'🔒 La saisie des créneaux vient d’être fermée':'🔓 La saisie des créneaux vient d’être ouverte', v?'warn':'ok'); }
   if(MANIF.an===Number(r.annee)) MANIF.at=0;
 }
@@ -2677,8 +2727,10 @@ window.addEventListener('load',async()=>{
     if(!FU.saisons.length){ document.getElementById('chargement-txt').innerHTML='Aucune saison n’est encore ouverte. <a style="color:#f0b429" href="index.html">Retour</a>'; return; }
     const {data}=await sb.from('ft_reglages').select('cle,valeur');
     if(data) data.forEach(r=>applyCfgRow(r.cle, r.valeur));
+    if(MODE_SALLES) await chargerSallesMunicipales();
   }catch(e){ document.getElementById('chargement-txt').textContent='Impossible de joindre la base de données : '+e.message; return; }
   CFG.bilan.saison=FU.saison;
+  appliquerTextesMode();
   applyLieux(); renderAssoSelect();
   initRealtime();
   buildTable();

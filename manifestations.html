@@ -734,6 +734,7 @@ tr.sem-odd .sem-add{color:#1565C0;border-color:#1565C0;background:#fff;}
           <label for="fm-lieu">Lieu de votre manifestation <span class="req">*</span></label>
           <select id="fm-lieu" onchange="majEspacesForm()"></select>
           <div class="msg-err">Choisissez l'équipement sportif.</div>
+          <div style="font-size:12px;color:#64748b;margin-top:5px">Besoin d'une salle municipale ? Faites la demande depuis le menu principal : « Réserver une salle municipale » (événement ponctuel) ou « Vos créneaux réguliers en salles municipales ».</div>
         </div>
         <div class="ff" id="ff-esp">
           <label>Précision sur le lieu</label>
@@ -861,7 +862,6 @@ tr.sem-odd .sem-add{color:#1565C0;border-color:#1565C0;background:#fff;}
       <div class="acard" onclick="go('pg-extraction')"><div class="ai">📥</div><h3>Extraction</h3><p>Télécharger planning par mois, activité ou bilan.</p><button class="abtn ab-g">Extraire</button></div>
       <div class="acard" onclick="go('pg-bilan-site')"><div class="ai">🗺️</div><h3>Bilan par site</h3><p>Manifestations par équipement ou salle.</p><button class="abtn ab-b">Consulter</button></div>
       <div class="acard" onclick="go('pg-verrou')"><div class="ai">🔒</div><h3>Ouvrir / fermer les inscriptions</h3><p>Indépendant des créneaux à l'année.</p><button class="abtn ab-o">Gérer</button></div>
-      <div class="acard" onclick="go('pg-lieux')"><div class="ai">📍</div><h3>Salles municipales</h3><p>Les équipements sportifs se gèrent dans les créneaux à l'année.</p><button class="abtn ab-b">Gérer</button></div>
       <div class="acard" onclick="location.href='index.html#assos'"><div class="ai">🏢</div><h3>Associations ↗</h3><p>Liste unique des deux plannings, mots de passe.</p><button class="abtn ab-b">Gérer</button></div>
       <div class="acard" onclick="location.href='index.html#saisons'"><div class="ai">📅</div><h3>Saisons ↗</h3><p>Créer la saison suivante, supprimer une saison.</p><button class="abtn ab-b">Gérer</button></div>
       <div class="acard" onclick="location.href='index.html#docs'"><div class="ai">📄</div><h3>Documents à télécharger ↗</h3><p>Officialisation, demande de matériel.</p><button class="abtn ab-p">Gérer</button></div>
@@ -1697,7 +1697,7 @@ function lieuSelects(mois,ri,r,lk){
   return `<select class="ei"${dis} onchange="upLieuCat('${mois}',${ri},this)">
       <option value=""${cat===''?' selected':''}>— Type —</option>
       <option value="EQUIPEMENT SPORTIF"${cat==='EQUIPEMENT SPORTIF'?' selected':''}>🏟️ Équipement sportif</option>
-      <option value="SALLE MUNICIPALE"${cat==='SALLE MUNICIPALE'?' selected':''}>🏛️ Salle municipale</option>
+      ${cat==='SALLE MUNICIPALE'?'<option value="SALLE MUNICIPALE" selected>🏛️ Salle municipale (ancienne saisie)</option>':''}
     </select>
     <select class="ei"${dis}${(!lk&&!cat)?' disabled':''} onchange="upMField('${mois}',${ri},'lieu',this.value);refreshConflicts();">
       <option value=""${lieu===''?' selected':''}>— Lieu —</option>${opts}

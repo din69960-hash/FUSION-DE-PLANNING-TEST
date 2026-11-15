@@ -72,7 +72,7 @@ const FU = {
   },
   async chargerSaisons(){
     const sb = FU.client();
-    const {data, error} = await sb.from('ft_saisons').select('annee,creneaux_ouvert,manif_ouvert').order('annee');
+    const {data, error} = await sb.from('ft_saisons').select('annee,creneaux_ouvert,creneaux_salles_ouvert,manif_ouvert').order('annee');
     if(error) throw error;
     FU.saisons = data || [];
     let an = parseInt(sessionStorage.getItem('ft_saison')||'', 10);
