@@ -286,8 +286,9 @@
         </div>
         <div id="a-salles" class="page">
           <div class="section-title">🏛️ Salles</div>
-          <p class="section-sub">Fiche de chaque salle : photo, vidéo, descriptif, conditions par profil (tarif, cautions, matériel), périodes réservables et règles d'enchaînement.</p>
+          <p class="section-sub">Toutes les salles, avec leurs réglages. <b>Une salle</b> : bouton ✏️ pour tout régler (photo, visibilité, tarifs, cautions, jours…). <b>Plusieurs salles</b> : cochez-les, puis appliquez un même réglage à toutes en une fois.</p>
           <button class="btn btn-primary" style="margin-bottom:16px" onclick="ouvrirSalle(null)">＋ Ajouter une salle</button>
+          <div class="set-section" id="gp-box" style="display:none"></div>
           <div id="a-salles-liste"></div>
         </div>
         <div id="a-reglages" class="page">
@@ -364,6 +365,7 @@
       </div>
       <div class="mf plein"><label>Périodes réservables</label><div class="coches" id="sa-periodes"></div></div>
       <div class="mf plein"><label class="coche"><input type="checkbox" id="sa-actif"> Salle visible et réservable</label></div>
+      <div class="mf plein"><label>Visible par (profils qui voient la salle et peuvent la demander)</label><div class="coches" id="sa-profils"></div></div>
       <div class="mf plein"><label class="coche"><input type="checkbox" id="sa-weekend"> Un seul événement par week-end (une demande le vendredi, le samedi ou le dimanche ferme tout le week-end)</label></div>
     </div>
     <div class="set-section" style="padding:16px">
@@ -373,7 +375,7 @@
     </div>
     <div class="set-section" style="padding:16px">
       <h4>Tarifs et cautions selon le demandeur et la nature</h4>
-      <p class="aide">Montants en euros. Location : <b>0</b> = gratuit, <b>vide</b> = montant fixé par le service à la validation. Décochez « Proposée » si la salle n'est pas louée pour cette nature : elle n'apparaît alors pas à l'usager.</p>
+      <p class="aide">Montants en euros. Location : <b>0</b> = gratuit, <b>vide</b> = montant fixé par le service à la validation. Décochez « Proposée » si la salle n'est pas louée pour cette nature : elle n'apparaît alors pas à l'usager. Colonnes « Week-end » : forfait appliqué à la période « Week-end » (vide = tarif à la journée).</p>
       <div class="prof-tabs" id="sa-tarif-tabs"></div>
       <div class="tb-wrap"><table class="tb tarif-tb" id="sa-tarifs"></table></div>
     </div>
@@ -423,7 +425,7 @@
     <p class="sous">Possible à toute date, y compris à moins d'un mois (réservation exceptionnelle). Le créneau doit être libre.</p>
     <div class="note bleu" id="ar-recap"></div>
     <div class="grille2">
-      <div class="mf"><label>Période</label><select id="ar-periode"></select></div>
+      <div class="mf"><label>Période</label><select id="ar-periode" onchange="arTarif()"></select></div>
       <div class="mf"><label>Profil du demandeur</label><select id="ar-profil" onchange="arMaj()"><option value="asso">Association</option><option value="entreprise">Entreprise</option><option value="particulier">Particulier</option></select></div>
       <div class="mf"><label>Nature</label><select id="ar-nature" onchange="arTarif()"></select></div>
       <div class="mf"><label>Origine</label><select id="ar-corbas" onchange="arTarif()"><option value="true">De Corbas</option><option value="false">Extérieur</option></select></div>
@@ -492,11 +494,12 @@ const ORIGINE = {
 };
 const origineTxt = (prof,c) => c===null||c===undefined ? '' : (ORIGINE[prof]||ORIGINE.particulier)[c?0:1];
 // Tarif d'une salle pour un profil, une nature et une origine (même règle que la base)
-function tarifSalle(s, prof, nat, corbas){
+function tarifSalle(s, prof, nat, corbas, periode){
   const all = ROLE==='admin' ? ((s.tarifs||{})[prof]||{}) : (s.tarifs||{});
   const t = all[nat.code] || {};
   const v = k => t[k]===null||t[k]===undefined||t[k]==='' ? null : Number(t[k]);
-  const loc = v(corbas===false?'ext':'corbas');
+  let loc = v(corbas===false?'ext':'corbas');
+  if(periode==='weekend' && v(corbas===false?'ext_we':'corbas_we')!==null) loc=v(corbas===false?'ext_we':'corbas_we');
   return {ouvert: t.ouvert!==false, location: loc!==null ? loc : (nat.tarif===null||nat.tarif===undefined||nat.tarif===''?null:Number(nat.tarif)), menage:v('menage'), reparation:v('reparation')};
 }
 // Le créneau (matin, après-midi, soir) est-il proposé ce jour-là ?
@@ -650,13 +653,13 @@ function fenetre(){ const p=monProfil(), n=natureOrient(); return {debut:p.debut
 function conditionsHtml(s){
   const c=s.conditions||{};
   const l=[['Matériel disponible',c.materiel],['Bon à savoir',c.infos]].filter(x=>x[1]&&String(x[1]).trim());
-  const nat=(monProfil().natures||[]).map(n=>({n, tc:tarifSalle(s,ROLE,n,true), te:tarifSalle(s,ROLE,n,false)})).filter(x=>x.tc.ouvert);
+  const nat=(monProfil().natures||[]).map(n=>({n, tc:tarifSalle(s,ROLE,n,true), te:tarifSalle(s,ROLE,n,false), tw:tarifSalle(s,ROLE,n,true,'weekend'), tx:tarifSalle(s,ROLE,n,false,'weekend')})).filter(x=>x.tc.ouvert);
   const fmt=v=>v===null?'Sur devis':v===0?'Gratuit':montant(v);
   const cau=nat.find(x=>x.tc.menage!==null||x.tc.reparation!==null);
   let h='';
   if(nat.length) h+=`<div class="cond"><h5>Tarifs pour les ${PROFILS_PL[ROLE].toLowerCase()}</h5>
     <table class="tb" style="font-size:13px"><tr><th>Nature</th><th>De Corbas</th><th>Extérieur</th></tr>
-    ${nat.map(x=>`<tr><td>${esc(x.n.libelle)}${restrictionTxt((s.tarifs||{})[x.n.code])?'<br><small style="color:var(--gris2)">'+esc(restrictionTxt((s.tarifs||{})[x.n.code]))+'</small>':''}</td><td><b>${fmt(x.tc.location)}</b></td><td><b>${fmt(x.te.location)}</b></td></tr>`).join('')}</table>
+    ${nat.map(x=>`<tr><td>${esc(x.n.libelle)}${restrictionTxt((s.tarifs||{})[x.n.code])?'<br><small style="color:var(--gris2)">'+esc(restrictionTxt((s.tarifs||{})[x.n.code]))+'</small>':''}</td><td><b>${fmt(x.tc.location)}</b>${x.tw.location!==x.tc.location?'<br><small>week-end : '+fmt(x.tw.location)+'</small>':''}</td><td><b>${fmt(x.te.location)}</b>${x.tx.location!==x.te.location?'<br><small>week-end : '+fmt(x.tx.location)+'</small>':''}</td></tr>`).join('')}</table>
     ${cau?`<div style="margin-top:8px;font-size:13px">Cautions (chèques remis la veille au service des sports) : ménage <b>${montant(cau.tc.menage)||'—'}</b> · réparation <b>${montant(cau.tc.reparation)||'—'}</b></div>`:''}</div>`;
   if(l.length) h+=`<div class="cond"><dl>${l.map(x=>`<dt>${x[0]}</dt><dd>${esc(x[1])}</dd>`).join('')}</dl></div>`;
   return h;
@@ -824,7 +827,7 @@ function majNature(){
   document.getElementById('rs-precision-zone').style.display = n&&n.precision ? 'block' : 'none';
   const cond=document.getElementById('rs-conditions'), pz=document.getElementById('rs-pieces');
   if(!n){ cond.innerHTML=''; pz.innerHTML=''; return; }
-  const t=tarifSalle(RESA.salle,ROLE,n,ORIENT.corbas); const p=monProfil();
+  const t=tarifSalle(RESA.salle,ROLE,n,ORIENT.corbas,RESA.periode); const p=monProfil();
   cond.innerHTML=`<div class="cond" style="margin-bottom:12px"><h5>Conditions</h5><dl>
       <dt>Location</dt><dd>${t.location===null?'Montant communiqué par le service des sports':t.location===0?'Gratuit':montant(t.location)}</dd>
       ${t.menage!==null?`<dt>Caution ménage</dt><dd>${montant(t.menage)}</dd>`:''}
@@ -931,27 +934,28 @@ async function rechargerSalles(){ SALLES=await FU.rpc('ft_salles_liste',{p_token
 
 // ---------- Demandes ----------
 let FILTRE='a_traiter', RECH='';
-const FILTRES=[['a_traiter','À traiter',['demande','pieces']],['option','Attente de paiement',['option']],['reservee','Réservées',['reservee']],['closes','Refusées / annulées',['refusee','annulee','expiree']],['toutes','Toutes',null]];
+const FILTRES=[['a_traiter','À traiter',['demande','pieces']],['option','Attente de paiement',['option']],['reservee','Réservées',['reservee']],['closes','Refusées / annulées',['refusee','annulee','expiree']],['toutes','Toutes',null],['archives','🗄️ Archives',null]];
+const garder=(k,r)=>k==='archives'?r.archive:!r.archive;
 async function renderDemandes(){
   try{ DEMANDES=await FU.rpc('ft_resa_liste',{p_token:tok()})||[]; }catch(e){ document.getElementById('a-demandes-liste').innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
-  const n=DEMANDES.filter(r=>r.statut==='demande').length; const pa=document.getElementById('pastille'); pa.textContent=n; pa.style.display=n?'inline':'none';
+  const n=DEMANDES.filter(r=>r.statut==='demande'&&!r.archive).length; const pa=document.getElementById('pastille'); pa.textContent=n; pa.style.display=n?'inline':'none';
   dessinerDemandes();
 }
 function dessinerDemandes(){
-  document.getElementById('a-filtres').innerHTML=FILTRES.map(([k,l,st])=>{ const nb=DEMANDES.filter(r=>!st||st.includes(r.statut)).length;
+  document.getElementById('a-filtres').innerHTML=FILTRES.map(([k,l,st])=>{ const nb=DEMANDES.filter(r=>garder(k,r)&&(!st||st.includes(r.statut))).length;
     return `<button class="filtre ${FILTRE===k?'on':''}" onclick="FILTRE='${k}';dessinerDemandes()">${l} (${nb})</button>`; }).join('')
     +`<input class="recherche" placeholder="🔎 Rechercher (nom, salle…)" value="${esc(RECH)}" oninput="RECH=this.value;dessinerListe()">`;
   dessinerListe();
 }
 function dessinerListe(){
   const st=FILTRES.find(f=>f[0]===FILTRE)[2]; const q=FU.norm(RECH);
-  const l=DEMANDES.filter(r=>(!st||st.includes(r.statut)) && (!q || FU.norm(r.demandeur_nom+' '+r.salle+' '+r.nature_libelle).includes(q)));
+  const l=DEMANDES.filter(r=>garder(FILTRE,r) && (!st||st.includes(r.statut)) && (!q || FU.norm(r.demandeur_nom+' '+r.salle+' '+r.nature_libelle).includes(q)));
   const box=document.getElementById('a-demandes-liste');
-  if(!l.length){ box.innerHTML='<div class="set-section"><p class="vide">Aucune demande.</p></div>'; return; }
+  if(!l.length){ box.innerHTML='<div class="set-section"><p class="vide">'+(FILTRE==='archives'?'Aucune demande archivée. Une demande supprimée « avec archive » est gardée ici 1 an, puis effacée.':'Aucune demande.')+'</p></div>'; return; }
   box.innerHTML=l.map(r=>`<div class="dem-card s-${r.statut}" style="cursor:pointer" onclick="ouvrirDemande(${r.id})">
     <div class="dem-tete"><div><h4>${esc(r.demandeur_nom)} <span style="font-size:12px;color:var(--gris2);font-family:'DM Sans'">· ${esc(PROFILS[r.profil])}</span></h4>
       <div class="dem-infos">🏛️ ${esc(r.salle)} · 📅 ${esc(dateLongue(r.date))} · ${esc(PERIODES[r.periode])}<br>${esc(r.nature_libelle)}${r.precision?' ('+esc(r.precision)+')':''}${r.corbassien!==null&&r.corbassien!==undefined?' · '+(r.corbassien?'Corbas':'Extérieur'):''}${r.nb_personnes?' · '+r.nb_personnes+' pers.':''} · ${esc(euros(r.tarif))} · 📎 ${r.pieces.length} pièce(s)${r.statut==='option'?' · à payer avant le <b>'+dateFr(r.echeance)+'</b>':''}${r.par_admin?' · saisie par le service':''}</div></div>
-      <div>${chipStatut(r.statut)}${r.paye_le?`<span class="paye">💳 ${r.paye_mode==='guichet'?'payé au service':'payé en ligne'}</span>`:''}</div></div></div>`).join('');
+      <div>${r.archive?'<span class="paye" style="background:#eef0f3;color:#5b6573">🗄️ archivée le '+new Date(r.archive_le).toLocaleDateString('fr-FR')+'</span> ':''}${chipStatut(r.statut)}${r.paye_le?`<span class="paye">💳 ${r.paye_mode==='guichet'?'payé au service':'payé en ligne'}</span>`:''}</div></div></div>`).join('');
 }
 function ouvrirDemande(id){
   const r=DEMANDES.find(x=>x.id===id);
@@ -964,7 +968,8 @@ function ouvrirDemande(id){
   if(r.statut==='option') actions.push(`<button class="btn btn-danger" style="background:var(--c-reserve)" onclick="decider(${r.id},'payee')">💳 Paiement reçu → réservée</button>`);
   if(['demande','pieces','option'].includes(r.statut)) actions.push(`<button class="btn btn-secondary" onclick="decider(${r.id},'refuser')">✖️ Refuser</button>`);
   if(r.statut==='reservee') actions.push(`<button class="btn btn-secondary" onclick="decider(${r.id},'annuler')">Annuler la réservation</button>`);
-  const NOMS={demande:'Demande déposée',piece:'Pièce ajoutée',validee:'Validée — lien de paiement envoyé',pieces:'Pièces demandées',refusee:'Refusée',reservee:'Réservée',annulee:'Annulée par le service',annulee_demandeur:'Annulée par le demandeur',expiree:'Annulée automatiquement',payee_en_ligne:'💳 Payée en ligne',montants:'Montants modifiés'};
+  if(r.archive) actions.length=0;
+  const NOMS={demande:'Demande déposée',piece:'Pièce ajoutée',validee:'Validée — lien de paiement envoyé',pieces:'Pièces demandées',refusee:'Refusée',reservee:'Réservée',annulee:'Annulée par le service',annulee_demandeur:'Annulée par le demandeur',expiree:'Annulée automatiquement',payee_en_ligne:'💳 Payée en ligne',montants:'Montants modifiés',modifiee:'Modifiée',archivee:'Supprimée avec archive',restauree:'Restaurée',piece_supprimee:'Pièce supprimée'};
   const modifMontants=['demande','pieces','option'].includes(r.statut);
   const champM=(id,lab,v)=>`<div class="mf" style="margin:0"><label>${lab}</label><input type="number" min="0" step="0.01" id="${id}" value="${v===null||v===undefined?'':v}" placeholder="—" ${modifMontants?'':'disabled'}></div>`;
   const lien=lienPaiement(r);
@@ -996,6 +1001,13 @@ function ouvrirDemande(id){
     <div>${r.pieces.length?r.pieces.map(p=>`<span class="piece" onclick="lirePiece(${p.id})">⬇️ ${esc(p.libelle)} — ${esc(p.nom||'')} · ${esc(taille(p.taille))}</span>`).join(''):'<span class="vide">Aucune pièce.</span>'}</div>
     ${actions.length?`<div class="mf" style="margin-top:16px"><label>Message au demandeur (pièces à compléter, motif du refus, consignes…)</label><textarea id="dm-msg" placeholder="Facultatif pour une validation"></textarea></div>
       <div class="err-msg" id="dm-err"></div><div class="btns">${actions.join('')}</div>`:''}
+    <div class="btns" style="justify-content:flex-start;border-top:1px solid var(--gris);padding-top:12px;margin-top:16px">
+      ${r.archive?`<button class="btn btn-secondary" onclick="supprimerDemande(${r.id},'restaurer')">♻️ Restaurer</button>
+        <button class="btn btn-danger" onclick="supprimerDemande(${r.id},'definitif')">🗑️ Supprimer définitivement</button>`
+      :`<button class="btn btn-secondary" onclick="modifierDemande(${r.id})">✏️ Modifier la demande</button>
+        <button class="btn btn-secondary" onclick="choixSuppression(${r.id})">🗑️ Supprimer…</button>`}
+    </div>
+    <div id="dm-suppr"></div>
     <h4 style="font-family:Syne,sans-serif;margin:18px 0 4px">Historique</h4>
     <div class="histo">${(r.historique||[]).map(h=>`<div><b>${new Date(h.at).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})}</b> — ${esc(NOMS[h.action]||h.action)} (${esc(h.par)})${h.message?' : '+esc(h.message):''}</div>`).join('')}</div>`;
   ouvrirM('dem');
@@ -1019,6 +1031,81 @@ async function decider(id,action){
   const m=await envoyerMail(id,r.evt);
   toast(m.envoye?'✅ Enregistré — mail envoyé au demandeur':m.sans_adresse?'✅ Enregistré (pas d\'adresse mail pour ce demandeur)':'✅ Enregistré — ⚠️ mail non envoyé'+(m.erreur?' : '+m.erreur:''), m.envoye||m.sans_adresse?'ok':'warn');
   renderDemandes();
+}
+
+// ---------- Modifier / supprimer / archiver une demande ----------
+function choixSuppression(id){
+  document.getElementById('dm-suppr').innerHTML=`<div class="note" style="margin-top:10px;background:#fff6f6;border-color:#f3c2c2">
+    <b>Comment supprimer cette demande ?</b>
+    <div class="btns" style="justify-content:flex-start;margin-top:8px">
+      <button class="btn btn-secondary" onclick="supprimerDemande(${id},'archive')">🗄️ Supprimer avec archive</button>
+      <button class="btn btn-danger" onclick="supprimerDemande(${id},'definitif')">🗑️ Supprimer définitivement</button>
+      <button class="lnk" onclick="document.getElementById('dm-suppr').innerHTML=''">Annuler</button></div>
+    <p class="aide" style="margin-top:6px"><b>Avec archive</b> : la demande disparaît des listes et libère la date, mais elle reste consultable 1 an dans « Archives » (et peut être restaurée). <b>Définitivement</b> : la demande et ses pièces sont effacées tout de suite (la réservation n'aura pas lieu). Aucun mail n'est envoyé au demandeur.</p></div>`;
+  document.getElementById('dm-suppr').scrollIntoView({block:'nearest'});
+}
+async function supprimerDemande(id,mode){
+  if(mode==='definitif' && !confirm('Supprimer définitivement cette demande et ses pièces ? Action irréversible.')) return;
+  try{ await FU.rpc('ft_resa_supprimer',{p_token:tok(),p_resa:id,p_mode:mode}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  fermerM('dem'); toast(mode==='archive'?'🗄️ Demande archivée (gardée 1 an)':mode==='restaurer'?'♻️ Demande restaurée':'🗑️ Demande supprimée définitivement','ok');
+  renderDemandes();
+}
+function modifierDemande(id){
+  const r=DEMANDES.find(x=>x.id===id); const v=x=>x===null||x===undefined?'':x;
+  const opts=(o,sel)=>Object.entries(o).map(([k,l])=>`<option value="${esc(k)}" ${k===sel?'selected':''}>${esc(l)}</option>`).join('');
+  document.getElementById('dm-corps').innerHTML=`<h3>✏️ Modifier la demande n° ${r.id}</h3>
+    <div class="grille2">
+      <div class="mf"><label>Salle</label><select id="md-salle">${SALLES.map(s=>`<option value="${s.id}" ${s.id===r.salle_id?'selected':''}>${esc(s.nom)}</option>`).join('')}</select></div>
+      <div class="mf"><label>Date</label><input type="date" id="md-date" value="${esc(r.date)}"></div>
+      <div class="mf"><label>Période</label><select id="md-per">${opts(PERIODES,r.periode)}</select></div>
+      <div class="mf"><label>Statut</label><select id="md-statut">${opts(Object.fromEntries(Object.entries(STATUTS).map(([k,x])=>[k,x[0]])),r.statut)}</select></div>
+      <div class="mf"><label>Profil du demandeur</label><select id="md-profil" onchange="mdNatures()">${opts(PROFILS,r.profil)}</select></div>
+      <div class="mf"><label>Nature</label><select id="md-nature"></select></div>
+      <div class="mf"><label>Précision</label><input type="text" id="md-prec" value="${esc(v(r.precision))}"></div>
+      <div class="mf"><label>Nombre de personnes</label><input type="number" min="1" id="md-nb" value="${v(r.nb_personnes)}"></div>
+      <div class="mf"><label>Demandeur</label><input type="text" id="md-nom" value="${esc(v(r.demandeur_nom))}"></div>
+      <div class="mf"><label>Origine</label><select id="md-corbas"><option value="">—</option><option value="true" ${r.corbassien===true?'selected':''}>Corbas</option><option value="false" ${r.corbassien===false?'selected':''}>Extérieur</option></select></div>
+      <div class="mf"><label>Mail</label><input type="email" id="md-mail" value="${esc(v(r.contact_mail))}"></div>
+      <div class="mf"><label>Téléphone</label><input type="tel" id="md-tel" value="${esc(v(r.contact_tel))}"></div>
+      <div class="mf"><label>Location (€)</label><input type="number" min="0" step="0.01" id="md-tarif" value="${v(r.tarif)}"></div>
+      <div class="mf"><label>Caution ménage (€)</label><input type="number" min="0" step="0.01" id="md-cm" value="${v(r.caution_menage)}"></div>
+      <div class="mf"><label>Caution réparation (€)</label><input type="number" min="0" step="0.01" id="md-cr" value="${v(r.caution_reparation)}"></div>
+      <div class="mf plein"><label>Remarque</label><textarea id="md-rem">${esc(v(r.remarque))}</textarea></div>
+    </div>
+    <h4 style="font-family:Syne,sans-serif;margin:14px 0 6px">Pièces jointes</h4>
+    <div>${r.pieces.length?r.pieces.map(p=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px"><span class="piece" onclick="lirePiece(${p.id})">⬇️ ${esc(p.libelle)} — ${esc(p.nom||'')} · ${esc(taille(p.taille))}</span><button class="lnk red" onclick="retirerPieceAdmin(${r.id},${p.id})">Retirer</button></div>`).join(''):'<span class="vide">Aucune pièce.</span>'}</div>
+    <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-top:8px">
+      <div class="mf" style="margin:0;flex:1;min-width:200px"><label>Intitulé de la pièce à ajouter</label><input type="text" id="md-plib" placeholder="Ex : Attestation d'assurance"></div>
+      <label class="btn btn-secondary btn-sm">📎 Ajouter un fichier<input type="file" style="display:none" onchange="ajouterPieceAdmin(${r.id},this)"></label>
+    </div>
+    <p class="aide">Les pièces s'ajoutent ou se retirent tout de suite. Le reste est enregistré avec le bouton ci-dessous. Aucun mail n'est envoyé au demandeur.</p>
+    <div class="err-msg" id="md-err"></div>
+    <div class="btns"><button class="btn btn-secondary" onclick="ouvrirDemande(${r.id})">Annuler</button><button class="btn btn-primary" onclick="enregistrerModif(${r.id})">💾 Enregistrer les modifications</button></div>`;
+  mdNatures(r.nature);
+}
+function mdNatures(sel){
+  const p=document.getElementById('md-profil').value; const nat=(INFOS.profils[p]||{}).natures||[];
+  document.getElementById('md-nature').innerHTML=nat.map(n=>`<option value="${esc(n.code)}" ${n.code===sel?'selected':''}>${esc(n.libelle)}</option>`).join('');
+}
+async function enregistrerModif(id){
+  const g=x=>document.getElementById(x).value;
+  const d={salle_id:g('md-salle'),date:g('md-date'),periode:g('md-per'),statut:g('md-statut'),profil:g('md-profil'),nature:g('md-nature'),
+    precision:g('md-prec'),nb_personnes:g('md-nb'),demandeur_nom:g('md-nom'),corbassien:g('md-corbas'),contact_mail:g('md-mail'),contact_tel:g('md-tel'),
+    tarif:g('md-tarif'),caution_menage:g('md-cm'),caution_reparation:g('md-cr'),remarque:g('md-rem')};
+  try{ await FU.rpc('ft_resa_modifier',{p_token:tok(),p_resa:id,p_data:d}); }catch(e){ return errM('md-err',e.message); }
+  toast('✅ Demande modifiée','ok'); DEMANDES=await FU.rpc('ft_resa_liste',{p_token:tok()})||[]; dessinerDemandes(); ouvrirDemande(id);
+}
+async function rafraichirModif(id){ DEMANDES=await FU.rpc('ft_resa_liste',{p_token:tok()})||[]; dessinerDemandes(); modifierDemande(id); }
+async function ajouterPieceAdmin(id,input){
+  const f=input.files[0]; if(!f) return; input.value='';
+  try{ const x=await preparerFichier(f); await FU.rpc('ft_resa_piece_admin_ajouter',{p_token:tok(),p_resa:id,p_libelle:document.getElementById('md-plib').value,p_nom:x.nom,p_type:x.type,p_contenu:x.contenu}); }
+  catch(e){ return errM('md-err',e.message); }
+  toast('📎 Pièce ajoutée','ok'); rafraichirModif(id);
+}
+async function retirerPieceAdmin(id,pid){
+  if(!confirm('Retirer cette pièce ?')) return;
+  try{ await FU.rpc('ft_resa_piece_supprimer',{p_token:tok(),p_piece:pid}); }catch(e){ return errM('md-err',e.message); }
+  toast('Pièce retirée','ok'); rafraichirModif(id);
 }
 
 // ---------- Blocages ----------
@@ -1070,7 +1157,7 @@ function arMaj(){
 function arTarif(){
   const prof=document.getElementById('ar-profil').value; const n=((INFOS.profils[prof]||{}).natures||[]).find(x=>x.code===document.getElementById('ar-nature').value);
   if(!n) return;
-  const t=tarifSalle(AR.salle,prof,n,document.getElementById('ar-corbas').value==='true');
+  const t=tarifSalle(AR.salle,prof,n,document.getElementById('ar-corbas').value==='true',(document.getElementById('ar-periode')||{}).value);
   document.getElementById('ar-tarif').value=t.location===null?'':t.location;
   document.getElementById('ar-cm').value=t.menage===null?'':t.menage;
   document.getElementById('ar-cr').value=t.reparation===null?'':t.reparation;
@@ -1097,23 +1184,91 @@ let SALLE_EDIT=null, COND_PROFIL='asso', TARIF_PROFIL='asso';
 const COND_CHAMPS=[['materiel','Matériel disponible','Ex : 20 tables, 120 chaises, cuisine équipée'],['infos','Bon à savoir','Ex : fin de la location à 2 h, parking de 40 places']];
 function renderSallesAdmin(){
   const box=document.getElementById('a-salles-liste');
-  if(!SALLES.length){ box.innerHTML='<div class="set-section"><p class="vide">Aucune salle. Ajoutez la première.</p></div>'; return; }
-  box.innerHTML='<div class="salles-grid">'+SALLES.map(s=>`<div class="salle-card" style="${s.actif?'':'opacity:.6'}">
-    <div class="salle-photo" style="height:140px">${s.photo?`<img src="${esc(s.photo)}" alt="">`:'🏛️'}</div>
-    <div class="salle-corps"><h3>${esc(s.nom)}${s.actif?'':' <span style="font-size:12px;color:var(--rouge)">(masquée)</span>'}</h3>
-      <div class="salle-meta">${(s.periodes||[]).map(p=>PERIODES[p]).join(' · ')}${s.capacite_max?' · '+s.capacite_max+' pers. max':''}${s.un_par_weekend?' · 1 événement par week-end':''}</div>
-      <div class="salle-btns"><button class="btn btn-primary btn-sm" onclick="ouvrirSalle(${s.id})">✏️ Modifier</button>
-      <button class="btn btn-secondary btn-sm" onclick="CAL.salle=${s.id};adminNav('planning')">📆 Planning</button>
-      <button class="lnk red" onclick="supprimerSalle(${s.id})">Supprimer</button></div></div></div>`).join('')+'</div>';
+  if(!SALLES.length){ box.innerHTML='<div class="set-section"><p class="vide">Aucune salle. Ajoutez la première.</p></div>'; dessinerGroupe(); return; }
+  SEL_SALLES=new Set([...SEL_SALLES].filter(id=>SALLES.some(s=>s.id===id)));
+  const cautions=s=>{ const v=new Set(); Object.values(s.tarifs||{}).forEach(pr=>Object.values(pr||{}).forEach(x=>{ if(x&&x.ouvert!==false&&(x.reparation||x.menage)) v.add((x.reparation||0)+' € + '+(x.menage||0)+' €'); })); return v.size?[...v].join(' / '):'—'; };
+  box.innerHTML=`<div class="set-section" style="padding:0;overflow:auto"><table class="tb" style="min-width:820px"><tr>
+      <th style="width:34px"><input type="checkbox" title="Tout sélectionner" ${SEL_SALLES.size===SALLES.length?'checked':''} onchange="SALLES.forEach(s=>this.checked?SEL_SALLES.add(s.id):SEL_SALLES.delete(s.id));renderSallesAdmin()"></th>
+      <th>Salle</th><th>Capacité</th><th>Visible par</th><th>Périodes</th><th>Cautions (réparation + ménage)</th><th></th></tr>`
+    +SALLES.map(s=>`<tr style="${s.actif?'':'opacity:.55'}">
+      <td><input type="checkbox" ${SEL_SALLES.has(s.id)?'checked':''} onchange="this.checked?SEL_SALLES.add(${s.id}):SEL_SALLES.delete(${s.id});dessinerGroupe()"></td>
+      <td><b>${esc(s.nom)}</b>${s.actif?'':' <span style="font-size:12px;color:var(--rouge)">(masquée)</span>'}<br><span style="font-size:12px;color:var(--gris2)">${esc(s.adresse||'')}</span></td>
+      <td>${s.capacite_max||'—'}</td>
+      <td>${(s.profils||[]).length?(s.profils||[]).map(p=>esc(PROFILS_PL[p])).join(', '):'<span style="color:var(--rouge)">Personne (service seulement)</span>'}</td>
+      <td style="font-size:12.5px">${(s.periodes||[]).map(p=>esc(PERIODES[p].replace(' (samedi + dimanche)',''))).join(', ')}${s.un_par_weekend?'<br>1 événement / week-end':''}</td>
+      <td style="font-size:12.5px">${esc(cautions(s))}</td>
+      <td style="white-space:nowrap"><button class="btn btn-primary btn-sm" onclick="ouvrirSalle(${s.id})">✏️</button>
+        <button class="btn btn-secondary btn-sm" title="Planning" onclick="CAL.salle=${s.id};adminNav('planning')">📆</button>
+        <button class="lnk red" onclick="supprimerSalle(${s.id})">Supprimer</button></td></tr>`).join('')+'</table></div>';
+  dessinerGroupe();
+}
+// Réglage groupé : appliqué à toutes les salles cochées
+let SEL_SALLES=new Set();
+function dessinerGroupe(){
+  const box=document.getElementById('gp-box'); const n=SEL_SALLES.size;
+  if(!n){ box.style.display='none'; box.innerHTML=''; return; }
+  box.style.display='block';
+  const opt3=id=>`<select id="${id}"><option value="">Ne pas changer</option><option value="1">Oui</option><option value="0">Non</option></select>`;
+  const profOpts='<option value="tous">Tous les profils</option>'+Object.entries(PROFILS_PL).map(([k,l])=>`<option value="${k}">${l}</option>`).join('');
+  box.innerHTML=`<h4>⚙️ Appliquer à ${n} salle${n>1?'s':''} sélectionnée${n>1?'s':''} <button class="lnk" onclick="SEL_SALLES.clear();renderSallesAdmin()">(tout désélectionner)</button></h4>
+    <p class="aide">${[...SEL_SALLES].map(id=>esc((SALLES.find(s=>s.id===id)||{}).nom||'')).join(' · ')}<br>Seuls les champs remplis ou cochés « appliquer » sont modifiés ; le reste de chaque salle ne bouge pas.</p>
+    <div class="grille2">
+      <div class="mf"><label class="coche"><input type="checkbox" id="gp-vis-on"> Appliquer la visibilité</label><div class="coches" id="gp-vis"></div></div>
+      <div class="mf"><label>Salle visible et réservable</label>${opt3('gp-actif')}<label style="margin-top:8px">Un seul événement par week-end</label>${opt3('gp-we')}</div>
+      <div class="mf plein" style="border-top:1px solid var(--gris);padding-top:10px"><label>Tarifs et cautions — pour le profil</label><select id="gp-prof" onchange="gpNatures()">${profOpts}</select>
+        <label style="margin-top:6px">et la nature</label><select id="gp-nat"></select></div>
+      <div class="mf"><label>Location Corbas (€)</label><input type="number" min="0" step="0.01" id="gp-corbas" placeholder="ne pas changer"></div>
+      <div class="mf"><label>Location extérieur (€)</label><input type="number" min="0" step="0.01" id="gp-ext" placeholder="ne pas changer"></div>
+      <div class="mf"><label>Forfait week-end Corbas (€)</label><input type="number" min="0" step="0.01" id="gp-corbas_we" placeholder="ne pas changer"></div>
+      <div class="mf"><label>Forfait week-end extérieur (€)</label><input type="number" min="0" step="0.01" id="gp-ext_we" placeholder="ne pas changer"></div>
+      <div class="mf"><label>Caution réparation (€)</label><input type="number" min="0" step="0.01" id="gp-reparation" placeholder="ne pas changer"></div>
+      <div class="mf"><label>Caution ménage (€)</label><input type="number" min="0" step="0.01" id="gp-menage" placeholder="ne pas changer"></div>
+      <div class="mf"><label>Nature proposée</label>${opt3('gp-ouvert')}</div>
+      <div class="mf"><label>Capacité maximale</label><input type="number" min="1" id="gp-capmax" placeholder="ne pas changer"></div>
+    </div>
+    <div class="err-msg" id="gp-err"></div>
+    <button class="btn btn-primary" style="margin-top:8px" onclick="appliquerGroupe()">Appliquer à ${n} salle${n>1?'s':''}</button>`;
+  coches('gp-vis',Object.entries(PROFILS_PL),[]);
+  gpNatures();
+}
+function gpNatures(){
+  const pr=document.getElementById('gp-prof').value; const profs=pr==='tous'?Object.keys(PROFILS):[pr];
+  const nat=new Map(); profs.forEach(p=>((INFOS.profils[p]||{}).natures||[]).forEach(n=>{ if(!nat.has(n.code)) nat.set(n.code,n.libelle); }));
+  document.getElementById('gp-nat').innerHTML='<option value="toutes">Toutes les natures</option>'+[...nat].map(([c,l])=>`<option value="${esc(c)}">${esc(l)}</option>`).join('');
+}
+async function appliquerGroupe(){
+  const g=id=>document.getElementById(id).value;
+  const visOn=document.getElementById('gp-vis-on').checked, vis=cochees('gp-vis');
+  const pr=g('gp-prof'), nat=g('gp-nat'); const montants={};
+  ['corbas','ext','corbas_we','ext_we','reparation','menage'].forEach(k=>{ const v=g('gp-'+k); if(v!=='') montants[k]=Number(v); });
+  const ouvert=g('gp-ouvert'), actif=g('gp-actif'), we=g('gp-we'), cap=g('gp-capmax');
+  if(!visOn && !Object.keys(montants).length && !ouvert && !actif && !we && !cap) return errM('gp-err','Rien à appliquer : remplissez au moins un champ.');
+  if(visOn && !vis.length && !confirm('Aucun profil coché : les salles ne seront visibles par personne (service seulement). Continuer ?')) return;
+  const ids=[...SEL_SALLES]; let ok=0; const err=[];
+  for(const id of ids){
+    const s=JSON.parse(JSON.stringify(SALLES.find(x=>x.id===id))); delete s.photo;
+    if(visOn) s.profils=vis;
+    if(actif) s.actif=actif==='1'; if(we) s.un_par_weekend=we==='1'; if(cap) s.capacite_max=cap;
+    if(Object.keys(montants).length||ouvert){
+      s.tarifs=s.tarifs||{};
+      (pr==='tous'?Object.keys(PROFILS):[pr]).forEach(p=>{ s.tarifs[p]=s.tarifs[p]||{};
+        ((INFOS.profils[p]||{}).natures||[]).filter(n=>nat==='toutes'||n.code===nat).forEach(n=>{
+          const x=s.tarifs[p][n.code]=s.tarifs[p][n.code]||{}; Object.assign(x,montants); if(ouvert) x.ouvert=ouvert==='1'; }); });
+    }
+    try{ await FU.rpc('ft_salle_sauver',{p_token:tok(),p_salle:s}); ok++; }catch(e){ err.push(s.nom+' : '+e.message); }
+  }
+  await rechargerSalles(); renderSallesAdmin();
+  if(err.length) toast('⚠️ '+ok+' salle(s) modifiée(s) — '+err.join(' ; '),'warn'); else toast('✅ Réglage appliqué à '+ok+' salle(s)','ok');
 }
 function ouvrirSalle(id){
-  const s=id?JSON.parse(JSON.stringify(SALLES.find(x=>x.id===id))):{nom:'',periodes:['matin','apres_midi','soir','journee'],actif:true,conditions:{},enchainement:{},dispo:{},tarifs:{},un_par_weekend:true};
+  const s=id?JSON.parse(JSON.stringify(SALLES.find(x=>x.id===id))):{nom:'',periodes:['matin','apres_midi','soir','journee'],actif:true,profils:['asso','entreprise','particulier'],conditions:{},enchainement:{},dispo:{},tarifs:{},un_par_weekend:true};
   SALLE_EDIT=s; SALLE_EDIT.photoModifiee=false; COND_PROFIL='asso'; TARIF_PROFIL='asso';
   SALLE_EDIT.conditions=s.conditions||{}; SALLE_EDIT.dispo=s.dispo||{}; SALLE_EDIT.tarifs=s.tarifs||{};
   document.getElementById('sa-titre').textContent=id?'Modifier la salle':'Nouvelle salle';
   [['sa-nom','nom'],['sa-adresse','adresse'],['sa-capacite','capacite'],['sa-youtube','youtube'],['sa-desc','descriptif']].forEach(([i,k])=>document.getElementById(i).value=s[k]||'');
   document.getElementById('sa-capmax').value=s.capacite_max||'';
   document.getElementById('sa-actif').checked=s.actif!==false;
+  coches('sa-profils',Object.entries(PROFILS_PL),s.profils||['asso','entreprise','particulier']);
   document.getElementById('sa-weekend').checked=s.un_par_weekend!==false;
   coches('sa-periodes',Object.entries(PERIODES),s.periodes||[]);
   document.getElementById('sa-periodes').onchange=()=>{ lireDispo(); dessinerDispo(); };
@@ -1146,14 +1301,14 @@ function dessinerTarifs(){
   document.getElementById('sa-tarif-tabs').innerHTML=Object.entries(PROFILS_PL).map(([k,l])=>`<button type="button" class="filtre ${k===TARIF_PROFIL?'on':''}" onclick="lireTarifs();TARIF_PROFIL='${k}';dessinerTarifs()">${l}</button>`).join('');
   const nat=(INFOS.profils[TARIF_PROFIL]||{}).natures||[]; const t=(SALLE_EDIT.tarifs||{})[TARIF_PROFIL]||{};
   const v=x=>x===null||x===undefined?'':x;
-  document.getElementById('sa-tarifs').innerHTML=`<tr><th>Nature</th><th>Proposée</th><th>Location<br>Corbas</th><th>Location<br>extérieur</th><th>Caution<br>ménage</th><th>Caution<br>réparation</th><th>Jours proposés</th><th>Créneau</th></tr>`
+  document.getElementById('sa-tarifs').innerHTML=`<tr><th>Nature</th><th>Proposée</th><th>Location<br>Corbas</th><th>Location<br>extérieur</th><th>Week-end<br>Corbas</th><th>Week-end<br>extérieur</th><th>Caution<br>ménage</th><th>Caution<br>réparation</th><th>Jours proposés</th><th>Créneau</th></tr>`
     +(nat.length?nat.map(n=>{ const x=t[n.code]||{}; const jr=Array.isArray(x.jours)?x.jours:[0,1,2,3,4,5,6];
       return `<tr data-code="${esc(n.code)}"><td>${esc(n.libelle)}</td>
         <td><input type="checkbox" data-k="ouvert" ${x.ouvert===false?'':'checked'}></td>
-        ${['corbas','ext','menage','reparation'].map(k=>`<td><input type="number" min="0" step="0.01" data-k="${k}" value="${v(x[k])}" placeholder="${(k==='corbas'||k==='ext')&&n.tarif!==null&&n.tarif!==undefined?n.tarif:'—'}"></td>`).join('')}
+        ${['corbas','ext','corbas_we','ext_we','menage','reparation'].map(k=>`<td><input type="number" min="0" step="0.01" data-k="${k}" value="${v(x[k])}" placeholder="${(k==='corbas'||k==='ext')&&n.tarif!==null&&n.tarif!==undefined?n.tarif:(k.endsWith('_we')?'= jour':'—')}"></td>`).join('')}
         <td style="white-space:nowrap">${[1,2,3,4,5,6,0].map(j=>`<label title="${JOURS[j]}" style="display:inline-flex;flex-direction:column;align-items:center;font-size:10px;margin-right:2px">${JOURS_COURTS[j].charAt(0).toUpperCase()}<input type="checkbox" data-j="${j}" ${jr.includes(j)?'checked':''}></label>`).join('')}</td>
         <td><select data-k="periodes"><option value="">Toutes</option>${['matin','apres_midi','soir'].map(pp=>`<option value="${pp}" ${Array.isArray(x.periodes)&&x.periodes.length===1&&x.periodes[0]===pp?'selected':''}>${esc(PERIODES[pp])} seul</option>`).join('')}</select></td></tr>`; }).join('')
-      :'<tr><td colspan="8" class="vide">Aucune nature pour ce profil (menu « Règles par profil »).</td></tr>');
+      :'<tr><td colspan="10" class="vide">Aucune nature pour ce profil (menu « Règles par profil »).</td></tr>');
 }
 function lireTarifs(){
   const o={};
@@ -1182,7 +1337,7 @@ async function enregistrerSalle(){
   const o={id:SALLE_EDIT.id||null, nom:document.getElementById('sa-nom').value, adresse:document.getElementById('sa-adresse').value, capacite:document.getElementById('sa-capacite').value,
     capacite_max:document.getElementById('sa-capmax').value, un_par_weekend:document.getElementById('sa-weekend').checked,
     youtube:document.getElementById('sa-youtube').value.trim(), descriptif:document.getElementById('sa-desc').value, periodes:cochees('sa-periodes'),
-    actif:document.getElementById('sa-actif').checked, conditions:SALLE_EDIT.conditions, enchainement:ench, dispo:SALLE_EDIT.dispo, tarifs:SALLE_EDIT.tarifs};
+    actif:document.getElementById('sa-actif').checked, profils:cochees('sa-profils'), conditions:SALLE_EDIT.conditions, enchainement:ench, dispo:SALLE_EDIT.dispo, tarifs:SALLE_EDIT.tarifs};
   if(o.youtube && !idYoutube(o.youtube)) return errM('sa-err','Le lien YouTube n\'est pas reconnu (ex : https://youtu.be/xxxxxxxxxxx).');
   if(SALLE_EDIT.photoModifiee || !SALLE_EDIT.id) o.photo=SALLE_EDIT.photo||'';
   try{ const id=await FU.rpc('ft_salle_sauver',{p_token:tok(),p_salle:o}); CAL.salle=Number(id); await rechargerSalles(); }catch(e){ return errM('sa-err',e.message); }

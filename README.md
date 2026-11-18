@@ -37,3 +37,11 @@ Copie de test du site FUSION-DE-PLANNING, pour développer la réservation des s
 - Un créneau régulier rend « indisponible » la période correspondante (matin < 12 h, après-midi 12 h–18 h, soir > 18 h) chaque semaine de la saison (1/09 → 31/08) dans le planning des locations ponctuelles, et bloque les demandes.
 - Menus : administrateur « Créneaux annuels — salles », association « Vos créneaux réguliers en salles municipales ». Planning des manifestations : plus de choix « Salle municipale ».
 - Base : `supabase/creneaux_salles.sql` (migration `ft_creneaux_salles`).
+
+## Étape 7 — Salles calibrées, réglages groupés, modification et archives (18/11/2026)
+
+- 13 salles calibrées d'après les fiches d'information, le règlement intérieur, la procédure interne et les délibérations (2017, 2023 forfait week-end, 2024 obsèques) : adresse, capacité, profils qui voient la salle, périodes, cautions, tarifs votés (`supabase/salles_calibrage.sql`).
+- Salle : « Visible par » (associations / entreprises / particuliers) ; forfaits « Week-end » Corbas / extérieur par nature.
+- Admin › Salles : tableau de toutes les salles avec cases à cocher ; réglage groupé (visibilité, visible et réservable, un événement par week-end, tarifs, forfaits week-end, cautions, nature proposée, capacité) appliqué à toutes les salles cochées.
+- Admin › Demandes : « Modifier » (salle, date, période, statut, profil, nature, demandeur, contacts, montants, remarque, pièces jointes ajoutées ou retirées) ; « Supprimer » avec archive (date libérée, demande gardée 1 an dans l'onglet Archives, restaurable) ou définitivement.
+- Base : `supabase/salles_v4.sql` (migration `ft_salles_v4`).
