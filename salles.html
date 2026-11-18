@@ -234,7 +234,7 @@
     <p class="section-sub" id="u-sous"></p>
     <div class="onglets">
       <button class="onglet" id="og-visite" onclick="usagerNav('visite')">🏛️ Visite des salles</button>
-      <button class="onglet" id="og-planning" onclick="usagerNav('planning')">📆 Planning &amp; réservation</button>
+      <button class="onglet" id="og-planning" onclick="usagerNav('planning')">📆 Réserver une salle (événement ponctuel)</button>
       <button class="onglet" id="og-mes" onclick="usagerNav('mes')">📝 Mes demandes</button>
     </div>
     <div id="u-etat"></div>
@@ -880,7 +880,7 @@ function cautionsTxt(r){
 async function renderMes(){
   const box=document.getElementById('u-mes-liste'); box.innerHTML='<div class="chargement">Chargement…</div>';
   let l=[]; try{ l=await FU.rpc('ft_resa_mes_demandes',{p_token:tok()})||[]; }catch(e){ box.innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
-  if(!l.length){ box.innerHTML='<div class="set-section"><p class="vide">Vous n\'avez encore fait aucune demande. Ouvrez « Planning & réservation » et répondez aux trois questions sur votre événement.</p></div>'; return; }
+  if(!l.length){ box.innerHTML='<div class="set-section"><p class="vide">Vous n\'avez encore fait aucune demande. Ouvrez « Réserver une salle (événement ponctuel) » et répondez aux trois questions sur votre événement.</p></div>'; return; }
   box.innerHTML=l.map(r=>{
     let action='';
     if(r.statut==='demande') action='<div class="note" style="background:#fff9e0;border-color:#f2d36b;color:#6b5200">📨 Votre demande est enregistrée et va être traitée par nos services sous 15 jours à 1 mois.</div>';

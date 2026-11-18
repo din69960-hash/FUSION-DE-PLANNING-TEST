@@ -158,6 +158,7 @@
   .menu-card.grand .icon{font-size:42px;}
   .menu-card.grand h3{font-size:19px;}
   .menu-card.discret{border-style:dashed;}
+  .menu-card .reserve{display:block;margin-top:4px;font-family:inherit;font-size:12.5px;font-weight:700;color:#b7791f;}
   .menu-card.grand .sous-liste{font-size:12.5px;color:var(--gris2);margin-top:10px;line-height:1.6;}
   .groupe-sous{font-size:14px;color:var(--gris2);margin:-6px 0 18px;}
   .nav-grp{font-weight:700;}
@@ -283,25 +284,25 @@
     <div class="menu-grid">
       <div class="menu-card grand" onclick="allerVers('creneaux.html')">
         <div class="icon">📅</div>
-        <h3>Saisir vos créneaux à l'année (équipements sportifs)</h3>
+        <h3>Saisir vos créneaux à l'année dans les équipements sportifs<span class="reserve">Réservé aux associations sportives</span></h3>
         <p>Vos entraînements réguliers de la saison, équipement par équipement. Consultez aussi le planning hebdomadaire.</p>
         <span class="etat" id="asso-etat-cr"></span>
       </div>
       <div class="menu-card grand" onclick="allerVers('creneaux.html?type=salles')">
         <div class="icon">🗓️</div>
-        <h3>Vos créneaux réguliers en salles municipales</h3>
+        <h3>Saisir vos créneaux à l'année dans les salles municipales</h3>
         <p>Vos activités régulières de la saison (réunions, cours…) dans une salle municipale, salle par salle. Consultez aussi le planning hebdomadaire.</p>
         <span class="etat" id="asso-etat-crs"></span>
       </div>
       <div class="menu-card grand" onclick="allerVers('manifestations.html')">
         <div class="icon">🏆</div>
-        <h3>Saisir une (ou plusieurs) manifestations ponctuelles</h3>
+        <h3>Faire vos demandes de manifestations sportives dans un équipement sportif<span class="reserve">Réservé aux associations sportives</span></h3>
         <p>Compétitions, tournois, galas, stages… Saisissez vos demandes, suivez-les et consultez le planning et vos impacts.</p>
         <span class="etat" id="asso-etat-ma"></span>
       </div>
       <div class="menu-card grand" onclick="allerVers('salles.html#planning')">
         <div class="icon">🏛️</div>
-        <h3>Réserver une salle municipale (événement ponctuel)</h3>
+        <h3>Réserver une salle municipale pour un événement ponctuel</h3>
         <p>Moment festif, assemblée générale, vente, réunion : visitez les salles, consultez le planning et suivez vos demandes.</p>
       </div>
       <div class="menu-card discret" onclick="ouvrirChgMdp()">
@@ -369,7 +370,7 @@
       </div>
       <div class="menu-card grand" onclick="allerVers('salles.html#planning')">
         <div class="icon">📆</div>
-        <h3>Planning &amp; réservation</h3>
+        <h3>Réserver une salle municipale pour un événement ponctuel</h3>
         <p>Choisissez une salle, voyez mois par mois les dates libres et faites votre demande.</p>
       </div>
       <div class="menu-card grand" onclick="allerVers('salles.html#mes')">
