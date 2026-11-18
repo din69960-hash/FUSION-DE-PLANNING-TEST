@@ -112,6 +112,11 @@
   .aide-lieu.on { display:block; animation:pop .2s ease; }
   select.lieu-alerte { border-color:var(--or2) !important; box-shadow:0 0 0 4px rgba(240,180,41,.35); animation:pulseLieu 1s ease 2; }
   @keyframes pulseLieu { 50%{ box-shadow:0 0 0 8px rgba(240,180,41,.15); } }
+  .saisie-memo { display:none; margin:4px 0 14px; padding:10px 14px; border-radius:8px; font-size:13.5px; line-height:1.45; }
+  .saisie-memo.on { display:block; animation:pop .2s ease; }
+  .saisie-memo.ok { background:#eaf6ee; border:1px solid #9fd3ae; color:#1e5e33; }
+  .saisie-memo.prec { background:#fff7e6; border:1px solid var(--or2); color:#7a4a00; }
+  .saisie-memo.vide { background:#F4F7FB; border:1px solid var(--gris); color:var(--gris2); }
   .sel-espace.manque { border:2px solid var(--rouge) !important; background:#fff5f5; }
   .info-liste { margin:10px 0 4px 18px; } .info-liste li { margin:2px 0; }
   .modal-btns { display:flex; gap:10px; margin-top:20px; }
@@ -678,7 +683,7 @@ body.mode-salles .sub-espace, body.mode-salles .td-espace{display:none;}
           </div>
           <div class="form-group">
             <label data-salles="Choisir la salle municipale">Choisir votre équipement sportif</label>
-            <select id="asso-lieu" class="lieu-sel" data-first="— Choisir un équipement —" data-first-salles="— Choisir une salle —" onchange="majEspaces();masquerAideLieu()">
+            <select id="asso-lieu" class="lieu-sel" data-first="— Choisir un équipement —" data-first-salles="— Choisir une salle —" onchange="majEspaces();masquerAideLieu();chargerSaisieExistante()">
               <option value="">— Choisir un équipement —</option>
               <option value="alice_milliat">Espace sportif Alice Milliat</option>
               <option value="taillis">Complexe des Taillis</option>
@@ -689,6 +694,8 @@ body.mode-salles .sub-espace, body.mode-salles .td-espace{display:none;}
             <div class="aide-lieu" id="aide-lieu" role="alert" data-salles="⬆️ Veuillez d'abord choisir la salle ci-dessus">⬆️ Veuillez d'abord choisir l'équipement ci-dessus</div>
           </div>
         </div>
+
+        <div class="saisie-memo" id="saisie-memo"></div>
 
         <div class="table-wrap">
           <table class="ptable" id="ptable">
@@ -1007,7 +1014,10 @@ async function changerSaisonPage(an){
     if(isVisible('adm-plan-body') && document.getElementById('adm-lieu')?.value) admLoadPlan();
     if(isVisible('taux-print')) loadTaux(true);
     if(isVisible('bilan-print')) loadBilan(true);
-  } else if(isVisible('consult-body') && document.getElementById('cf-lieu')?.value) loadConsult();
+  } else {
+    if(isVisible('consult-body') && document.getElementById('cf-lieu')?.value) loadConsult();
+    if(isVisible('ptbody')){ marquerLieuxSaisis(); chargerSaisieExistante(); }
+  }
   toast('📅 Saison '+FU.libelleSaison()+' affichée','ok');
 }
 
@@ -1015,7 +1025,7 @@ async function changerSaisonPage(an){
 function goPage(id){
   document.querySelectorAll('#app-asso .page').forEach(p=>p.classList.remove('on'));
   document.getElementById(id)?.classList.add('on');
-  if(id==='p-saisie') refreshAssoSelect();
+  if(id==='p-saisie'){ refreshAssoSelect(); marquerLieuxSaisis(); chargerSaisieExistante(); }
 }
 function goConsult(){
   goPage('p-consult');
@@ -1218,7 +1228,87 @@ function resetSaisie(){
   renderAssoSelect();
   document.getElementById('asso-lieu').value='';
   S.nbCren=3; buildTbody(); majEspaces();
+  afficherMemo('');
 }
+
+// ===== MÉMOIRE DES DEMANDES =====
+// À l'ouverture de la saisie (et à chaque choix d'équipement / de salle), on recharge les créneaux
+// déjà enregistrés par l'association pour la saison affichée. S'il n'y en a pas encore, on propose
+// ceux de la dernière saison précédente : l'association n'a plus qu'à adapter puis enregistrer.
+let _memoTok=0;
+function assoCourante(){ return (S.role==='asso' && S.assoNom) ? S.assoNom : (document.getElementById('asso-name')?.value||'').trim(); }
+function afficherMemo(type,html){
+  const m=document.getElementById('saisie-memo'); if(!m) return;
+  m.className='saisie-memo'+(type?' on '+type:''); m.innerHTML=html||'';
+}
+async function lireCreneauxAsso(lieu, saisonMax, strict){
+  const asso=normName(assoCourante());
+  if(sb){
+    let q=sb.from('ft_creneaux').select('*').eq('lieu',lieu);
+    q = strict ? q.eq('saison',saisonMax) : q.lt('saison',saisonMax);
+    const {data,error}=await q.order('saison',{ascending:false}).limit(1000);
+    if(error) throw error;
+    return (data||[]).filter(r=>normName(r.association)===asso);
+  }
+  return JSON.parse(localStorage.getItem('cren')||'[]').filter(r=>r.lieu===lieu && normName(r.association)===asso && (strict ? (r.saison==null||r.saison===saisonMax) : (r.saison!=null && r.saison<saisonMax)));
+}
+async function chargerSaisieExistante(){
+  const lieu=document.getElementById('asso-lieu')?.value;
+  const tok=++_memoTok;
+  if(!lieu || !assoCourante()){ afficherMemo(''); return; }
+  let rows=[], prec=null;
+  try{
+    rows=await lireCreneauxAsso(lieu, FU.saison, true);
+    if(!rows.length){
+      const old=await lireCreneauxAsso(lieu, FU.saison, false);
+      if(old.length){ prec=Math.max(...old.map(r=>Number(r.saison))); rows=old.filter(r=>Number(r.saison)===prec); }
+    }
+  }catch(e){ if(tok===_memoTok) afficherMemo('vide','⚠️ Impossible de récupérer votre demande précédente ('+esc(e.message)+').'); return; }
+  if(tok!==_memoTok || document.getElementById('asso-lieu')?.value!==lieu) return;   // choix modifié entre-temps
+  remplirSaisie(rows);
+  const nom=esc(LIEU_LABELS[lieu]||lieu);
+  if(!rows.length) afficherMemo('vide',`Aucune demande enregistrée pour <b>${nom}</b> : saisissez vos créneaux puis enregistrez.`);
+  else if(prec==null){
+    const d=rows.map(r=>r.created_at).filter(Boolean).sort().pop();
+    afficherMemo('ok',`✅ Voici votre demande déjà enregistrée pour <b>${nom}</b> (saison ${FU.libelleSaison()}${d?`, le ${new Date(d).toLocaleDateString('fr-FR')}`:''}). `+
+      (S.locked?'La saisie est fermée : consultation seulement.':'Modifiez si besoin puis cliquez sur <b>Enregistrer</b>.'));
+  } else {
+    afficherMemo('prec',`📋 Créneaux repris de votre demande de la saison <b>${FU.libelleSaison(prec)}</b> pour <b>${nom}</b>. `+
+      `<b>Ils ne sont pas encore enregistrés pour ${FU.libelleSaison()}</b> : vérifiez, adaptez si besoin puis cliquez sur <b>Enregistrer</b>.`);
+  }
+}
+function remplirSaisie(rows){
+  const maxC=rows.reduce((m,r)=>Math.max(m,Number(r.creneau)||0),0);
+  S.nbCren=Math.max(3,maxC);
+  buildTbody(); majEspaces();
+  rows.forEach(r=>{
+    const c=Number(r.creneau), ji=JOURS.indexOf(r.jour);
+    if(!c || ji<0) return;
+    const esp=document.getElementById(`esp-${c}-${ji}`);
+    if(esp && r.espace){
+      if(esp.tagName==='SELECT' && ![...esp.options].some(o=>o.value===r.espace))
+        esp.insertAdjacentHTML('beforeend',`<option value="${esc(r.espace)}">${esc(r.espace)} (ancien)</option>`);
+      if(esp.tagName==='SELECT') esp.value=r.espace;
+    }
+    [['deb',r.heure_debut],['fin',r.heure_fin]].forEach(([t,v])=>{
+      const id=`tp-${c}-${ji}-${t}`, inp=document.getElementById('inp-'+id);
+      if(inp && v){ inp.value=v; document.querySelectorAll(`#${id} .tp-opt`).forEach(o=>o.classList.toggle('sel',o.textContent===v)); }
+    });
+  });
+}
+// Coche « ✓ déjà saisi » devant les équipements / salles où l'association a une demande cette saison
+async function marquerLieuxSaisis(){
+  const sel=document.getElementById('asso-lieu'); if(!sel) return;
+  const asso=normName(assoCourante());
+  let faits=new Set();
+  if(asso){ try{ (await fetchCreneaux()).forEach(r=>{ if(normName(r.association)===asso) faits.add(r.lieu); }); }catch(e){} }
+  [...sel.options].forEach(o=>{
+    if(!o.value) return;
+    const base=LIEU_LABELS[o.value]||o.textContent.replace(/ ✓ déjà saisi$/,'');
+    o.textContent=base+(faits.has(o.value)?' ✓ déjà saisi':'');
+  });
+}
+document.addEventListener('change',e=>{ if(e.target.id==='asso-name'){ marquerLieuxSaisis(); chargerSaisieExistante(); } });
 
 // ===== SAUVEGARDE =====
 async function savePlanning(){
@@ -1274,6 +1364,8 @@ async function savePlanning(){
     try{
       await rpc('ft_cr_enregistrer',{p_token:S.token,p_saison:FU.saison,p_association:assoName,p_lieu:lieu,p_lignes:rows});
       toast(`✅ ${rows.length} créneau(x) enregistré(s) pour la saison ${FU.libelleSaison()}`,'ok');
+      afficherMemo('ok',`✅ Demande enregistrée pour la saison ${FU.libelleSaison()}. Vous la retrouverez ici à votre prochaine connexion et pourrez la modifier tant que la saisie est ouverte.`);
+      marquerLieuxSaisis();
     }catch(e){ toast('Erreur : '+e.message,'err'); }
   } else {
     const all = JSON.parse(localStorage.getItem('cren')||'[]')
@@ -2082,7 +2174,7 @@ function applyLieux(){
     if(cur && ESPACES[cur]) sel.value=cur;
   });
   const sl=document.getElementById('s-lieux'); if(sl) sl.textContent=CFG.lieux.length;
-  if(document.getElementById('asso-lieu')) majEspaces();
+  if(document.getElementById('asso-lieu')){ majEspaces(); marquerLieuxSaisis(); }
 }
 
 async function countCrens(lieu,espace){
