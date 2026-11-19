@@ -57,6 +57,11 @@
 
   .set-section{background:#fff;border:1px solid var(--gris);border-radius:var(--r2);padding:20px;margin-bottom:18px;}
   .set-section h4{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--bleu);margin-bottom:10px;}
+  .salles-intro{background:#fff7e0;border:2px solid #f2b705;border-radius:14px;padding:14px 16px;margin:4px 0 14px;}
+  .salles-intro .si-titre{font-size:17px;font-weight:800;color:#1b3a5c;line-height:1.35;margin-bottom:10px;}
+  .salles-intro .si-etapes{display:flex;flex-direction:column;gap:6px;font-size:14.5px;color:#1b3a5c;}
+  .salles-intro .si-etapes b{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#1b3a5c;color:#fff;font-size:12.5px;margin-right:8px;}
+  .salles-intro .si-dates{font-size:13px;color:#5a6b7d;margin-top:10px;}
   .aide{font-size:12.5px;color:var(--gris2);margin-bottom:12px;line-height:1.5;}
   .inline-f{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
   .inline-f .mf{flex:1;min-width:170px;margin-bottom:0;}
@@ -627,7 +632,7 @@ function renderOrient(box){
       ${[true,false].map(c=>`<label class="coche"><input type="radio" name="or-corbas" value="${c}" ${o.corbas===c?'checked':''}> ${esc(origineTxt(ROLE,c))}</label>`).join('')}
     </div></div>
     <div class="err-msg" id="or-err"></div>
-    <div class="btns"><button class="btn btn-primary" onclick="validerOrient()">Voir les salles et les dates disponibles →</button></div>
+    <div class="btns"><button class="btn btn-primary" onclick="validerOrient()">Voir les salles répondant à ma demande →</button></div>
   </div>`;
 }
 function validerOrient(){
@@ -712,7 +717,9 @@ function renderPlanning(cid){
       <button class="lnk" onclick="modifierOrient()">Modifier</button></div>`;
     if(!liste.length){ box.innerHTML=entete+`<div class="set-section"><p>Aucune salle ne correspond à cet événement${SALLES.some(s=>s.capacite_max&&ORIENT.nb>s.capacite_max)?' (capacité dépassée)':''}. Contactez le service des sports ou modifiez vos réponses.</p></div>`; return; }
     if(!liste.some(s=>s.id===CAL.salle)) CAL.salle=liste[0].id;
-    entete+=`<div class="aide" style="font-size:13.5px">Dates proposées du <b>${dateFr(f.debut)}</b> au <b>${f.fin?dateFr(f.fin):'—'}</b>. Choisissez une salle, puis touchez une date verte.</div>
+    entete+=`<div class="salles-intro"><div class="si-titre">🏛️ Voici le listing des salles pouvant accueillir votre demande</div>
+      <div class="si-etapes"><span><b>1</b> Choisissez une salle</span><span><b>2</b> Consultez son planning ci-dessous pour voir ses disponibilités</span><span><b>3</b> Touchez une date verte</span></div>
+      <div class="si-dates">Dates proposées du <b>${dateFr(f.debut)}</b> au <b>${f.fin?dateFr(f.fin):'—'}</b>.</div></div>
       <div class="salle-choix">${liste.map(s=>{ const t=tarifSalle(s,ROLE,n,ORIENT.corbas);
         const rt=restrictionTxt(restrictionNature(s));
         return `<button class="${s.id===CAL.salle?'on':''}" onclick="CAL.salle=${s.id};renderPlanning('u-planning')"><b>${esc(s.nom)}</b><small>${t.location===null?'Tarif sur devis':t.location===0?'Gratuit':'Location '+montant(t.location)}${s.capacite_max?' · '+s.capacite_max+' pers. max':''}${rt?' · '+esc(rt):''}</small></button>`; }).join('')}</div>`;

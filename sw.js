@@ -1,7 +1,7 @@
 // Service worker de l'application « Sports Corbas »
 // Réseau d'abord : les associations voient toujours la dernière version du site.
 // Le cache ne sert qu'en secours, si le téléphone n'a pas de connexion.
-const CACHE = 'sports-corbas-test-v3';
+const CACHE = 'sports-corbas-test-v4';
 const FICHIERS = [
   './', './index.html', './creneaux.html', './manifestations.html', './salles.html', './paiement.html', './commun.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'
