@@ -305,6 +305,12 @@
         <h3>Réserver une salle municipale pour un événement ponctuel</h3>
         <p>Moment festif, assemblée générale, vente, réunion : visitez les salles, consultez le planning et suivez vos demandes.</p>
       </div>
+      <div class="menu-card grand" onclick="allerVers('conventions.html')">
+        <div class="icon">📝</div>
+        <span class="badge-coin" id="badge-conv-asso" style="display:none"></span>
+        <h3>Ma fiche association et ma convention</h3>
+        <p>Tenez à jour la fiche de votre association (SIRET, président, siège, dernière AG…) et signez en ligne votre convention de partenariat avec la Ville.</p>
+      </div>
       <div class="menu-card discret" onclick="ouvrirChgMdp()">
         <div class="icon">🔑</div>
         <h3>Changer votre mot de passe</h3>
@@ -410,6 +416,7 @@
         <div class="nav-item nav-grp" id="nav-g-creneaux-salles" onclick="adminNav('g-creneaux-salles')">🗓️ Créneaux annuels — salles</div>
         <div class="nav-item nav-grp" id="nav-g-manif" onclick="adminNav('g-manif')">🏆 Manifestations</div>
         <div class="nav-item nav-grp" id="nav-g-salles" onclick="adminNav('g-salles')">🏛️ Salles municipales<span class="badge-rouge" id="badge-salles-nav" style="display:none"></span></div>
+        <div class="nav-item nav-grp" id="nav-g-conv" onclick="adminNav('g-conv')">📝 Conventions</div>
         <div class="nav-item nav-grp" id="nav-g-reglage" onclick="adminNav('g-reglage')">⚙️ Réglage administrateur</div>
       </div>
       <div class="admin-content">
@@ -452,6 +459,12 @@
               <p>Location aux associations, entreprises et particuliers.</p>
               <div class="sous-liste">Demandes · planning · dates bloquées · fiches des salles · règles · comptes</div>
             </div>
+            <div class="menu-card grand" onclick="adminNav('g-conv')">
+              <div class="icon">📝</div>
+              <h3>Conventions de partenariat</h3>
+              <p>Conventions annuelles remplies automatiquement et signées en ligne par les associations.</p>
+              <div class="sous-liste">Tableau des données · modèles · signatures &amp; i-parapheur · fiches · demandes de compte</div>
+            </div>
             <div class="menu-card grand" onclick="adminNav('g-reglage')">
               <div class="icon">⚙️</div>
               <h3>Réglage administrateur</h3>
@@ -466,6 +479,7 @@
         <div id="adm-g-creneaux-salles" class="page"></div>
         <div id="adm-g-manif" class="page"></div>
         <div id="adm-g-salles" class="page"></div>
+        <div id="adm-g-conv" class="page"></div>
         <div id="adm-g-reglage" class="page"></div>
 
         <!-- Saisons -->
@@ -572,7 +586,7 @@
         <label class="voir-mdp"><input type="checkbox" id="la-remember"> Se souvenir de mon association</label>
       </div>
       <div class="err-msg" id="la-err"></div>
-      <div class="note-new" style="margin-top:12px">Votre association n'apparaît pas dans la liste ? Contactez le service des sports : <a href="mailto:sports@ville-corbas.fr">sports@ville-corbas.fr</a></div>
+      <div class="note-new" style="margin-top:12px">Votre association n'apparaît pas dans la liste ? <a href="conventions.html?demande=1"><b>Demander la création d'un compte</b></a> ou contactez le service des sports : <a href="mailto:sports@ville-corbas.fr">sports@ville-corbas.fr</a></div>
       <div class="modal-btns">
         <button type="button" class="btn btn-secondary" onclick="fermerM('asso')">Annuler</button>
         <button type="submit" class="btn btn-primary" id="la-go" style="display:none">Valider</button>
@@ -856,8 +870,13 @@ function majMenus(){
   }
 }
 
+async function majBadgeConv(){
+  const s=FU.lireSession(); if(!s||s.role!=='asso') return;
+  try{ const r=await FU.rpc('ft_conv_ma_fiche',{p_token:s.token}); const n=(r.conventions||[]).filter(c=>c.statut==='a_signer').length;
+    const b=document.getElementById('badge-conv-asso'); if(b){ b.textContent=n?'✍️ '+n+' à signer':''; b.style.display=n?'inline':'none'; } }catch(e){}
+}
 async function entrerAsso(){
-  const s=FU.lireSession();
+  const s=FU.lireSession(); majBadgeConv();
   document.getElementById('asso-nom-hdr').textContent=s.nom||'';
   document.getElementById('asso-bonjour').textContent='Bonjour '+(s.nom||'')+' !';
   montrer('ecran-asso');
@@ -936,6 +955,13 @@ const GROUPES={
     ['⚙️','Règles par profil','Ouverture, délais, natures, pièces, conventions, mail au service.',"allerVers('salles.html#reglages')"],
     ['🏢','Comptes entreprises','Créer, modifier, mot de passe.',"adminNav('ent')"],
     ['👤','Comptes particuliers','Créer, modifier, mot de passe.',"adminNav('part')"]]},
+  'g-conv':{icone:'📝', titre:'Conventions de partenariat', sous:'Remplies automatiquement, signées en ligne par les associations, puis i-parapheur pour le Maire', items:[
+    ['📊','Tableau des données','Montants, versements, aides, avantages en nature (n-1), lieux : ils remplissent les conventions.',"allerVers('conventions.html#tableau')"],
+    ['📄','Modèles de convention','Modifier le texte, plusieurs modèles, choisir les associations de chaque modèle.',"allerVers('conventions.html#modeles')"],
+    ['✍️','Signatures & i-parapheur','Suivi des signatures, PDF signés à déposer dans i-parapheur, version définitive.',"allerVers('conventions.html#suivi')"],
+    ['🏃','Fiches associations','SIRET, président, siège, dernière AG, activité, fédération, statuts.',"allerVers('conventions.html#fiches')"],
+    ['📨','Demandes de compte','Associations qui demandent à être créées sur le site.',"allerVers('conventions.html#demandes')"],
+    ['⚙️','Paramètres de la saison','Délibération, dates de la convention, année des avantages en nature (n-1).',"allerVers('conventions.html#parametres')"]]},
   'g-reglage':{icone:'⚙️', titre:'Réglage administrateur', sous:'Ce qui sert à tous les plannings', items:[
     ['🗓️','Saisons & ouverture','Créer la saison suivante, ouvrir ou fermer chaque saisie.',"adminNav('saisons')"],
     ['🏃','Associations','La liste unique de tous les plannings : ajouter, renommer, mots de passe.',"adminNav('assos')"],

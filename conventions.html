@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a3a5c">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<title>Conventions de partenariat — Ville de Corbas</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="commun.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap');
+  :root{ --bleu:#1a3a5c; --bleu2:#2563a8; --or:#c8972a; --or2:#f0b429; --clair:#f4f7fb; --gris:#e2e8f0; --gris2:#64748b; --rouge:#c0392b; --vert:#1a7a4a; --r:10px; --r2:18px; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--clair);color:var(--bleu);min-height:100vh;}
+  .app-header{background:var(--bleu);padding:0 24px;min-height:62px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.18);position:sticky;top:0;z-index:100;gap:10px;flex-wrap:wrap;}
+  .hdr-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:#fff;white-space:nowrap;cursor:pointer;}
+  .hdr-logo span{color:var(--or2);}
+  .hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;padding:8px 0;}
+  .role-badge{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:1px;}
+  .role-badge.admin{background:rgba(200,151,42,.3);border-color:var(--or);}
+  .hdr-nom{color:#fff;font-weight:700;font-size:13.5px;}
+  .btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:12px;padding:6px 14px;border-radius:20px;cursor:pointer;font-family:inherit;}
+  .btn-logout:hover{background:rgba(255,255,255,.2);}
+  .app-body{max-width:1320px;margin:0 auto;padding:26px 20px 70px;}
+  .section-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--bleu);margin-bottom:6px;}
+  .section-sub{color:var(--gris2);font-size:14px;margin-bottom:20px;line-height:1.5;}
+  .onglets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;border-bottom:2px solid var(--gris);}
+  .onglet{padding:10px 16px;border-radius:10px 10px 0 0;cursor:pointer;font-weight:700;font-size:14px;color:var(--gris2);border:2px solid transparent;border-bottom:none;margin-bottom:-2px;background:none;font-family:inherit;}
+  .onglet:hover{color:var(--bleu);} .onglet.on{background:#fff;color:var(--bleu);border-color:var(--gris);}
+  .onglet .badge{background:var(--rouge);color:#fff;border-radius:20px;font-size:11px;padding:1px 7px;margin-left:5px;}
+  .vue{display:none;} .vue.on{display:block;}
+  .carte{background:#fff;border:1px solid var(--gris);border-radius:var(--r2);padding:20px;margin-bottom:16px;}
+  .carte h4{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px;}
+  .aide{font-size:12.5px;color:var(--gris2);line-height:1.5;margin-bottom:10px;}
+  .barre{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+  .barre .espace{flex:1;}
+  select,input,textarea{font-family:inherit;}
+  .sel{padding:8px 11px;border:2px solid var(--gris);border-radius:var(--r);font-size:14px;color:var(--bleu);background:#fff;}
+  .btn{padding:9px 15px;border-radius:var(--r);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;border:none;transition:.15s;white-space:nowrap;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-primary{background:var(--bleu);color:#fff;} .btn-primary:hover:not(:disabled){background:var(--bleu2);}
+  .btn-secondary{background:var(--gris);color:var(--bleu);} .btn-secondary:hover{background:#d1dce8;}
+  .btn-danger{background:var(--rouge);color:#fff;} .btn-success{background:var(--vert);color:#fff;}
+  .btn-or{background:var(--or);color:#fff;} .btn-or:hover{background:var(--or2);}
+  .btn-sm{padding:6px 11px;font-size:12px;}
+  .lnk{background:none;border:none;color:var(--bleu2);font-size:12.5px;cursor:pointer;font-family:inherit;text-decoration:underline;}
+  .lnk.red{color:var(--rouge);}
+  .mf{margin-bottom:12px;text-align:left;}
+  .mf label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--gris2);margin-bottom:5px;}
+  .mf input,.mf select,.mf textarea{width:100%;padding:10px 12px;border:2px solid var(--gris);border-radius:var(--r);font-size:14.5px;color:var(--bleu);outline:none;background:#fff;}
+  .mf input:focus,.mf select:focus,.mf textarea:focus{border-color:var(--bleu2);}
+  .mf textarea{min-height:80px;resize:vertical;line-height:1.45;}
+  .mf .aide-champ{font-size:11.5px;color:var(--gris2);margin-top:4px;line-height:1.4;}
+  .mf.oblig label::after{content:' *';color:var(--rouge);}
+  .grille{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;} .grille .plein{grid-column:1/-1;}
+  .grille3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 14px;}
+  @media(max-width:700px){ .grille,.grille3{grid-template-columns:1fr;} }
+  table.tb{width:100%;border-collapse:collapse;font-size:13px;}
+  table.tb th{background:var(--clair);color:var(--gris2);font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:8px;text-align:left;border-bottom:2px solid var(--gris);vertical-align:bottom;}
+  table.tb td{padding:7px 8px;border-bottom:1px solid var(--gris);vertical-align:middle;}
+  table.tb tr.off td{opacity:.45;}
+  table.tb tr:hover td{background:#fafcff;}
+  table.tb input.ci,table.tb select.ci{width:100%;padding:6px 8px;border:1px solid var(--gris);border-radius:7px;font-size:13px;color:var(--bleu);background:#fff;}
+  table.tb input.num{text-align:right;max-width:120px;}
+  .tb-wrap{overflow-x:auto;background:#fff;border:1px solid var(--gris);border-radius:var(--r2);}
+  .pastille{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .p-gris{background:#eef2f7;color:var(--gris2);} .p-jaune{background:#fff4d6;color:#8a5a00;} .p-bleu{background:#e5efff;color:var(--bleu2);}
+  .p-vert{background:#e7f6ec;color:var(--vert);} .p-rouge{background:#fdecea;color:var(--rouge);} .p-or{background:#fbf1dc;color:#8a5a00;}
+  .petit{font-size:11.5px;color:var(--gris2);}
+  .vide{color:var(--gris2);font-style:italic;font-size:13px;padding:8px 0;}
+  .alerte{background:#fff8e6;border:1px solid #f3d38a;color:#7a4b00;border-radius:12px;padding:11px 14px;font-size:13.5px;margin-bottom:14px;line-height:1.5;}
+  .alerte.rouge{background:#fff5f5;border-color:#fecaca;color:var(--rouge);}
+  .alerte.vert{background:#effaf3;border-color:#bbe5cb;color:var(--vert);}
+  .alerte.bleu{background:#eef5ff;border-color:#c7dbf7;color:var(--bleu);}
+  /* Modales */
+  .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-start;justify-content:center;padding:24px 14px;overflow:auto;}
+  .modal-ov.on{display:flex;}
+  .modal-box{background:#fff;border-radius:var(--r2);padding:26px;width:640px;max-width:100%;box-shadow:0 16px 60px rgba(0,0,0,.25);}
+  .modal-box.large{width:1000px;} .modal-box.moyen{width:760px;}
+  .modal-box h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px;}
+  .modal-box > p.sous{color:var(--gris2);font-size:13px;margin-bottom:16px;line-height:1.45;}
+  .modal-btns{display:flex;gap:10px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap;}
+  .err-msg{color:var(--rouge);font-size:13px;margin-top:8px;display:none;background:#fff5f5;border:1px solid #fecaca;border-radius:8px;padding:8px 10px;}
+  .err-msg.on{display:block;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bleu);color:#fff;padding:12px 22px;border-radius:30px;font-size:14px;opacity:0;transition:.3s;z-index:3000;pointer-events:none;max-width:90vw;text-align:center;}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.ok{background:var(--vert);} .toast.err{background:var(--rouge);} .toast.warn{background:#b45309;}
+  /* Lignes de montants */
+  .lignes .ligne{display:flex;gap:8px;margin-bottom:6px;align-items:center;}
+  .lignes .ligne input,.lignes .ligne select{padding:7px 9px;border:2px solid var(--gris);border-radius:8px;font-size:13.5px;color:var(--bleu);}
+  .lignes .ligne .lib{flex:1;} .lignes .ligne .mt{width:120px;text-align:right;}
+  .total{font-size:13px;margin-top:6px;}
+  /* Document (aperçu, lecture) */
+  .feuille{background:#fff;max-width:820px;margin:0 auto;padding:46px 54px;box-shadow:0 4px 24px rgba(26,58,92,.12);border-radius:6px;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:13.5px;line-height:1.5;text-align:justify;}
+  .feuille h1{font-size:19px;margin:10px 0 4px;color:#111;}
+  .feuille h2{font-size:14.5px;margin:18px 0 6px;color:#111;}
+  .feuille h3{font-size:13.5px;margin:12px 0 4px;color:#111;}
+  .feuille p{margin:0 0 7px;}
+  .feuille ul,.feuille ol{margin:0 0 8px 22px;}
+  .feuille table{border-collapse:collapse;width:100%;margin:8px 0;}
+  .feuille table td,.feuille table th{border:1px solid #999;padding:4px 6px;font-size:12px;vertical-align:top;text-align:left;}
+  .feuille table.signatures td{border:none;width:50%;padding:12px 8px;font-size:13.5px;}
+  .feuille .pdf-pagebreak-before{margin-top:34px;padding-top:24px;border-top:2px dashed #cbd5e1;}
+  .feuille mark.manque{background:#ffe1e1;color:#a61b1b;padding:0 3px;border-radius:3px;font-size:12px;}
+  .feuille img{max-width:100%;}
+  .apercu-wrap{background:#e9eef5;padding:20px;border-radius:var(--r2);max-height:70vh;overflow:auto;}
+  /* Éditeur de modèle */
+  .editeur-barre{display:flex;gap:4px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--gris);border-bottom:none;border-radius:12px 12px 0 0;padding:8px;position:sticky;top:62px;z-index:20;}
+  .editeur-barre button{background:var(--clair);border:1px solid var(--gris);border-radius:7px;padding:5px 9px;cursor:pointer;font-size:13px;color:var(--bleu);font-family:inherit;min-width:32px;}
+  .editeur-barre button:hover{background:#e3ebf6;}
+  .editeur-barre select{padding:5px 7px;border:1px solid var(--gris);border-radius:7px;font-size:12.5px;color:var(--bleu);max-width:230px;}
+  .editeur-barre .sep{width:1px;height:24px;background:var(--gris);margin:0 4px;}
+  #editeur{background:#fff;border:1px solid var(--gris);border-radius:0 0 12px 12px;min-height:520px;padding:40px 54px;outline:none;font-family:Arial,Helvetica,sans-serif;font-size:13.5px;line-height:1.5;color:#111;text-align:justify;}
+  #editeur h1{font-size:19px;margin:10px 0 4px;} #editeur h2{font-size:14.5px;margin:16px 0 6px;} #editeur h3{font-size:13.5px;margin:10px 0 4px;}
+  #editeur p{margin:0 0 7px;} #editeur ul,#editeur ol{margin:0 0 8px 22px;}
+  #editeur table{border-collapse:collapse;width:100%;} #editeur td{border:1px dotted #bbb;padding:6px;vertical-align:top;}
+  #editeur .champ, .feuille .champ{background:#dbe8ff;color:#1d4ed8;border-radius:4px;padding:0 4px;font-weight:700;font-size:12.5px;white-space:nowrap;cursor:default;}
+  #editeur [data-si],#editeur [data-sinon]{border:2px dashed #34a065;border-radius:8px;padding:22px 10px 4px;margin:6px 0;position:relative;}
+  #editeur [data-sinon]{border-color:#e08a1e;}
+  #editeur [data-si]::before,#editeur [data-sinon]::before{position:absolute;top:2px;left:8px;font-size:10.5px;font-weight:700;font-family:'DM Sans',sans-serif;color:#1a7a4a;}
+  #editeur [data-sinon]::before{color:#b45309;}
+  #editeur [data-si="subvention"]::before{content:'▸ Affiché seulement si la subvention « apparaît »';}
+  #editeur [data-sinon="subvention"]::before{content:'▸ Affiché seulement si la subvention « n\'apparaît pas »';}
+  #editeur [data-si="article_specifique"]::before{content:'▸ Affiché seulement si un article spécifique est saisi';}
+  #editeur [data-si="avantages"]::before{content:'▸ Affiché seulement si les avantages en nature sont renseignés';}
+  #editeur [data-si="federation"]::before{content:'▸ Affiché seulement si l\'association est affiliée à une fédération';}
+  #editeur .pdf-pagebreak-before{border-top:3px double #94a3b8;padding-top:14px;margin-top:22px;}
+  #editeur .pdf-pagebreak-before::after{content:'(nouvelle page)';font-size:10px;color:#94a3b8;margin-left:8px;font-weight:400;}
+  #source{width:100%;min-height:520px;font-family:monospace;font-size:12px;border:1px solid var(--gris);border-radius:0 0 12px 12px;padding:12px;display:none;}
+  .modeles-liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:16px;}
+  .modele-carte{background:#fff;border:2px solid var(--gris);border-radius:14px;padding:14px 16px;cursor:pointer;}
+  .modele-carte.on{border-color:var(--bleu2);box-shadow:0 6px 18px rgba(37,99,168,.12);}
+  .modele-carte b{font-size:15px;} .modele-carte .petit{margin-top:4px;}
+  /* Signature */
+  .sig-zone{border:2px dashed #94a3b8;border-radius:12px;background:#fff;position:relative;touch-action:none;}
+  .sig-zone canvas{display:block;width:100%;height:190px;cursor:crosshair;border-radius:12px;}
+  .sig-zone .sig-ligne{position:absolute;left:24px;right:24px;bottom:42px;border-bottom:1px solid #cbd5e1;pointer-events:none;}
+  .sig-zone .sig-txt{position:absolute;left:26px;bottom:20px;font-size:11px;color:#94a3b8;pointer-events:none;}
+  .etapes{display:flex;flex-direction:column;gap:14px;}
+  .etape{background:#fff;border:2px solid var(--gris);border-radius:var(--r2);padding:18px 20px;}
+  .etape.on{border-color:var(--bleu2);} .etape.ok{border-color:#9fd8b4;background:#f7fcf9;}
+  .etape h5{font-family:'Syne',sans-serif;font-size:15px;margin-bottom:8px;display:flex;gap:10px;align-items:center;}
+  .etape h5 .num{background:var(--bleu);color:#fff;border-radius:50%;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none;}
+  .etape.ok h5 .num{background:var(--vert);}
+  .code-in{font-size:26px;letter-spacing:10px;text-align:center;width:220px;padding:10px;border:2px solid var(--gris);border-radius:12px;font-family:monospace;color:var(--bleu);}
+  .conv-carte{background:#fff;border:2px solid var(--gris);border-radius:var(--r2);padding:18px 20px;margin-bottom:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+  .conv-carte .info{flex:1;min-width:240px;}
+  .conv-carte h4{font-family:'Syne',sans-serif;font-size:17px;margin-bottom:4px;}
+  .conv-carte.a-signer{border-color:#f3c46b;background:#fffaf0;}
+  .chargement{color:var(--gris2);font-size:13px;padding:14px 0;}
+  .cocher{width:16px;height:16px;cursor:pointer;}
+  .chk-liste{max-height:340px;overflow:auto;border:1px solid var(--gris);border-radius:10px;padding:8px 12px;}
+  .chk-liste label{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:14px;cursor:pointer;}
+  details.param summary{cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+  details.param[open] summary{margin-bottom:12px;}
+  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .mono{font-family:monospace;font-size:11.5px;word-break:break-all;}
+  .switch{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;user-select:none;white-space:nowrap;}
+  .switch input{width:16px;height:16px;cursor:pointer;}
+  @media(max-width:700px){ .feuille{padding:24px 18px;} #editeur{padding:20px 16px;} .app-header{padding:0 12px;} }
+</style>
+</head>
+<body>
+<header class="app-header">
+  <div class="hdr-logo" onclick="location.href='index.html'">🏟️ <span>Équipements</span> Corbas · Conventions</div>
+  <div class="hdr-right">
+    <span class="role-badge" id="hdr-role"></span>
+    <span class="hdr-nom" id="hdr-nom"></span>
+    <button class="btn-logout" onclick="location.href='index.html'">← Accueil</button>
+    <button class="btn-logout" id="hdr-deco" onclick="FU.deconnexion()">Déconnexion</button>
+  </div>
+</header>
+
+<div class="app-body">
+
+<!-- =================================================================== -->
+<!-- ADMINISTRATEUR                                                        -->
+<!-- =================================================================== -->
+<div id="ecran-admin" style="display:none">
+  <div class="section-title">📝 Conventions de partenariat</div>
+  <p class="section-sub">Le tableau remplit automatiquement les conventions : ce que vous modifiez ici (ou dans les paramètres communs, ou dans un modèle) change toutes les conventions concernées tant qu'elles ne sont pas envoyées. L'association signe en ligne, puis vous téléchargez le PDF pour i-parapheur.</p>
+  <div class="barre">
+    <label class="petit" for="saison-sel" style="font-weight:700;text-transform:uppercase">Saison</label>
+    <select id="saison-sel" class="sel" onchange="changerSaison(this.value)"></select>
+    <span class="espace"></span>
+    <span class="petit" id="maj-info"></span>
+  </div>
+  <div class="onglets">
+    <button class="onglet" data-v="tableau" onclick="vue('tableau')">📊 Tableau des données</button>
+    <button class="onglet" data-v="modeles" onclick="vue('modeles')">📄 Modèles de convention</button>
+    <button class="onglet" data-v="suivi" onclick="vue('suivi')">✍️ Signatures &amp; i-parapheur</button>
+    <button class="onglet" data-v="fiches" onclick="vue('fiches')">🏃 Fiches associations</button>
+    <button class="onglet" data-v="demandes" onclick="vue('demandes')">📨 Demandes de compte<span class="badge" id="badge-dem" style="display:none"></span></button>
+  </div>
+
+  <!-- ---------- Tableau ---------- -->
+  <div class="vue" id="v-tableau">
+    <div class="carte">
+      <details class="param" id="params-box">
+        <summary>⚙️ Paramètres communs de la saison <span class="petit" id="params-resume"></span></summary>
+        <p class="aide">Une seule saisie pour toutes les conventions de la saison (comme « la première cellule » de votre tableau).</p>
+        <div class="grille3">
+          <div class="mf"><label>Maire signataire</label><input id="pa-maire" placeholder="Benoit ERACLAS"></div>
+          <div class="mf"><label>Début de la convention</label><input type="date" id="pa-debut"></div>
+          <div class="mf"><label>Fin de la convention</label><input type="date" id="pa-fin"></div>
+          <div class="mf plein" style="grid-column:1/-1"><label>Délibération(s) des subventions sports</label><input id="pa-delib" placeholder="N° 2026DL018 et N° 2026DL019 du 5 mars 2026"></div>
+          <div class="mf"><label>Année de la subvention</label><input type="number" id="pa-annee-sub"><div class="aide-champ">En général l'année de début de saison.</div></div>
+          <div class="mf"><label>Année des avantages en nature</label><input type="number" id="pa-annee-av"><div class="aide-champ">⚠️ Piège : ce sont les avantages de <b>n-1</b> (valeur proposée : année de la subvention − 1).</div></div>
+          <div class="mf"><label>Modèle par défaut</label><select id="pa-modele"></select><div class="aide-champ">Utilisé pour les associations sans modèle choisi.</div></div>
+        </div>
+        <div class="flex">
+          <button class="btn btn-primary btn-sm" onclick="sauverParams()">Enregistrer les paramètres</button>
+          <button class="btn btn-secondary btn-sm" onclick="reprendreSaison()">↩️ Reprendre les lignes de la saison précédente</button>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('imp-fichier').click()">📥 Importer votre tableau (.ods / .xlsx)</button>
+          <input type="file" id="imp-fichier" accept=".ods,.xlsx,.xls" style="display:none" onchange="importerTableau(this)">
+        </div>
+      </details>
+    </div>
+    <div class="barre">
+      <input class="sel" id="tb-recherche" placeholder="🔎 Rechercher une association" oninput="dessinerTableau()" style="min-width:240px">
+      <label class="switch"><input type="checkbox" id="tb-masquer" onchange="dessinerTableau()"> Masquer les non concernées</label>
+      <span class="espace"></span>
+      <span class="petit" id="tb-selection">0 sélectionnée</span>
+      <button class="btn btn-secondary btn-sm" onclick="ouvrirGroupe()">⚙️ Réglage groupé…</button>
+      <button class="btn btn-or btn-sm" onclick="envoyerSelection()">✉️ Envoyer pour signature</button>
+    </div>
+    <div class="tb-wrap"><table class="tb" id="tableau"></table></div>
+    <p class="petit" style="margin-top:8px">Montant : total des versements et aides (ou montant global saisi). « Avantages » = avantages en nature de l'année <span id="tb-annee-av"></span>. Cliquez sur ✏️ pour le détail (versements, aides, lieux, article spécifique).</p>
+  </div>
+
+  <!-- ---------- Modèles ---------- -->
+  <div class="vue" id="v-modeles">
+    <p class="aide">Plusieurs modèles possibles (ex. standard, avec article spécifique, structure non sportive…). Chaque association reçoit le modèle choisi dans le tableau, sinon le modèle par défaut. Les <span class="champ" style="background:#dbe8ff;color:#1d4ed8;border-radius:4px;padding:0 4px;font-weight:700;font-size:12px">champs bleus</span> se remplissent automatiquement.</p>
+    <div class="modeles-liste" id="modeles-liste"></div>
+    <div id="editeur-zone" style="display:none">
+      <div class="barre">
+        <div class="mf" style="margin:0;min-width:280px;flex:1;max-width:620px"><input id="modele-nom" placeholder="Nom du modèle" style="font-weight:700"></div>
+        <span class="espace"></span>
+        <button class="btn btn-secondary btn-sm" onclick="ouvrirAffectation()">👥 Associations concernées…</button>
+        <button class="btn btn-secondary btn-sm" onclick="apercuModele()">👁️ Aperçu</button>
+        <button class="btn btn-secondary btn-sm" onclick="dupliquerModele()">⧉ Dupliquer</button>
+        <button class="btn btn-danger btn-sm" onclick="supprimerModele()">🗑️</button>
+        <button class="btn btn-primary btn-sm" onclick="sauverModele()">💾 Enregistrer le modèle</button>
+      </div>
+      <div class="editeur-barre" id="editeur-barre">
+        <button title="Annuler" onclick="cmd('undo')">↶</button><button title="Rétablir" onclick="cmd('redo')">↷</button><span class="sep"></span>
+        <button title="Gras" onclick="cmd('bold')"><b>G</b></button><button title="Italique" onclick="cmd('italic')"><i>I</i></button><button title="Souligné" onclick="cmd('underline')"><u>S</u></button><span class="sep"></span>
+        <select onchange="bloc(this.value);this.value=''" title="Style du paragraphe"><option value="">Style…</option><option value="H1">Titre 1</option><option value="H2">Titre 2 (article)</option><option value="H3">Titre 3</option><option value="P">Paragraphe</option></select>
+        <button title="Liste à puces" onclick="cmd('insertUnorderedList')">• —</button>
+        <button title="Aligner à gauche" onclick="cmd('justifyLeft')">⇤</button><button title="Centrer" onclick="cmd('justifyCenter')">↔</button><button title="Justifier" onclick="cmd('justifyFull')">☰</button><span class="sep"></span>
+        <select id="ins-champ" onchange="insererChamp(this.value);this.value=''" title="Insérer un champ automatique"></select>
+        <select onchange="condition(this.value);this.value=''" title="Afficher un passage sous condition">
+          <option value="">Passage conditionnel…</option>
+          <option value="si:subvention">Si la subvention apparaît</option>
+          <option value="sinon:subvention">Si la subvention n'apparaît pas</option>
+          <option value="si:article_specifique">Si un article spécifique est saisi</option>
+          <option value="si:avantages">Si les avantages en nature sont renseignés</option>
+          <option value="si:federation">Si l'association est affiliée à une fédération</option>
+          <option value="retirer">✖ Retirer la condition (curseur dedans)</option>
+        </select>
+        <button title="Commencer une nouvelle page avant ce paragraphe (PDF)" onclick="sautPage()">⤓ Saut de page</button>
+        <button title="Insérer l'image (logo)…" onclick="document.getElementById('img-in').click()">🖼️</button>
+        <input type="file" id="img-in" accept="image/png,image/jpeg" style="display:none" onchange="insererImage(this)">
+        <span class="sep"></span>
+        <button title="Remplacer tout le texte par un fichier Word (.docx)" onclick="document.getElementById('docx-in').click()">📥 Importer un .docx</button>
+        <input type="file" id="docx-in" accept=".docx" style="display:none" onchange="importerDocx(this)">
+        <button title="Voir / modifier le code HTML" onclick="basculerSource()">&lt;/&gt;</button>
+      </div>
+      <div id="editeur" contenteditable="true" spellcheck="true"></div>
+      <textarea id="source" spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <!-- ---------- Suivi des signatures ---------- -->
+  <div class="vue" id="v-suivi">
+    <div class="alerte bleu">Circuit : <b>envoi</b> → l'association <b>lit et signe</b> (code reçu par mail + signature tracée) → vous <b>téléchargez le PDF signé</b> (avec sa page de preuve) et le déposez dans <b>i-parapheur</b> pour le Maire → vous <b>déposez ici le PDF final</b> : l'association le retrouve dans son espace.</div>
+    <div class="barre">
+      <select class="sel" id="suivi-filtre" onchange="dessinerSuivi()">
+        <option value="">Tous les statuts</option><option value="a_envoyer">À envoyer</option><option value="a_signer">En attente de signature</option>
+        <option value="signee">Signées par l'association</option><option value="finalisee">Finalisées (Maire)</option>
+      </select>
+      <span class="espace"></span>
+      <button class="btn btn-secondary btn-sm" onclick="zipSignees()">🗜️ Télécharger toutes les signées (ZIP)</button>
+    </div>
+    <div class="tb-wrap"><table class="tb" id="suivi"></table></div>
+  </div>
+
+  <!-- ---------- Fiches ---------- -->
+  <div class="vue" id="v-fiches">
+    <p class="aide">Les fiches sont remplies par les associations dans leur espace (vous pouvez les corriger). Ce sont ces informations qui sont reprises dans la convention.</p>
+    <div class="tb-wrap"><table class="tb" id="fiches"></table></div>
+  </div>
+
+  <!-- ---------- Demandes de compte ---------- -->
+  <div class="vue" id="v-demandes">
+    <p class="aide">Une association sans compte peut en faire la demande depuis l'accueil (« Association » → « Demander un compte »). En acceptant, l'association est ajoutée à la liste et sa fiche est créée ; elle crée ensuite son mot de passe à la première connexion.</p>
+    <p class="petit" style="margin-bottom:10px">Lien à communiquer : <a id="lien-demande" target="_blank"></a></p>
+    <div id="demandes"><div class="chargement">Chargement…</div></div>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- ASSOCIATION                                                           -->
+<!-- =================================================================== -->
+<div id="ecran-asso" style="display:none">
+  <div id="asso-liste">
+    <div class="section-title">📝 Ma fiche association et mes conventions</div>
+    <p class="section-sub">Tenez à jour la fiche de votre association : elle sert à préparer votre convention de partenariat avec la Ville. Quand une convention est prête, vous pouvez la lire et la signer ici.</p>
+    <div id="asso-conventions"></div>
+    <div class="carte">
+      <h4>🏃 Fiche de l'association</h4>
+      <div id="asso-fiche-etat"></div>
+      <div id="asso-fiche"></div>
+      <div class="err-msg" id="asso-fiche-err"></div>
+      <div class="flex" style="margin-top:6px"><button class="btn btn-primary" onclick="sauverMaFiche()">💾 Enregistrer la fiche</button><span class="petit" id="asso-fiche-maj"></span></div>
+    </div>
+  </div>
+  <div id="asso-lecture" style="display:none">
+    <button class="lnk" onclick="retourAsso()" style="margin-bottom:12px">← Retour à ma fiche et mes conventions</button>
+    <div id="lecture-entete"></div>
+    <div class="apercu-wrap" style="max-height:none" id="lecture-doc"></div>
+    <div id="lecture-signature" style="margin-top:18px"></div>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- DEMANDE DE COMPTE (sans connexion)                                    -->
+<!-- =================================================================== -->
+<div id="ecran-demande" style="display:none">
+  <div style="max-width:760px;margin:0 auto">
+    <div class="section-title">📨 Demander un compte association</div>
+    <p class="section-sub">Votre association n'a pas encore de compte sur le site des équipements de la Ville de Corbas ? Remplissez ce formulaire : le service des sports le vérifie et vous répond par mail.</p>
+    <div class="carte" id="demande-form"></div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== MODALES ===================== -->
+<div class="modal-ov" id="modal-ligne"><div class="modal-box moyen">
+  <h3 id="ml-titre">Détail</h3><p class="sous" id="ml-sous"></p>
+  <div class="grille">
+    <div class="mf"><label>Modèle de convention</label><select id="ml-modele"></select></div>
+    <div class="mf"><label>Concernée par une convention cette saison</label><select id="ml-concernee"><option value="true">Oui</option><option value="false">Non</option></select></div>
+    <div class="mf plein"><label>Activité (telle qu'écrite dans la convention)</label><input id="ml-activite"><div class="aide-champ">« …la compétition <b>de la gymnastique</b> ». Vide = l'activité de la fiche de l'association.</div></div>
+  </div>
+  <div class="carte" style="padding:14px 16px;margin-top:4px">
+    <label class="switch" style="font-size:14px;font-weight:700"><input type="checkbox" id="ml-sub" onchange="majTotal()"> Le montant de la subvention apparaît sur la convention</label>
+    <div id="ml-sub-zone" style="margin-top:12px">
+      <div class="grille">
+        <div><div class="mf" style="margin-bottom:6px"><label>Fonctionnement — versements</label></div><div class="lignes" id="ml-versements"></div>
+          <button class="lnk" onclick="ajouterLigne('ml-versements','versement')">＋ Ajouter un versement</button></div>
+        <div><div class="mf" style="margin-bottom:6px"><label>Aides spécifiques</label></div><div class="lignes" id="ml-aides"></div>
+          <button class="lnk" onclick="ajouterLigne('ml-aides','aide')">＋ Ajouter une aide</button></div>
+      </div>
+      <div class="grille" style="margin-top:10px">
+        <div class="mf"><label>Montant global</label><input id="ml-global" placeholder="calculé automatiquement" oninput="majTotal()"><div class="aide-champ">Vide = total des lignes.</div></div>
+        <div class="total" id="ml-total"></div>
+      </div>
+    </div>
+  </div>
+  <div class="grille">
+    <div class="mf"><label>Avantages en nature (€)</label><input id="ml-avantages" placeholder="ex : 83884,57"></div>
+    <div class="mf"><label>Année des avantages</label><input type="number" id="ml-av-annee"><div class="aide-champ" id="ml-av-aide"></div></div>
+    <div class="mf plein"><label>Lieux mis à disposition (une ligne par lieu)</label><textarea id="ml-lieux" style="min-height:100px"></textarea></div>
+    <div class="mf plein"><label>Article spécifique (3.9) — facultatif</label><textarea id="ml-article" placeholder="3.9 - Utilisation de la structure artificielle d'escalade&#10;Texte de l'article…"></textarea><div class="aide-champ">La 1re ligne est mise en titre. Laisser vide si l'association n'a pas d'article spécifique.</div></div>
+    <div class="mf plein"><label>Remarque interne (n'apparaît pas)</label><input id="ml-remarque"></div>
+  </div>
+  <div class="err-msg" id="ml-err"></div>
+  <div class="modal-btns">
+    <button class="btn btn-secondary" onclick="ficheDepuisLigne()">🏃 Fiche de l'association…</button>
+    <button class="btn btn-secondary" onclick="apercuDepuisLigne()">👁️ Aperçu</button>
+    <span style="flex:1"></span>
+    <button class="btn btn-secondary" onclick="fermer('ligne')">Annuler</button>
+    <button class="btn btn-primary" onclick="sauverLigne()">Enregistrer</button>
+  </div>
+</div></div>
+
+<div class="modal-ov" id="modal-fiche"><div class="modal-box moyen">
+  <h3 id="mf-titre">Fiche de l'association</h3><p class="sous">Informations reprises dans la convention.</p>
+  <div id="mf-champs"></div>
+  <div class="err-msg" id="mf-err"></div>
+  <div class="modal-btns"><button class="btn btn-secondary" onclick="fermer('fiche')">Annuler</button><button class="btn btn-primary" onclick="sauverFicheAdmin()">Enregistrer</button></div>
+</div></div>
+
+<div class="modal-ov" id="modal-apercu"><div class="modal-box large">
+  <div class="flex" style="margin-bottom:10px"><h3 id="ap-titre" style="flex:1">Aperçu</h3>
+    <select class="sel" id="ap-asso" onchange="apercuRedessiner()"></select>
+    <button class="btn btn-secondary btn-sm" onclick="apercuPdf()">📄 PDF</button>
+    <button class="btn btn-secondary btn-sm" onclick="fermer('apercu')">Fermer</button></div>
+  <div id="ap-manque"></div>
+  <div class="apercu-wrap" id="ap-doc"></div>
+</div></div>
+
+<div class="modal-ov" id="modal-groupe"><div class="modal-box">
+  <h3>Réglage groupé</h3><p class="sous" id="gr-sous"></p>
+  <div class="mf"><label>Modèle</label><select id="gr-modele"></select></div>
+  <div class="mf"><label>Concernée</label><select id="gr-concernee"><option value="">— ne pas changer —</option><option value="true">Oui</option><option value="false">Non</option></select></div>
+  <div class="mf"><label>Le montant de la subvention</label><select id="gr-sub"><option value="">— ne pas changer —</option><option value="true">Apparaît</option><option value="false">N'apparaît pas</option></select></div>
+  <div class="err-msg" id="gr-err"></div>
+  <div class="modal-btns"><button class="btn btn-secondary" onclick="fermer('groupe')">Annuler</button><button class="btn btn-primary" onclick="appliquerGroupe()">Appliquer</button></div>
+</div></div>
+
+<div class="modal-ov" id="modal-affect"><div class="modal-box">
+  <h3>Associations concernées par ce modèle</h3><p class="sous" id="af-sous"></p>
+  <div class="flex" style="margin-bottom:8px"><button class="lnk" onclick="cocherTout('af-liste',true)">Tout cocher</button><button class="lnk" onclick="cocherTout('af-liste',false)">Tout décocher</button></div>
+  <div class="chk-liste" id="af-liste"></div>
+  <div class="modal-btns"><button class="btn btn-secondary" onclick="fermer('affect')">Annuler</button><button class="btn btn-primary" onclick="appliquerAffectation()">Appliquer</button></div>
+</div></div>
+
+<div class="modal-ov" id="modal-envoi"><div class="modal-box moyen">
+  <h3>Envoyer pour signature</h3><p class="sous">Chaque association reçoit un mail l'invitant à lire et signer sa convention. Le texte est figé au moment de l'envoi.</p>
+  <div id="en-liste"></div>
+  <label class="switch" id="en-remplacer-zone" style="display:none;margin-top:10px"><input type="checkbox" id="en-remplacer"> Remplacer aussi les conventions déjà signées (elles devront être signées à nouveau)</label>
+  <div class="err-msg" id="en-err"></div>
+  <div class="modal-btns"><button class="btn btn-secondary" onclick="fermer('envoi')">Annuler</button><button class="btn btn-or" id="en-go" onclick="confirmerEnvoi()">✉️ Envoyer</button></div>
+</div></div>
+
+<div class="modal-ov" id="modal-import"><div class="modal-box large">
+  <h3>Importer votre tableau « données automatiques »</h3>
+  <p class="sous">Chaque ligne du fichier est rattachée à une association du site. Vérifiez les correspondances : les montants, lieux, avantages et la délibération remplissent le tableau de la saison <b id="im-saison"></b>.</p>
+  <label class="switch" style="margin-bottom:10px"><input type="checkbox" id="im-fiches" checked> Compléter aussi les fiches des associations (président, siège, SIRET, nom officiel) — seulement les cases encore vides</label>
+  <div class="tb-wrap" style="max-height:52vh;overflow:auto"><table class="tb" id="im-table"></table></div>
+  <div class="err-msg" id="im-err"></div>
+  <div class="modal-btns"><button class="btn btn-secondary" onclick="fermer('import')">Annuler</button><button class="btn btn-primary" id="im-go" onclick="confirmerImport()">Importer</button></div>
+</div></div>
+
+<div class="modal-ov" id="modal-detail"><div class="modal-box large">
+  <div class="flex" style="margin-bottom:10px"><h3 id="dt-titre" style="flex:1"></h3><button class="btn btn-secondary btn-sm" onclick="fermer('detail')">Fermer</button></div>
+  <div id="dt-corps"></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================================
+// CONVENTIONS — outils communs
+// =====================================================================
+const esc = FU.esc, norm = FU.norm;
+let SES=null, ROLE=null, D=null, CREN=[], VUE='tableau', MODELE_ID=null, LIGNE_ASSO=null, FICHE_ASSO=null, APERCU={}, SEL=new Set();
+const MOIS_FR=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const JOURS=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+const MARQUEURS=['signature_association','date_signature'];
+const TYPES_AIDE=['Transport','Formation','Manifestation','Haut niveau','Exceptionnelle','Autre'];
+// [clé, libellé, groupe, obligatoire]
+const CHAMPS=[
+  ['nom',"Nom de l'association",'Association',1],['president','Nom du président','Association',1],['qualite_president','Qualité du signataire (président…)','Association'],
+  ['siege','Siège social','Association',1],['siret','N° SIRET','Association',1],['activite',"L'activité",'Association',1],['federation','Fédération','Association'],
+  ['date_ag','Date de la dernière AG','Association'],['forme','Forme juridique','Association'],
+  ['saison','Saison (2026–2027)','Saison'],['periode','Durée (du … au …)','Saison',1],['deliberation','N° de délibération','Saison',1],['maire','Nom du Maire','Saison',1],
+  ['annee_subvention','Année de la subvention','Saison',1],
+  ['montant_global','Montant global de la subvention','Subvention'],['decomposition','Décomposition de la subvention (lignes)','Subvention'],
+  ['avantages_montant','Avantages en nature (montant)','Mise à disposition'],['avantages_annee','Année des avantages (n-1)','Mise à disposition'],
+  ['lieux','Lieux mis à disposition','Mise à disposition',1],['annexe_creneaux','Tableau des créneaux (annexe)','Mise à disposition'],
+  ['article_specifique','Article spécifique (3.9)','Divers'],
+  ['date_signature',"Date de signature de l'association",'Signature'],['signature_association',"Signature de l'association",'Signature']
+];
+const LIB=Object.fromEntries(CHAMPS.map(c=>[c[0],c[1]]));
+const FICHE_CHAMPS=[
+  ['nom_officiel',"Nom officiel de l'association",'text',1,"Tel qu'il figure aux statuts, ex : CORBAS BASKET CLUB"],
+  ['siret','N° SIRET','text',1,'14 chiffres'],
+  ['forme','Forme juridique','text',0,'Association loi 1901'],
+  ['president','Président(e)','text',1,'Civilité, prénom et nom — ex : Madame Béatrice CAROTTE'],
+  ['president_qualite','Qualité du signataire','text',0,'Président(e), co-président(e)…'],
+  ['mail',"Adresse mail du président / de l'association",'email',1,'Le code de signature y sera envoyé'],
+  ['telephone','Téléphone','tel',0,''],
+  ['date_ag','Date de la dernière assemblée générale','date',1,''],
+  ['siege','Siège social','text',1,'Adresse complète, ex : Place Charles Jocteur – 69960 CORBAS'],
+  ['activite','Activité','text',1,'Telle qu\'elle sera écrite dans la convention : « de la gymnastique », « du basket »…'],
+  ['federation','Fédération (si affiliée)','text',0,'ex : Fédération Française de Gymnastique — laisser vide si non affiliée']
+];
+
+function toast(m,t=''){ const e=document.getElementById('toast'); e.textContent=m; e.className='toast on '+t; clearTimeout(toast._t); toast._t=setTimeout(()=>e.classList.remove('on'),4200); }
+function ouvrir(id){ document.getElementById('modal-'+id).classList.add('on'); }
+function fermer(id){ document.getElementById('modal-'+id).classList.remove('on'); }
+function err(id,m){ const e=document.getElementById(id); if(!m){ e.classList.remove('on'); return; } e.textContent='❌ '+m; e.classList.add('on'); }
+const tok=()=>(FU.lireSession()||{}).token;
+const S=()=>FU.saison;
+const saisonLib=a=>a+'–'+(Number(a)+1);
+function nombre(v){ if(v===null||v===undefined||v==='') return null; if(typeof v==='number') return v; const s=String(v).replace(/[^\d,.\-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'); const n=parseFloat(s); return isNaN(n)?null:n; }
+function eur(n){ if(n===null||n===undefined||n==='') return ''; n=Number(n); return n.toLocaleString('fr-FR',{minimumFractionDigits:Number.isInteger(n)?0:2,maximumFractionDigits:2}).replace(/ /g,' ')+' €'; }
+function dateLongue(iso){ if(!iso) return ''; const [y,m,d]=String(iso).slice(0,10).split('-').map(Number); return (d===1?'1er':d)+' '+MOIS_FR[m-1]+' '+y; }
+function dateCourte(iso){ if(!iso) return ''; return new Date(iso).toLocaleDateString('fr-FR',{timeZone:'Europe/Paris'}); }
+function dateHeure(iso){ if(!iso) return ''; return new Date(iso).toLocaleString('fr-FR',{dateStyle:'long',timeStyle:'short',timeZone:'Europe/Paris'}); }
+function siretFmt(s){ s=String(s||'').replace(/\D/g,''); return s.length===14?s.replace(/^(\d{3})(\d{3})(\d{3})(\d{5})$/,'$1 $2 $3 $4'):s; }
+function hcode(s){ return String(s||'').split(/\r?\n/).map(l=>esc(l)).join('<br>'); }
+async function sha256(txt){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+function lireBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result).split(',')[1]||''); r.onerror=()=>rej(new Error('Lecture du fichier impossible')); r.readAsDataURL(file); }); }
+function telecharger(blob,nom){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=nom; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
+function b64Blob(b64,type){ const bin=atob(b64); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return new Blob([u],{type:type||'application/octet-stream'}); }
+function nomFichier(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w\-]+/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,''); }
+function chargerScript(src){ return new Promise((res,rej)=>{ if(document.querySelector(`script[src="${src}"]`)) return res(); const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('Chargement impossible : '+src)); document.head.appendChild(s); }); }
+async function envoyerMail(id,evt){
+  try{ const r=await fetch(FU_URL+'/functions/v1/fusiontest-conv-mail',{method:'POST',headers:{'Content-Type':'application/json','apikey':FU_KEY,'Authorization':'Bearer '+FU_KEY},body:JSON.stringify({token:tok(),id,evt})});
+    const j=await r.json().catch(()=>({})); if(!r.ok && !j.erreur && !j.detail) j.erreur='Erreur '+r.status; return j; }
+  catch(e){ return {envoye:false, erreur:String(e)}; }
+}
+function ficheComplete(f){ if(!f) return false; return FICHE_CHAMPS.filter(c=>c[3]).every(c=>f[c[0]]); }
+function manquesFiche(f){ return FICHE_CHAMPS.filter(c=>c[3] && !(f&&f[c[0]])).map(c=>c[1]); }
+
+// =====================================================================
+// MOTEUR : modèle + données → texte de la convention
+// =====================================================================
+function params(){ return (D&&D.params)||{}; }
+function paramsEff(){
+  const P=params(), s=S();
+  return { maire:P.maire||'Benoit ERACLAS', date_debut:P.date_debut||`${s}-09-01`, date_fin:P.date_fin||`${s+1}-09-30`, deliberation:P.deliberation||'',
+    annee_subvention:Number(P.annee_subvention)||s, annee_avantages:Number(P.annee_avantages)||((Number(P.annee_subvention)||s)-1), modele_defaut:P.modele_defaut||null };
+}
+const fiche=a=>((D&&D.fiches)||[]).find(f=>norm(f.asso)===norm(a))||null;
+const donnee=a=>((D&&D.donnees)||[]).find(d=>norm(d.asso)===norm(a))||null;
+const convDe=a=>((D&&D.conventions)||[]).find(c=>norm(c.asso)===norm(a))||null;
+function modeleDe(a){ const d=donnee(a)||{}; const id=d.modele_id||paramsEff().modele_defaut; const ms=(D&&D.modeles)||[]; return ms.find(m=>m.id==id)||ms[0]||null; }
+function lignesSub(d){
+  const v=(d.versements||[]).filter(x=>nombre(x.montant)).map(x=>({lib:'Fonctionnement'+(x.libelle?' – '+x.libelle:''),m:nombre(x.montant)}));
+  const a=(d.autres_aides||[]).filter(x=>nombre(x.montant)).map(x=>({lib:(x.type||'Aide')+(x.libelle?' – '+x.libelle:''),m:nombre(x.montant)}));
+  return v.concat(a);
+}
+function totalSub(d){ return lignesSub(d).reduce((t,x)=>t+x.m,0); }
+function montantGlobal(d){ const g=nombre(d.montant_global); return g!==null?g:(lignesSub(d).length?totalSub(d):null); }
+function annexeCreneaux(asso){
+  const l=CREN.filter(c=>norm(c.association)===norm(asso));
+  if(!l.length) return {html:'<p><i>Aucun créneau n\'est encore saisi pour cette saison : les créneaux attribués seront précisés en début de saison.</i></p>',bloc:true};
+  const grp={}; l.forEach(c=>{ const k=(c.lieu_label||c.lieu)+(c.espace&&c.espace!=='Salle entière'?' — '+c.espace:''); (grp[k]=grp[k]||{})[c.jour]=(grp[k][c.jour]||[]).concat([c]); });
+  const jours=JOURS.filter(j=>l.some(c=>c.jour===j));
+  const h=x=>String(x||'').replace(':','h');
+  const lignes=Object.keys(grp).sort((a,b)=>a.localeCompare(b,'fr')).map(k=>`<tr><td><b>${esc(k)}</b></td>${jours.map(j=>`<td>${(grp[k][j]||[]).sort((a,b)=>String(a.heure_debut).localeCompare(b.heure_debut)).map(c=>esc(h(c.heure_debut)+' – '+h(c.heure_fin))).join('<br>')}</td>`).join('')}</tr>`).join('');
+  const w=JSON.stringify({fontSize:8,widths:['26%'].concat(jours.map(()=>'*'))});
+  return {html:`<table data-pdfmake='${w}'><thead><tr><th>Installation</th>${jours.map(j=>`<th>${j}</th>`).join('')}</tr></thead><tbody>${lignes}</tbody></table>`,bloc:true};
+}
+function contexte(asso){
+  const f=fiche(asso)||{}, d=donnee(asso)||{}, P=paramsEff(), s=S();
+  const lignes=lignesSub(d), g=montantGlobal(d);
+  const av=nombre(d.avantages), avAn=d.avantages_annee||P.annee_avantages;
+  let art=null;
+  if(d.article_specifique){ const ls=String(d.article_specifique).split(/\r?\n/); const t=ls.shift(); art={bloc:true,html:`<h3>${esc(t)}</h3>`+ls.join('\n').split(/\n\s*\n/).filter(x=>x.trim()).map(p=>`<p>${hcode(p.trim())}</p>`).join('')}; }
+  const val={
+    nom:f.nom_officiel||asso, president:f.president||'', qualite_president:f.president_qualite||'', siege:f.siege||'', siret:siretFmt(f.siret),
+    activite:d.activite||f.activite||'', federation:f.federation||'', date_ag:f.date_ag?dateLongue(f.date_ag):'', forme:f.forme||'',
+    saison:saisonLib(s), periode:`du ${dateLongue(P.date_debut)} au ${dateLongue(P.date_fin)}`, deliberation:P.deliberation, maire:P.maire,
+    annee_subvention:String(P.annee_subvention), montant_global:g!==null?eur(g):'',
+    decomposition:lignes.length?{html:lignes.map(x=>`– ${esc(x.lib)} : ${esc(eur(x.m))}`).join('<br>')}:'',
+    avantages_montant:av!==null?eur(av):'', avantages_annee:String(avAn),
+    lieux:d.lieux?{html:hcode(d.lieux)}:'', annexe_creneaux:annexeCreneaux(asso), article_specifique:art
+  };
+  const cond={ subvention: d.afficher_subvention!==false && g!==null && g>0, article_specifique:!!d.article_specifique, avantages:av!==null, federation:!!f.federation };
+  return {val,cond};
+}
+function rendre(modeleHtml, ctx, mode){
+  const doc=new DOMParser().parseFromString('<div id="r">'+(modeleHtml||'')+'</div>','text/html'); const root=doc.getElementById('r');
+  const deballer=el=>{ while(el.firstChild) el.parentNode.insertBefore(el.firstChild,el); el.remove(); };
+  [...root.querySelectorAll('[data-si]')].reverse().forEach(el=>{ if(ctx.cond[el.dataset.si]) deballer(el); else el.remove(); });
+  [...root.querySelectorAll('[data-sinon]')].reverse().forEach(el=>{ if(!ctx.cond[el.dataset.sinon]) deballer(el); else el.remove(); });
+  const manquants=new Set();
+  root.querySelectorAll('[data-champ]').forEach(sp=>{
+    const k=sp.dataset.champ;
+    if(MARQUEURS.includes(k)){ sp.textContent='…'; sp.removeAttribute('contenteditable'); sp.className='marqueur'; return; }
+    const v=ctx.val[k];
+    if(v===undefined||v===null||v===''){
+      if(CHAMPS.find(c=>c[0]===k&&c[3])) manquants.add(k);
+      if(mode==='apercu') sp.outerHTML=`<mark class="manque">[${esc(LIB[k]||k)}]</mark>`; else sp.replaceWith(doc.createTextNode('……………'));
+      return;
+    }
+    if(typeof v==='object'){
+      const p=sp.parentElement;
+      if(v.bloc && p && p.tagName==='P' && p.textContent.trim()===sp.textContent.trim() && p!==root) p.outerHTML=v.html; else sp.outerHTML=v.html;
+    } else sp.replaceWith(doc.createTextNode(v));
+  });
+  root.querySelectorAll('p').forEach(p=>{ if(!p.textContent.trim() && !p.querySelector('img,[data-champ],table')) p.remove(); });
+  return {html:root.innerHTML, manquants:[...manquants]};
+}
+function conventionDe(asso, mode){ const m=modeleDe(asso); if(!m) return {html:'<p>Aucun modèle de convention.</p>',manquants:['modèle'],modele:null}; const r=rendre(m.contenu,contexte(asso),mode); r.modele=m; return r; }
+// Signature de l'association posée dans les marqueurs du texte figé
+function avecSignature(html, c){
+  const doc=new DOMParser().parseFromString('<div id="r">'+html+'</div>','text/html'); const root=doc.getElementById('r');
+  root.querySelectorAll('[data-champ="signature_association"]').forEach(sp=>{
+    sp.innerHTML = c && c.signature ? `<img src="${c.signature}" width="170" alt="signature"><br>${esc(c.signataire||'')}${c.signataire_qualite?', '+esc(c.signataire_qualite):''}<br><small>Signé électroniquement le ${esc(dateHeure(c.signe_le))}</small>` : '………………………';
+  });
+  root.querySelectorAll('[data-champ="date_signature"]').forEach(sp=>{ sp.textContent = c && c.signe_le ? dateLongue(new Date(c.signe_le).toLocaleDateString('sv-SE',{timeZone:'Europe/Paris'})) : '………………'; });
+  return root.innerHTML;
+}
+
+// ---------- PDF (pdfmake) ----------
+async function libsPdf(){
+  await chargerScript('https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/pdfmake.min.js');
+  await chargerScript('https://cdn.jsdelivr.net/npm/pdfmake@0.2.10/build/vfs_fonts.js');
+  await chargerScript('https://cdn.jsdelivr.net/npm/html-to-pdfmake@2.5.13/browser.js');
+}
+function pdfContenu(html){
+  return htmlToPdfmake(html,{window, tableAutoSize:false, defaultStyles:{
+    h1:{fontSize:15,bold:true,marginBottom:4,marginTop:6}, h2:{fontSize:11.5,bold:true,marginTop:10,marginBottom:4}, h3:{fontSize:10.5,bold:true,marginTop:6,marginBottom:3},
+    p:{margin:[0,0,0,5]}, ul:{marginBottom:5,marginLeft:12}, li:{marginBottom:2}, th:{bold:true,fillColor:'#eef2f7'}, td:{}, table:{marginBottom:6}
+  }});
+}
+function blocPreuve(c, integre){
+  const L=(k,v)=>[{text:k,color:'#475569',fontSize:9},{text:v||'—',fontSize:9}];
+  const hist=(c.historique||[]).map(h=>[{text:dateHeure(h.at),fontSize:8.5},{text:(h.quoi||'')+(h.qui?' ('+h.qui+')':''),fontSize:8.5}]);
+  return [
+    {text:'ATTESTATION DE SIGNATURE ÉLECTRONIQUE',fontSize:14,bold:true,alignment:'center',margin:[0,0,0,4],pageBreak:'before'},
+    {text:'Page de preuve jointe à la convention',alignment:'center',fontSize:9,color:'#64748b',margin:[0,0,0,14]},
+    {table:{widths:['32%','*'],body:[
+      L('Convention',`Convention annuelle de partenariat ${saisonLib(c.saison)} — ${c.asso}`), L('Modèle',c.modele_nom||''),
+      L('Envoyée pour signature le',dateHeure(c.envoyee_le)), L("Ouverte par l'association le",dateHeure(c.lu_le)),
+      L('Signataire',(c.signataire||'')+(c.signataire_qualite?' — '+c.signataire_qualite:'')),
+      L('Vérification du signataire',c.signataire_mail?`Code à usage unique envoyé à ${c.signataire_mail} et saisi correctement`:''),
+      L('Signée le',dateHeure(c.signe_le)), L('Adresse IP',c.signe_ip||''), L('Navigateur',c.signe_agent||''),
+      L('Empreinte SHA-256 du texte signé',c.empreinte), L('Contrôle d\'intégrité', integre?'Conforme : le texte de ce document correspond à l\'empreinte enregistrée lors de l\'envoi.':'ATTENTION : le texte ne correspond pas à l\'empreinte enregistrée.')
+    ]},layout:'lightHorizontalLines'},
+    c.signature?{image:c.signature,width:180,margin:[0,14,0,0]}:'',
+    {text:"Signature électronique simple au sens de l'article 25 du règlement (UE) n° 910/2014 (eIDAS) et des articles 1366 et 1367 du Code civil. Le texte signé est identifié par son empreinte : toute modification du texte modifierait l'empreinte.",fontSize:8,color:'#475569',margin:[0,14,0,10]},
+    hist.length?{text:'Historique',bold:true,fontSize:10,margin:[0,6,0,4]}:'',
+    hist.length?{table:{widths:['30%','*'],body:hist},layout:'lightHorizontalLines'}:''
+  ];
+}
+async function pdfDoc(html, titre, c){
+  await libsPdf();
+  const content=pdfContenu(html);
+  if(c && c.signe_le){ const ok=(await sha256(c.contenu))===c.empreinte; content.push(...blocPreuve(c,ok)); }
+  return pdfMake.createPdf({ pageSize:'A4', pageMargins:[52,46,52,52], info:{title:titre,author:'Ville de Corbas'},
+    defaultStyle:{fontSize:9.5,lineHeight:1.12,alignment:'justify'}, content,
+    pageBreakBefore:(n)=>Array.isArray(n.style) && n.style.includes('pdf-pagebreak-before'),
+    footer:(p,n)=>({columns:[{text:titre,fontSize:7,color:'#94a3b8'},{text:p+' / '+n,alignment:'right',fontSize:7,color:'#94a3b8'}],margin:[52,18,52,0]}) });
+}
+async function pdfConvention(c){ return pdfDoc(avecSignature(c.contenu,c), `Convention ${saisonLib(c.saison)} — ${c.asso}`, c); }
+const nomPdf=c=>`Convention_${c.saison}_${nomFichier(c.asso)}${c.signe_le?'_signee_asso':''}.pdf`;
+
+// =====================================================================
+// DÉMARRAGE
+// =====================================================================
+window.addEventListener('load', async ()=>{
+  const q=new URLSearchParams(location.search);
+  if(q.has('demande')){ ecranDemande(); return; }
+  SES=await FU.exigerSession(['admin','asso']); if(!SES) return;
+  ROLE=SES.role;
+  document.getElementById('hdr-role').textContent=ROLE==='admin'?'Administrateur':'Association';
+  if(ROLE==='admin'){ document.getElementById('hdr-role').classList.add('admin'); demarrerAdmin(); }
+  else { document.getElementById('hdr-nom').textContent=SES.nom||''; demarrerAsso(); }
+});
+
+// =====================================================================
+// ADMINISTRATEUR
+// =====================================================================
+async function demarrerAdmin(){
+  document.getElementById('ecran-admin').style.display='';
+  const lien=location.href.split(/[?#]/)[0]+'?demande=1'; const a=document.getElementById('lien-demande'); a.href=lien; a.textContent=lien;
+  try{ await FU.chargerSaisons(); }catch(e){ toast('Erreur : '+e.message,'err'); }
+  const sel=document.getElementById('saison-sel');
+  sel.innerHTML=FU.saisons.map(s=>`<option value="${s.annee}" ${s.annee===FU.saison?'selected':''}>${saisonLib(s.annee)}</option>`).join('');
+  remplirSelectChamps();
+  await charger();
+  const h=(location.hash||'#tableau').slice(1);
+  vue(['tableau','modeles','suivi','fiches','demandes','parametres'].includes(h)?h:'tableau');
+}
+async function changerSaison(an){ FU.choisirSaison(an); await charger(); vue(VUE); }
+async function charger(){
+  try{
+    D=await FU.rpc('ft_conv_admin_charger',{p_token:tok(),p_saison:S()});
+    const {data,error}=await FU.client().from('ft_creneaux').select('association,lieu,lieu_label,jour,espace,heure_debut,heure_fin,supprime').eq('saison',S());
+    if(error) throw error; CREN=(data||[]).filter(c=>!c.supprime);
+  }catch(e){ toast('Erreur de chargement : '+e.message,'err'); D=D||{assos:[],modeles:[],fiches:[],donnees:[],conventions:[],params:{}}; }
+  D.assos=(D.assos||[]).slice().sort((a,b)=>a.localeCompare(b,'fr',{sensitivity:'base'}));
+  const b=document.getElementById('badge-dem'); b.textContent=D.demandes||''; b.style.display=D.demandes?'inline':'none';
+  document.getElementById('maj-info').textContent=`${D.assos.length} associations · ${(D.modeles||[]).length} modèle(s) · ${(D.conventions||[]).length} convention(s) envoyée(s)`;
+  remplirParams(); await calculerEtats();
+}
+function vue(v){
+  if(v==='parametres'){ v='tableau'; document.getElementById('params-box').open=true; }
+  VUE=v; history.replaceState(null,'','#'+v);
+  document.querySelectorAll('.onglet').forEach(o=>o.classList.toggle('on',o.dataset.v===v));
+  document.querySelectorAll('.vue').forEach(o=>o.classList.toggle('on',o.id==='v-'+v));
+  if(v==='tableau') dessinerTableau();
+  if(v==='modeles') dessinerModeles();
+  if(v==='suivi') dessinerSuivi();
+  if(v==='fiches') dessinerFiches();
+  if(v==='demandes') dessinerDemandes();
+}
+
+// ---------- Paramètres ----------
+function optionsModeles(sel, vide){ return (vide?`<option value="">${vide}</option>`:'')+((D&&D.modeles)||[]).map(m=>`<option value="${m.id}" ${String(m.id)===String(sel)?'selected':''}>${esc(m.nom)}</option>`).join(''); }
+function remplirParams(){
+  const P=params(), E=paramsEff();
+  document.getElementById('pa-maire').value=P.maire||''; document.getElementById('pa-maire').placeholder=E.maire;
+  document.getElementById('pa-debut').value=E.date_debut; document.getElementById('pa-fin').value=E.date_fin;
+  document.getElementById('pa-delib').value=P.deliberation||'';
+  document.getElementById('pa-annee-sub').value=P.annee_subvention||''; document.getElementById('pa-annee-sub').placeholder=E.annee_subvention;
+  document.getElementById('pa-annee-av').value=P.annee_avantages||''; document.getElementById('pa-annee-av').placeholder=E.annee_avantages;
+  document.getElementById('pa-modele').innerHTML=optionsModeles(P.modele_defaut,'— premier modèle —');
+  document.getElementById('params-resume').textContent=`· ${E.deliberation?'délibération '+E.deliberation:'⚠️ délibération à saisir'} · subvention ${E.annee_subvention} · avantages ${E.annee_avantages}`;
+  document.getElementById('tb-annee-av').textContent=E.annee_avantages;
+}
+async function sauverParams(){
+  const v=id=>document.getElementById(id).value.trim();
+  const P=Object.assign({},params(),{maire:v('pa-maire'),date_debut:v('pa-debut'),date_fin:v('pa-fin'),deliberation:v('pa-delib'),
+    annee_subvention:v('pa-annee-sub')?Number(v('pa-annee-sub')):null,annee_avantages:v('pa-annee-av')?Number(v('pa-annee-av')):null,modele_defaut:v('pa-modele')?Number(v('pa-modele')):null});
+  Object.keys(P).forEach(k=>{ if(P[k]===''||P[k]===null) delete P[k]; });
+  if(P.date_debut && P.date_fin && P.date_fin<=P.date_debut) return toast('La date de fin doit être après la date de début','err');
+  try{ await FU.rpc('ft_conv_params_sauver',{p_token:tok(),p_saison:S(),p_params:P}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  D.params=P; remplirParams(); await calculerEtats(); dessinerTableau(); toast('✅ Paramètres enregistrés — toutes les conventions de la saison sont à jour','ok');
+}
+async function reprendreSaison(){
+  const de=S()-1;
+  if(!confirm(`Reprendre les lignes de la saison ${saisonLib(de)} (modèle, lieux, activité, article spécifique) pour les associations qui n'ont pas encore de ligne en ${saisonLib(S())} ?\nLes montants restent à saisir.`)) return;
+  try{ const n=await FU.rpc('ft_conv_reprendre',{p_token:tok(),p_de:de,p_vers:S()}); toast(`✅ ${n} ligne(s) reprise(s)`,'ok'); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  await charger(); dessinerTableau();
+}
+
+// ---------- État de chaque convention (texte modifié depuis l'envoi ?) ----------
+const ETAT={};
+async function calculerEtats(){
+  for(const k in ETAT) delete ETAT[k];
+  for(const c of (D.conventions||[])){
+    if(c.statut!=='a_signer' && c.statut!=='signee') continue;
+    const r=conventionDe(c.asso,'envoi'); if(!r.modele) continue;
+    try{ ETAT[norm(c.asso)]={modifie:(await sha256(r.html))!==(c.empreinte||'')}; }catch(e){}
+  }
+}
+function pastilleStatut(a){
+  const c=convDe(a), d=donnee(a)||{};
+  if(d.concernee===false) return '<span class="pastille p-gris">Non concernée</span>';
+  if(!c) return '<span class="pastille p-gris">À envoyer</span>';
+  const mod=ETAT[norm(a)]&&ETAT[norm(a)].modifie?' <span class="pastille p-rouge" title="Les données ou le modèle ont changé depuis l\'envoi : renvoyez la convention pour que l\'association signe la version à jour.">⚠️ modifiée depuis l\'envoi</span>':'';
+  if(c.statut==='a_signer') return `<span class="pastille p-jaune" title="Envoyée le ${dateCourte(c.envoyee_le)}">⏳ ${c.lu_le?'Lue, ':''}à signer</span>`+mod;
+  if(c.statut==='signee') return `<span class="pastille p-bleu" title="Signée le ${dateCourte(c.signe_le)}">✍️ Signée asso</span>`+mod;
+  if(c.statut==='finalisee') return '<span class="pastille p-vert">✅ Finalisée</span>';
+  return '';
+}
+
+// ---------- Tableau ----------
+function assosFiltrees(){
+  const q=norm(document.getElementById('tb-recherche').value), mas=document.getElementById('tb-masquer').checked;
+  return D.assos.filter(a=>{ const f=fiche(a)||{}; if(q && !norm(a+' '+(f.nom_officiel||'')).includes(q)) return false; if(mas && (donnee(a)||{}).concernee===false) return false; return true; });
+}
+function dessinerTableau(){
+  const t=document.getElementById('tableau'); if(!D) return;
+  const liste=assosFiltrees();
+  if(!D.assos.length){ t.innerHTML='<tr><td class="vide">Aucune association : ajoutez-les dans Réglage administrateur › Associations.</td></tr>'; return; }
+  const tousCoches=liste.length && liste.every(a=>SEL.has(a));
+  t.innerHTML=`<thead><tr><th><input type="checkbox" class="cocher" ${tousCoches?'checked':''} onchange="toutSel(this.checked)"></th>
+    <th>Association</th><th>Fiche</th><th>Modèle</th><th>Subvention</th><th style="text-align:right">Montant</th><th style="text-align:right">Avantages ${paramsEff().annee_avantages}</th><th>Lieux mis à disposition</th><th>Convention</th><th></th></tr></thead><tbody>`+
+  liste.map(a=>{
+    const f=fiche(a), d=donnee(a)||{}, g=montantGlobal(d), tot=totalSub(d), ecart=nombre(d.montant_global)!==null && lignesSub(d).length && Math.abs(nombre(d.montant_global)-tot)>0.009;
+    const ia=D.assos.indexOf(a);
+    const off=d.concernee===false;
+    return `<tr class="${off?'off':''}">
+      <td><input type="checkbox" class="cocher" ${SEL.has(a)?'checked':''} onchange="basculerSel(${ia},this.checked)"></td>
+      <td><b>${esc(a)}</b>${f&&f.nom_officiel&&norm(f.nom_officiel)!==norm(a)?`<div class="petit">${esc(f.nom_officiel)}</div>`:''}</td>
+      <td>${ficheComplete(f)?'<span class="pastille p-vert" title="Fiche complète">✔</span>':`<span class="pastille p-or" title="Manque : ${esc(manquesFiche(f).join(', '))}" style="cursor:pointer" onclick="ouvrirFiche(${ia})">⚠️ ${manquesFiche(f).length}</span>`}</td>
+      <td><select class="ci" onchange="majCellule(${ia},'modele_id',this.value)" style="min-width:150px">${optionsModeles(d.modele_id,'Par défaut')}</select></td>
+      <td><label class="switch"><input type="checkbox" ${d.afficher_subvention!==false?'checked':''} onchange="majCellule(${ia},'afficher_subvention',this.checked)"> apparaît</label></td>
+      <td style="text-align:right;white-space:nowrap">${g!==null?`<b>${esc(eur(g))}</b>`:'<span class="petit">—</span>'}${ecart?`<div class="petit" style="color:#b45309" title="Le montant global saisi ne correspond pas au total des lignes">⚠️ lignes : ${esc(eur(tot))}</div>`:''}</td>
+      <td style="text-align:right"><input class="ci num" value="${d.avantages!=null?esc(String(d.avantages).replace('.',',')):''}" placeholder="—" onchange="majCellule(${ia},'avantages',this.value)"></td>
+      <td style="max-width:260px"><div class="petit" style="max-height:38px;overflow:hidden" title="${esc(d.lieux||'')}">${d.lieux?esc(d.lieux):'<span style="color:#b45309">à saisir</span>'}</div></td>
+      <td>${pastilleStatut(a)}</td>
+      <td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" title="Détail" onclick="ouvrirLigne(${ia})">✏️</button>
+        <button class="btn btn-secondary btn-sm" title="Aperçu" onclick="ouvrirApercu('${'a'}',${ia})">👁️</button></td></tr>`;
+  }).join('')+'</tbody>';
+  document.getElementById('tb-selection').textContent=SEL.size+' sélectionnée'+(SEL.size>1?'s':'');
+}
+function basculerSel(i,on){ const a=D.assos[i]; if(on) SEL.add(a); else SEL.delete(a); dessinerTableau(); }
+function toutSel(on){ assosFiltrees().forEach(a=>{ if(on) SEL.add(a); else SEL.delete(a); }); dessinerTableau(); }
+async function majCellule(i,champ,val){
+  const a=D.assos[i]; const p={}; p[champ]=val;
+  try{ const r=await FU.rpc('ft_conv_donnees_sauver',{p_token:tok(),p_saison:S(),p_asso:a,p_d:p}); majDonnee(r); }
+  catch(e){ toast('Erreur : '+e.message,'err'); }
+  await calculerEtats(); dessinerTableau();
+}
+function majDonnee(r){ const L=D.donnees||(D.donnees=[]); const k=L.findIndex(d=>norm(d.asso)===norm(r.asso)); if(k>=0) L[k]=r; else L.push(r); }
+
+// ---------- Détail d'une ligne ----------
+function ligneHtml(type,o){
+  o=o||{};
+  if(type==='versement') return `<div class="ligne"><input class="lib" placeholder="ex : Avril" value="${esc(o.libelle||'')}"><input class="mt" placeholder="€" value="${o.montant!=null?esc(String(o.montant).replace('.',',')):''}" oninput="majTotal()"><button class="lnk red" onclick="this.parentElement.remove();majTotal()">✖</button></div>`;
+  return `<div class="ligne"><select>${TYPES_AIDE.map(t=>`<option ${t===o.type?'selected':''}>${t}</option>`).join('')}</select><input class="lib" placeholder="précision (facultatif)" value="${esc(o.libelle||'')}"><input class="mt" placeholder="€" value="${o.montant!=null?esc(String(o.montant).replace('.',',')):''}" oninput="majTotal()"><button class="lnk red" onclick="this.parentElement.remove();majTotal()">✖</button></div>`;
+}
+function ajouterLigne(id,type){ document.getElementById(id).insertAdjacentHTML('beforeend',ligneHtml(type)); }
+function lireLignes(){
+  const v=[...document.querySelectorAll('#ml-versements .ligne')].map(l=>({libelle:l.querySelector('.lib').value.trim(),montant:nombre(l.querySelector('.mt').value)})).filter(x=>x.libelle||x.montant!==null);
+  const a=[...document.querySelectorAll('#ml-aides .ligne')].map(l=>({type:l.querySelector('select').value,libelle:l.querySelector('.lib').value.trim(),montant:nombre(l.querySelector('.mt').value)})).filter(x=>x.libelle||x.montant!==null);
+  return {v,a};
+}
+function majTotal(){
+  const {v,a}=lireLignes(); const tot=lignesSub({versements:v,autres_aides:a}).reduce((t,x)=>t+x.m,0); const g=nombre(document.getElementById('ml-global').value);
+  document.getElementById('ml-sub-zone').style.opacity=document.getElementById('ml-sub').checked?1:.45;
+  document.getElementById('ml-total').innerHTML=`Total des lignes : <b>${esc(eur(tot)||'0 €')}</b>`+(g!==null&&Math.abs(g-tot)>0.009&&(v.length||a.length)?`<div style="color:#b45309">⚠️ différent du montant global saisi (${esc(eur(g))})</div>`:'');
+}
+function ouvrirLigne(i){
+  const a=D.assos[i]; LIGNE_ASSO=a; const d=donnee(a)||{}, f=fiche(a)||{}, E=paramsEff();
+  document.getElementById('ml-titre').textContent=a; document.getElementById('ml-sous').textContent=(f.nom_officiel||'')+' · saison '+saisonLib(S());
+  document.getElementById('ml-modele').innerHTML=optionsModeles(d.modele_id,'Modèle par défaut');
+  document.getElementById('ml-concernee').value=String(d.concernee!==false);
+  document.getElementById('ml-activite').value=d.activite||''; document.getElementById('ml-activite').placeholder=f.activite||'';
+  document.getElementById('ml-sub').checked=d.afficher_subvention!==false;
+  document.getElementById('ml-versements').innerHTML=(d.versements||[]).map(x=>ligneHtml('versement',x)).join('');
+  document.getElementById('ml-aides').innerHTML=(d.autres_aides||[]).map(x=>ligneHtml('aide',x)).join('');
+  if(!(d.versements||[]).length) ajouterLigne('ml-versements','versement');
+  document.getElementById('ml-global').value=d.montant_global!=null?String(d.montant_global).replace('.',','):'';
+  document.getElementById('ml-avantages').value=d.avantages!=null?String(d.avantages).replace('.',','):'';
+  document.getElementById('ml-av-annee').value=d.avantages_annee||''; document.getElementById('ml-av-annee').placeholder=E.annee_avantages;
+  document.getElementById('ml-av-aide').textContent=`Vide = ${E.annee_avantages} (année n-1 des paramètres).`;
+  document.getElementById('ml-lieux').value=d.lieux||''; document.getElementById('ml-article').value=d.article_specifique||''; document.getElementById('ml-remarque').value=d.remarque||'';
+  err('ml-err'); majTotal(); ouvrir('ligne');
+}
+async function sauverLigne(){
+  const {v,a}=lireLignes(); const val=id=>document.getElementById(id).value;
+  const p={modele_id:val('ml-modele'),concernee:val('ml-concernee')==='true',activite:val('ml-activite'),afficher_subvention:document.getElementById('ml-sub').checked,
+    versements:v,autres_aides:a,montant_global:val('ml-global'),avantages:val('ml-avantages'),avantages_annee:val('ml-av-annee'),lieux:val('ml-lieux'),article_specifique:val('ml-article'),remarque:val('ml-remarque')};
+  try{ const r=await FU.rpc('ft_conv_donnees_sauver',{p_token:tok(),p_saison:S(),p_asso:LIGNE_ASSO,p_d:p}); majDonnee(r); }catch(e){ return err('ml-err',e.message); }
+  fermer('ligne'); await calculerEtats(); dessinerTableau(); toast('✅ Enregistré — la convention est à jour','ok');
+}
+function ficheDepuisLigne(){ fermer('ligne'); ouvrirFiche(D.assos.indexOf(LIGNE_ASSO)); }
+async function apercuDepuisLigne(){ await sauverLigne(); ouvrirApercu('a',D.assos.indexOf(LIGNE_ASSO)); }
+
+// ---------- Réglage groupé ----------
+function ouvrirGroupe(){
+  if(!SEL.size) return toast('Cochez d\'abord des associations dans le tableau','warn');
+  document.getElementById('gr-sous').textContent=SEL.size+' association(s) : '+[...SEL].join(', ');
+  document.getElementById('gr-modele').innerHTML='<option value="-">— ne pas changer —</option><option value="">Modèle par défaut</option>'+optionsModeles(null);
+  document.getElementById('gr-concernee').value=''; document.getElementById('gr-sub').value=''; err('gr-err'); ouvrir('groupe');
+}
+async function appliquerGroupe(){
+  const p={}, m=document.getElementById('gr-modele').value, c=document.getElementById('gr-concernee').value, s=document.getElementById('gr-sub').value;
+  if(m!=='-') p.modele_id=m; if(c) p.concernee=c==='true'; if(s) p.afficher_subvention=s==='true';
+  if(!Object.keys(p).length) return err('gr-err','Choisissez au moins un réglage.');
+  try{ await FU.rpc('ft_conv_donnees_groupe',{p_token:tok(),p_saison:S(),p_assos:[...SEL],p_d:p}); }catch(e){ return err('gr-err',e.message); }
+  fermer('groupe'); await charger(); dessinerTableau(); toast('✅ Réglage appliqué','ok');
+}
+
+// ---------- Aperçu ----------
+function ouvrirApercu(_,i){
+  APERCU={asso:D.assos[i], modele:null};
+  document.getElementById('ap-asso').innerHTML=D.assos.map((a,k)=>`<option value="${k}" ${k===i?'selected':''}>${esc(a)}</option>`).join('');
+  apercuRedessiner(); ouvrir('apercu');
+}
+function apercuRedessiner(){
+  const a=D.assos[Number(document.getElementById('ap-asso').value)]; APERCU.asso=a;
+  let r;
+  if(APERCU.modele){ r=rendre(APERCU.modele.contenu,contexte(a),'apercu'); r.modele=APERCU.modele; } else r=conventionDe(a,'apercu');
+  document.getElementById('ap-titre').textContent='Aperçu — '+(r.modele?r.modele.nom:'');
+  const mf=manquesFiche(fiche(a));
+  document.getElementById('ap-manque').innerHTML=(r.manquants.length?`<div class="alerte rouge">À compléter : ${r.manquants.map(k=>esc(LIB[k]||k)).join(', ')}</div>`:'')+
+    (mf.length?`<div class="alerte">Fiche de l'association incomplète : ${esc(mf.join(', '))}</div>`:'');
+  document.getElementById('ap-doc').innerHTML=`<div class="feuille">${avecSignature(r.html,null)}</div>`;
+}
+async function apercuPdf(){
+  const a=APERCU.asso; let r; if(APERCU.modele){ r=rendre(APERCU.modele.contenu,contexte(a),'envoi'); } else r=conventionDe(a,'envoi');
+  toast('⏳ Préparation du PDF…');
+  try{ (await pdfDoc(avecSignature(r.html,null),`Convention ${saisonLib(S())} — ${a} (projet)`,null)).download(`Projet_convention_${S()}_${nomFichier(a)}.pdf`); }catch(e){ toast('Erreur PDF : '+e.message,'err'); }
+}
+
+// ---------- Envoi pour signature ----------
+let ENVOI=[];
+function envoyerSelection(){
+  if(!SEL.size) return toast('Cochez les associations à qui envoyer la convention','warn');
+  ENVOI=[...SEL].map(a=>{ const r=conventionDe(a,'envoi'); const f=fiche(a), c=convDe(a), d=donnee(a)||{};
+    const pb=[]; if(d.concernee===false) pb.push('marquée « non concernée »'); if(!r.modele) pb.push('aucun modèle'); if(!f||!f.mail) pb.push('pas de mail dans la fiche');
+    return {a,r,c,pb,att:r.manquants.map(k=>LIB[k]||k).concat(manquesFiche(f).map(x=>'fiche : '+x))}; });
+  const deja=ENVOI.filter(x=>x.c&&['signee','finalisee'].includes(x.c.statut));
+  document.getElementById('en-liste').innerHTML=`<table class="tb"><thead><tr><th>Association</th><th>Modèle</th><th>Contrôle</th></tr></thead><tbody>`+ENVOI.map(x=>`<tr>
+    <td><b>${esc(x.a)}</b>${x.c?`<div class="petit">déjà envoyée (${esc(x.c.statut==='a_signer'?'à signer : sera remplacée':x.c.statut==='signee'?'signée':'finalisée')})</div>`:''}</td>
+    <td>${esc(x.r.modele?x.r.modele.nom:'—')}</td>
+    <td>${x.pb.length?`<span class="pastille p-rouge">✖ ${esc(x.pb.join(', '))}</span>`:x.att.length?`<span class="pastille p-or" title="${esc(x.att.join(', '))}">⚠️ ${x.att.length} champ(s) vide(s)</span><div class="petit">${esc(x.att.join(', '))}</div>`:'<span class="pastille p-vert">✔ complet</span>'}</td></tr>`).join('')+'</tbody></table>';
+  document.getElementById('en-remplacer-zone').style.display=deja.length?'':'none'; document.getElementById('en-remplacer').checked=false;
+  err('en-err'); ouvrir('envoi');
+}
+async function confirmerEnvoi(){
+  const rempl=document.getElementById('en-remplacer').checked, btn=document.getElementById('en-go');
+  const ok=ENVOI.filter(x=>!x.pb.length && (!x.c || x.c.statut==='a_signer' || rempl));
+  if(!ok.length) return err('en-err','Aucune convention à envoyer (voir les contrôles).');
+  if(ok.some(x=>x.att.length) && !confirm('Certaines conventions ont des champs vides (remplacés par « …… »). Envoyer quand même ?')) return;
+  btn.disabled=true; let n=0, nm=0; const erreurs=[];
+  for(const x of ok){
+    try{ const c=await FU.rpc('ft_conv_envoyer',{p_token:tok(),p_saison:S(),p_asso:x.a,p_modele:x.r.modele.id,p_contenu:x.r.html,p_remplacer:rempl}); n++;
+      const m=await envoyerMail(c.id,'a_signer'); if(m.envoye) nm++; else erreurs.push(x.a+' : mail non envoyé ('+(m.erreur||m.detail||'?')+')'); }
+    catch(e){ erreurs.push(x.a+' : '+e.message); }
+  }
+  btn.disabled=false; fermer('envoi'); SEL.clear(); await charger(); dessinerTableau();
+  toast(`✅ ${n} convention(s) envoyée(s), ${nm} mail(s) parti(s)`,erreurs.length?'warn':'ok');
+  if(erreurs.length) alert('Attention :\n'+erreurs.join('\n'));
+}
+
+// ---------- Suivi des signatures ----------
+function dessinerSuivi(){
+  const t=document.getElementById('suivi'), f=document.getElementById('suivi-filtre').value;
+  const lignes=D.assos.filter(a=>(donnee(a)||{}).concernee!==false || convDe(a)).map(a=>({a,c:convDe(a)})).filter(x=>!f || (f==='a_envoyer'?!x.c:x.c&&x.c.statut===f));
+  if(!lignes.length){ t.innerHTML='<tr><td class="vide">Rien à afficher.</td></tr>'; return; }
+  t.innerHTML=`<thead><tr><th>Association</th><th>Statut</th><th>Envoyée</th><th>Ouverte</th><th>Signée par l'association</th><th>Maire (i-parapheur)</th><th>Actions</th></tr></thead><tbody>`+lignes.map(({a,c})=>{
+    const ia=D.assos.indexOf(a);
+    if(!c) return `<tr><td><b>${esc(a)}</b></td><td>${pastilleStatut(a)}</td><td colspan="4" class="petit">—</td><td><button class="btn btn-secondary btn-sm" onclick="SEL.clear();SEL.add(D.assos[${ia}]);envoyerSelection()">✉️ Envoyer</button></td></tr>`;
+    return `<tr><td><b>${esc(a)}</b><div class="petit">${esc(c.modele_nom||'')}</div></td><td>${pastilleStatut(a)}</td>
+      <td>${esc(dateCourte(c.envoyee_le))}</td><td>${c.lu_le?esc(dateCourte(c.lu_le)):'<span class="petit">pas encore</span>'}</td>
+      <td>${c.signe_le?`${esc(dateHeure(c.signe_le))}<div class="petit">${esc(c.signataire||'')}</div>`:'—'}</td>
+      <td>${c.final_le?`✅ ${esc(dateCourte(c.final_le))}<div><button class="lnk" onclick="telechargerFinal(${c.id})">${esc(c.final_nom||'PDF')}</button></div>`:c.statut==='signee'?`<label class="btn btn-secondary btn-sm" style="display:inline-block">📤 Déposer le PDF signé<input type="file" accept="application/pdf" style="display:none" onchange="deposerFinal(${c.id},this)"></label>`:'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-secondary btn-sm" title="Voir" onclick="voirConvention(${c.id})">👁️</button>
+        <button class="btn btn-primary btn-sm" title="PDF pour i-parapheur" onclick="pdfParId(${c.id})">📄 PDF</button>
+        ${c.statut==='a_signer'?`<button class="btn btn-secondary btn-sm" title="Renvoyer le mail" onclick="relancer(${c.id})">🔔</button>`:''}
+        ${c.statut!=='finalisee'?`<button class="btn btn-secondary btn-sm" title="Annuler cette convention" onclick="annulerConv(${c.id})">✖</button>`:''}
+      </td></tr>`;
+  }).join('')+'</tbody>';
+}
+async function lireConv(id){ return FU.rpc('ft_conv_lire',{p_token:tok(),p_id:id}); }
+async function pdfParId(id){
+  toast('⏳ Préparation du PDF…');
+  try{ const c=await lireConv(id); (await pdfConvention(c)).download(nomPdf(c)); }catch(e){ toast('Erreur : '+e.message,'err'); }
+}
+async function voirConvention(id){
+  let c; try{ c=await lireConv(id); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  const ok=(await sha256(c.contenu))===c.empreinte;
+  document.getElementById('dt-titre').textContent=`Convention ${saisonLib(c.saison)} — ${c.asso}`;
+  document.getElementById('dt-corps').innerHTML=`<div class="grille" style="margin-bottom:12px">
+      <div class="carte" style="margin:0"><h4>Suivi</h4>${(c.historique||[]).map(h=>`<div class="petit">${esc(dateHeure(h.at))} — <b>${esc(h.quoi)}</b></div>`).join('')}</div>
+      <div class="carte" style="margin:0"><h4>Preuve</h4><div class="petit">Mail de la fiche : ${esc(c.mail_fiche||'—')}</div>
+        ${c.signe_le?`<div class="petit">Code vérifié sur : ${esc(c.signataire_mail||'')}</div><div class="petit">IP : ${esc(c.signe_ip||'—')}</div>`:''}
+        <div class="petit">Empreinte : <span class="mono">${esc(c.empreinte)}</span></div><div class="petit">${ok?'✔ intégrité vérifiée':'⚠️ le texte ne correspond pas à l\'empreinte'}</div></div></div>
+    <div class="apercu-wrap"><div class="feuille">${avecSignature(c.contenu,c)}</div></div>`;
+  ouvrir('detail');
+}
+async function relancer(id){ const m=await envoyerMail(id,'a_signer'); toast(m.envoye?'✅ Mail renvoyé':'Mail non envoyé : '+(m.erreur||m.detail||''),m.envoye?'ok':'err'); }
+async function annulerConv(id){
+  const motif=prompt('Annuler cette convention ? Elle ne pourra plus être signée.\nMotif (facultatif) :',''); if(motif===null) return;
+  try{ await FU.rpc('ft_conv_annuler',{p_token:tok(),p_id:id,p_motif:motif}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  await charger(); dessinerSuivi(); toast('Convention annulée','ok');
+}
+async function deposerFinal(id,input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  if(f.size>10*1024*1024) return toast('Fichier trop lourd (10 Mo maximum)','err');
+  toast('⏳ Envoi…');
+  try{ await FU.rpc('ft_conv_final_deposer',{p_token:tok(),p_id:id,p_nom:f.name,p_contenu:await lireBase64(f)}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  await charger(); dessinerSuivi(); toast('✅ Convention finalisée : l\'association peut la télécharger','ok');
+}
+async function telechargerFinal(id){
+  try{ const r=await FU.rpc('ft_conv_final_lire',{p_token:tok(),p_id:id}); telecharger(b64Blob(r.contenu,'application/pdf'),r.nom||'convention.pdf'); }catch(e){ toast('Erreur : '+e.message,'err'); }
+}
+async function zipSignees(){
+  const l=(D.conventions||[]).filter(c=>c.statut==='signee'||c.statut==='finalisee');
+  if(!l.length) return toast('Aucune convention signée pour cette saison','warn');
+  toast(`⏳ Préparation de ${l.length} PDF…`);
+  try{
+    await chargerScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
+    const z=new JSZip();
+    for(const r of l){ const c=await lireConv(r.id); const b=await new Promise(res=>pdfConvention(c).then(p=>p.getBlob(res))); z.file(nomPdf(c),b); }
+    telecharger(await z.generateAsync({type:'blob'}),`Conventions_signees_${S()}.zip`); toast('✅ ZIP prêt','ok');
+  }catch(e){ toast('Erreur : '+e.message,'err'); }
+}
+
+// ---------- Fiches ----------
+function dessinerFiches(){
+  const t=document.getElementById('fiches');
+  t.innerHTML=`<thead><tr><th>Compte</th><th>Nom officiel</th><th>Président(e)</th><th>Mail</th><th>SIRET</th><th>Dernière AG</th><th>Statuts</th><th>Mise à jour</th><th></th></tr></thead><tbody>`+D.assos.map((a,i)=>{
+    const f=fiche(a)||{};
+    return `<tr><td><b>${esc(a)}</b></td><td>${esc(f.nom_officiel||'')}</td><td>${esc(f.president||'')}</td><td>${esc(f.mail||'')}</td><td class="mono">${esc(siretFmt(f.siret))}</td>
+      <td>${f.date_ag?esc(dateCourte(f.date_ag)):''}</td><td>${f.statuts_nom?`<button class="lnk" onclick="telechargerStatuts(${i})">📎 ${esc(f.statuts_nom)}</button>`:'<span class="petit">—</span>'}</td>
+      <td class="petit">${f.maj?esc(dateCourte(f.maj))+' · '+esc(f.maj_par||''):''}</td>
+      <td style="white-space:nowrap">${ficheComplete(f)?'<span class="pastille p-vert">✔</span>':`<span class="pastille p-or" title="${esc(manquesFiche(f).join(', '))}">⚠️ ${manquesFiche(f).length}</span>`} <button class="btn btn-secondary btn-sm" onclick="ouvrirFiche(${i})">✏️</button></td></tr>`;
+  }).join('')+'</tbody>';
+}
+function champsFiche(prefix,f){
+  f=f||{};
+  return '<div class="grille">'+FICHE_CHAMPS.map(([k,l,t,o,a])=>`<div class="mf ${o?'oblig':''} ${['nom_officiel','siege','activite','federation'].includes(k)?'plein':''}"><label>${esc(l)}</label>
+    <input id="${prefix}-${k}" type="${t}" value="${esc(k==='date_ag'&&f[k]?String(f[k]).slice(0,10):k==='siret'?siretFmt(f[k]):(f[k]||''))}" ${t==='date'?`max="${new Date().toISOString().slice(0,10)}"`:''} placeholder="${esc(k==='forme'?'Association loi 1901':'')}">
+    ${a?`<div class="aide-champ">${esc(a)}</div>`:''}</div>`).join('')+'</div>';
+}
+function lireFiche(prefix){ const o={}; FICHE_CHAMPS.forEach(([k])=>{ const e=document.getElementById(prefix+'-'+k); if(e) o[k]=e.value.trim(); }); return o; }
+function ouvrirFiche(i){
+  FICHE_ASSO=D.assos[i]; const f=fiche(FICHE_ASSO);
+  document.getElementById('mf-titre').textContent='Fiche — '+FICHE_ASSO;
+  document.getElementById('mf-champs').innerHTML=champsFiche('mf',f)+`<div class="mf"><label>Statuts de l'association</label>
+    ${f&&f.statuts_nom?`<div class="petit" style="margin-bottom:6px">📎 ${esc(f.statuts_nom)} <button class="lnk" onclick="telechargerStatuts(${i})">télécharger</button></div>`:''}
+    <input type="file" accept=".pdf,.doc,.docx,.odt,image/*" onchange="deposerStatuts(this,'${'admin'}')"></div>`;
+  err('mf-err'); ouvrir('fiche');
+}
+async function sauverFicheAdmin(){
+  try{ const r=await FU.rpc('ft_conv_fiche_sauver',{p_token:tok(),p_asso:FICHE_ASSO,p_fiche:lireFiche('mf')}); majFiche(r); }catch(e){ return err('mf-err',e.message); }
+  fermer('fiche'); await calculerEtats(); vue(VUE); toast('✅ Fiche enregistrée','ok');
+}
+function majFiche(r){ const L=D.fiches||(D.fiches=[]); const k=L.findIndex(f=>norm(f.asso)===norm(r.asso)); if(k>=0) L[k]=r; else L.push(r); }
+async function deposerStatuts(input){
+  const f=input.files&&input.files[0]; if(!f) return;
+  if(f.size>8*1024*1024) return toast('Fichier trop lourd (8 Mo maximum)','err');
+  toast('⏳ Envoi des statuts…');
+  try{ await FU.rpc('ft_conv_statuts_deposer',{p_token:tok(),p_asso:ROLE==='admin'?FICHE_ASSO:null,p_nom:f.name,p_type:f.type||'application/octet-stream',p_contenu:await lireBase64(f)}); }
+  catch(e){ return toast('Erreur : '+e.message,'err'); }
+  toast('✅ Statuts enregistrés','ok');
+  if(ROLE==='admin'){ await charger(); } else demarrerAsso();
+}
+async function telechargerStatuts(i){
+  try{ const r=await FU.rpc('ft_conv_statuts_lire',{p_token:tok(),p_asso:ROLE==='admin'?D.assos[i]:null}); telecharger(b64Blob(r.contenu,r.type),r.nom||'statuts'); }catch(e){ toast('Erreur : '+e.message,'err'); }
+}
+
+// ---------- Demandes de compte ----------
+async function dessinerDemandes(){
+  const box=document.getElementById('demandes'); box.innerHTML='<div class="chargement">Chargement…</div>';
+  let L; try{ L=await FU.rpc('ft_conv_demandes_liste',{p_token:tok()}); }catch(e){ box.innerHTML='<p class="vide">Erreur : '+esc(e.message)+'</p>'; return; }
+  if(!L.length){ box.innerHTML='<p class="vide">Aucune demande.</p>'; return; }
+  box.innerHTML=L.map(d=>{ const x=d.infos||{};
+    const prop=x.nom_court||x.nom_officiel||'';
+    return `<div class="carte"><div class="flex" style="justify-content:space-between"><h4>${esc(x.nom_officiel)}</h4>
+      ${d.statut==='en_attente'?'<span class="pastille p-jaune">En attente</span>':d.statut==='acceptee'?`<span class="pastille p-vert">Acceptée → « ${esc(d.nom_compte)} »</span>`:'<span class="pastille p-rouge">Refusée</span>'}</div>
+      <div class="petit" style="margin-bottom:8px">Reçue le ${esc(dateHeure(d.cree))}</div>
+      <div class="grille" style="font-size:13.5px;line-height:1.6">
+        <div>SIRET : <b class="mono">${esc(siretFmt(x.siret))}</b><br>Président(e) : <b>${esc(x.president||'')}</b> ${x.president_qualite?'('+esc(x.president_qualite)+')':''}<br>Mail : <b>${esc(x.mail)}</b> · ${esc(x.telephone||'')}</div>
+        <div>Siège : ${esc(x.siege||'')}<br>Activité : ${esc(x.activite||'')} · Fédération : ${esc(x.federation||'—')}<br>Dernière AG : ${esc(x.date_ag?dateCourte(x.date_ag):'—')}</div>
+      </div>${x.message?`<p class="alerte bleu" style="margin-top:8px;white-space:pre-line">${esc(x.message)}</p>`:''}
+      ${d.statut==='en_attente'?`<div class="flex" style="margin-top:10px">
+        <div class="mf" style="margin:0;min-width:220px"><label>Nom du compte (liste des associations)</label><input id="dm-nom-${d.id}" value="${esc(prop)}" list="dm-assos"></div>
+        <div class="mf" style="margin:0;flex:1;min-width:220px"><label>Message (facultatif, envoyé au demandeur)</label><input id="dm-msg-${d.id}"></div>
+        <button class="btn btn-success btn-sm" onclick="traiterDemande(${d.id},'accepter')">✔ Accepter</button>
+        <button class="btn btn-danger btn-sm" onclick="traiterDemande(${d.id},'refuser')">✖ Refuser</button></div>`:''}</div>`; }).join('')+
+    `<datalist id="dm-assos">${D.assos.map(a=>`<option value="${esc(a)}">`).join('')}</datalist>`;
+}
+async function traiterDemande(id,action){
+  const nom=document.getElementById('dm-nom-'+id).value.trim(), msg=document.getElementById('dm-msg-'+id).value.trim();
+  if(action==='accepter' && D.assos.some(a=>norm(a)===norm(nom)) && !confirm(`« ${nom} » existe déjà : la demande sera rattachée à ce compte existant. Continuer ?`)) return;
+  if(action==='refuser' && !confirm('Refuser cette demande ?')) return;
+  try{ await FU.rpc('ft_conv_demande_traiter',{p_token:tok(),p_id:id,p_action:action,p_nom:nom,p_message:msg}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  const m=await envoyerMail(id,'reponse');
+  toast(action==='accepter'?'✅ Compte créé'+(m.envoye?' — mail envoyé':''):'Demande refusée'+(m.envoye?' — mail envoyé':''),'ok');
+  await charger(); dessinerDemandes();
+}
+
+// ---------- Import du tableau .ods / .xlsx ----------
+let IMPORT=[];
+const COLS={nom:/nom de l.association/i, president:/nom du pr[ée]sident/i, adresse:/^adresse/i, siret:/siret/i, delib:/d[ée]lib[ée]ration/i, activite:/activit[ée]/i,
+  global:/montant global/i, v1:/versement 1/i, v2:/versement 2/i, haut:/haut niveau/i, transport:/transport/i, formation:/formation/i, manif1:/manifestation 1/i, manif2:/manifestation 2/i,
+  lieux:/lieu de mise/i, avantages:/^mise [àa] dispo et/i, anneeAv:/ann[ée]e mise/i};
+async function importerTableau(input){
+  const f=input.files&&input.files[0]; input.value=''; if(!f) return;
+  toast('⏳ Lecture du fichier…');
+  try{ await chargerScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'); }catch(e){ return toast(e.message,'err'); }
+  const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+  let rows=null, col=null;
+  for(const nomF of wb.SheetNames){
+    const r=XLSX.utils.sheet_to_json(wb.Sheets[nomF],{header:1,raw:false,defval:''});
+    const h=r.findIndex(l=>l.some(c=>COLS.president.test(String(c))));
+    if(h>=0){ col={}; r[h].forEach((c,i)=>{ for(const k in COLS) if(col[k]===undefined && COLS[k].test(String(c).trim())) col[k]=i; }); rows=r.slice(h+1); break; }
+  }
+  if(!rows) return toast('Colonne « Nom du président » introuvable dans le fichier','err');
+  const alias=params().alias||{};
+  const get=(l,k)=>col[k]===undefined?'':String(l[col[k]]||'').trim();
+  IMPORT=rows.filter(l=>get(l,'nom') && !/^total/i.test(get(l,'nom'))).map(l=>{
+    const brut=get(l,'nom'), nomL=brut.replace(/pas de convention.*$/i,'').trim();
+    const sans=/pas de convention/i.test(brut);
+    let cible=alias[norm(nomL)]||D.assos.find(a=>norm(a)===norm(nomL))||D.assos.find(a=>{ const fo=fiche(a); return fo&&norm(fo.nom_officiel)===norm(nomL); })||'';
+    if(!cible){ const t=norm(nomL); cible=D.assos.find(a=>norm(a).length>2 && (t.includes(norm(a))||norm(a).includes(t)))||''; }
+    const parseLigne=s=>{ s=String(s||'').replace(/^[\s\-–]+/,'').trim(); if(!s) return null; const m=s.match(/^(.*?)[\s:]*([\d\s.,]+)\s*(€|euros?)?\s*$/i); if(!m) return null; const mt=nombre(m[2]); if(mt===null||mt===0) return null; return {lib:m[1].replace(/[:\s]+$/,'').trim(),montant:mt}; };
+    const vers=[get(l,'v1'),get(l,'v2')].map(parseLigne).filter(Boolean).map(x=>({libelle:x.lib,montant:x.montant}));
+    const aides=[];
+    const h=nombre(get(l,'haut')); if(h) aides.push({type:'Haut niveau',libelle:'',montant:h});
+    [['transport','Transport'],['formation','Formation'],['manif1','Manifestation'],['manif2','Manifestation']].forEach(([k,t])=>{ const x=parseLigne(get(l,k)); if(x){ let lib=x.lib.replace(new RegExp('^'+t,'i'),'').replace(/^[\s:–-]+/,'').trim(); aides.push({type:t,libelle:lib,montant:x.montant}); } });
+    return {brut:nomL, sans, cible, president:get(l,'president'), siege:get(l,'adresse'), siret:get(l,'siret').replace(/\D/g,''), delib:get(l,'delib'), activite:get(l,'activite'),
+      global:nombre(get(l,'global')), versements:vers, aides, lieux:get(l,'lieux').replace(/\s*[\uf000-\uf0ff•▪]\s*/g,'\n').replace(/\s{3,}/g,'\n').split('\n').map(x=>x.replace(/^[\s\-–]+/,'').trim()).filter(Boolean).join('\n'), avantages:nombre(get(l,'avantages')), anneeAv:nombre(get(l,'anneeAv'))};
+  });
+  document.getElementById('im-saison').textContent=saisonLib(S());
+  const opts=c=>'<option value="">— ignorer —</option>'+D.assos.map(a=>`<option ${a===c?'selected':''}>${esc(a)}</option>`).join('');
+  document.getElementById('im-table').innerHTML=`<thead><tr><th>Ligne du fichier</th><th>Association du site</th><th>Montant</th><th>Avantages</th><th>Lieux</th></tr></thead><tbody>`+IMPORT.map((x,i)=>`<tr>
+    <td><b>${esc(x.brut)}</b>${x.sans?'<div class="petit">pas de convention</div>':''}<div class="petit">${esc(x.president)}</div></td>
+    <td><select class="ci" id="im-c-${i}">${opts(x.cible)}</select></td><td>${esc(eur(x.global))}<div class="petit">${x.versements.concat(x.aides).length} ligne(s)</div></td>
+    <td>${esc(eur(x.avantages))}</td><td class="petit" style="max-width:260px">${esc(x.lieux.slice(0,90))}</td></tr>`).join('')+'</tbody>';
+  err('im-err'); ouvrir('import');
+}
+async function confirmerImport(){
+  const btn=document.getElementById('im-go'); btn.disabled=true; const comp=document.getElementById('im-fiches').checked;
+  const alias=Object.assign({},params().alias||{}); let n=0; const erreurs=[]; let delib='';
+  for(let i=0;i<IMPORT.length;i++){
+    const x=IMPORT[i], a=document.getElementById('im-c-'+i).value; if(!a) continue;
+    alias[norm(x.brut)]=a; if(!delib && x.delib) delib=x.delib;
+    const p={concernee:!x.sans, versements:x.versements, autres_aides:x.aides, montant_global:x.global!=null?String(x.global):'', lieux:x.lieux, activite:x.activite};
+    if(x.avantages!=null) p.avantages=String(x.avantages);
+    if(x.anneeAv) p.avantages_annee=String(x.anneeAv);
+    try{
+      majDonnee(await FU.rpc('ft_conv_donnees_sauver',{p_token:tok(),p_saison:S(),p_asso:a,p_d:p}));
+      if(comp){ const f=Object.assign({},fiche(a)||{}); const av=JSON.stringify(f);
+        if(!f.nom_officiel) f.nom_officiel=x.brut; if(!f.president) f.president=x.president; if(!f.siege) f.siege=x.siege; if(!f.siret && x.siret.length===14) f.siret=x.siret;
+        if(JSON.stringify(f)!==av){ const o={}; FICHE_CHAMPS.forEach(([k])=>o[k]=f[k]||''); majFiche(await FU.rpc('ft_conv_fiche_sauver',{p_token:tok(),p_asso:a,p_fiche:o})); } }
+      n++;
+    }catch(e){ erreurs.push(a+' : '+e.message); }
+  }
+  const P=Object.assign({},params(),{alias}); if(delib && !P.deliberation) P.deliberation=delib;
+  try{ await FU.rpc('ft_conv_params_sauver',{p_token:tok(),p_saison:S(),p_params:P}); }catch(e){}
+  btn.disabled=false; fermer('import'); await charger(); dessinerTableau();
+  toast(`✅ ${n} ligne(s) importée(s)`,erreurs.length?'warn':'ok'); if(erreurs.length) alert(erreurs.join('\n'));
+}
+
+// =====================================================================
+// MODÈLES (éditeur)
+// =====================================================================
+function remplirSelectChamps(){
+  const g={}; CHAMPS.forEach(([k,l,gr])=>{ (g[gr]=g[gr]||[]).push(`<option value="${k}">${esc(l)}</option>`); });
+  document.getElementById('ins-champ').innerHTML='<option value="">＋ Insérer un champ…</option>'+Object.keys(g).map(gr=>`<optgroup label="${esc(gr)}">${g[gr].join('')}</optgroup>`).join('');
+}
+function compteModele(id){ const def=paramsEff().modele_defaut||(D.modeles[0]&&D.modeles[0].id); return D.assos.filter(a=>{ const d=donnee(a)||{}; if(d.concernee===false) return false; return String(d.modele_id||def)===String(id); }).length; }
+function dessinerModeles(){
+  const L=D.modeles||[];
+  document.getElementById('modeles-liste').innerHTML=L.map(m=>`<div class="modele-carte ${m.id===MODELE_ID?'on':''}" onclick="editerModele(${m.id})">
+      <b>📄 ${esc(m.nom)}</b>${String(paramsEff().modele_defaut||(L[0]&&L[0].id))===String(m.id)?' <span class="pastille p-bleu">par défaut</span>':''}
+      <div class="petit">${compteModele(m.id)} association(s) · modifié le ${esc(dateCourte(m.maj))}</div></div>`).join('')+
+    `<div class="modele-carte" onclick="nouveauModele()" style="border-style:dashed;display:flex;align-items:center;justify-content:center"><b>＋ Nouveau modèle</b></div>`;
+  if(!MODELE_ID && L.length) editerModele(L[0].id);
+  if(!L.length) document.getElementById('editeur-zone').style.display='none';
+}
+function modeleCourant(){ return (D.modeles||[]).find(m=>m.id===MODELE_ID); }
+function editerModele(id){
+  if(MODELE_ID && MODELE_ID!==id && editeurModifie() && !confirm('Le modèle en cours a des modifications non enregistrées. Les abandonner ?')) return;
+  MODELE_ID=id; const m=modeleCourant(); if(!m) return;
+  document.getElementById('editeur-zone').style.display='';
+  document.getElementById('modele-nom').value=m.nom;
+  sourceOff(); document.getElementById('editeur').innerHTML=m.contenu; ED_ORIG=contenuEditeur();
+  document.querySelectorAll('.modele-carte').forEach(c=>c.classList.remove('on')); dessinerModeles();
+}
+let ED_ORIG='';
+function contenuEditeur(){
+  if(document.getElementById('source').style.display==='block') document.getElementById('editeur').innerHTML=document.getElementById('source').value;
+  const e=document.getElementById('editeur').cloneNode(true);
+  e.querySelectorAll('[data-champ]').forEach(s=>{ s.setAttribute('contenteditable','false'); s.classList.add('champ'); s.textContent=LIB[s.dataset.champ]||s.dataset.champ; });
+  return e.innerHTML;
+}
+function editeurModifie(){ return MODELE_ID && contenuEditeur()!==ED_ORIG; }
+async function sauverModele(){
+  const nom=document.getElementById('modele-nom').value.trim(); if(!nom) return toast('Donnez un nom au modèle','err');
+  const contenu=contenuEditeur();
+  try{ await FU.rpc('ft_conv_modele_sauver',{p_token:tok(),p_modele:{id:MODELE_ID,nom,contenu}}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  const m=modeleCourant(); m.nom=nom; m.contenu=contenu; m.maj=new Date().toISOString(); ED_ORIG=contenu;
+  await calculerEtats(); dessinerModeles(); toast(`✅ Modèle enregistré — ${compteModele(MODELE_ID)} convention(s) à jour`,'ok');
+}
+async function nouveauModele(){
+  const nom=prompt('Nom du nouveau modèle :','Convention annuelle de partenariat'); if(!nom) return;
+  const base=(D.modeles||[])[0];
+  const contenu=base&&confirm('Partir d\'une copie du premier modèle ?\n(Annuler = page vierge)')?base.contenu:'<h1 style="text-align:center">CONVENTION</h1><p>Texte…</p>';
+  try{ const id=await FU.rpc('ft_conv_modele_sauver',{p_token:tok(),p_modele:{nom,contenu}}); await charger(); MODELE_ID=null; editerModele(Number(id)); }catch(e){ toast('Erreur : '+e.message,'err'); }
+}
+async function dupliquerModele(){
+  const m=modeleCourant(); if(!m) return; const nom=prompt('Nom de la copie :',m.nom+' (copie)'); if(!nom) return;
+  try{ const id=await FU.rpc('ft_conv_modele_sauver',{p_token:tok(),p_modele:{nom,contenu:contenuEditeur()}}); await charger(); MODELE_ID=null; editerModele(Number(id)); toast('✅ Modèle dupliqué','ok'); }catch(e){ toast('Erreur : '+e.message,'err'); }
+}
+async function supprimerModele(){
+  const m=modeleCourant(); if(!m) return;
+  if((D.modeles||[]).length<2) return toast('Il faut garder au moins un modèle','warn');
+  if(!confirm(`Supprimer le modèle « ${m.nom} » ? Les associations qui l'utilisent passeront au modèle par défaut. Les conventions déjà envoyées ne changent pas.`)) return;
+  try{ await FU.rpc('ft_conv_modele_supprimer',{p_token:tok(),p_id:m.id}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  MODELE_ID=null; ED_ORIG=''; await charger(); dessinerModeles(); toast('Modèle supprimé','ok');
+}
+function apercuModele(){
+  APERCU={modele:{id:MODELE_ID,nom:document.getElementById('modele-nom').value,contenu:contenuEditeur()}};
+  const i=Math.max(0,D.assos.findIndex(a=>String((donnee(a)||{}).modele_id)===String(MODELE_ID)));
+  document.getElementById('ap-asso').innerHTML=D.assos.map((a,k)=>`<option value="${k}" ${k===i?'selected':''}>${esc(a)}</option>`).join('');
+  apercuRedessiner(); ouvrir('apercu');
+}
+function ouvrirAffectation(){
+  const def=paramsEff().modele_defaut||(D.modeles[0]&&D.modeles[0].id);
+  document.getElementById('af-sous').textContent=`Modèle « ${document.getElementById('modele-nom').value} » — saison ${saisonLib(S())}. Les associations décochées passent au modèle par défaut.`;
+  document.getElementById('af-liste').innerHTML=D.assos.map((a,i)=>{ const d=donnee(a)||{}; const on=String(d.modele_id||def)===String(MODELE_ID);
+    const autre=!on && d.modele_id ? ` <span class="petit">(${esc(((D.modeles||[]).find(m=>m.id==d.modele_id)||{}).nom||'')})</span>`:'';
+    return `<label><input type="checkbox" class="cocher" value="${i}" ${on?'checked':''}> ${esc(a)}${autre}${d.concernee===false?' <span class="petit">— non concernée</span>':''}</label>`; }).join('');
+  ouvrir('affect');
+}
+function cocherTout(id,on){ document.querySelectorAll('#'+id+' input[type=checkbox]').forEach(c=>c.checked=on); }
+async function appliquerAffectation(){
+  const def=paramsEff().modele_defaut||(D.modeles[0]&&D.modeles[0].id);
+  const on=[], off=[];
+  document.querySelectorAll('#af-liste input').forEach(c=>{ const a=D.assos[Number(c.value)], d=donnee(a)||{}, cur=String(d.modele_id||def)===String(MODELE_ID);
+    if(c.checked && !cur) on.push(a); if(!c.checked && cur && d.modele_id) off.push(a); });
+  try{
+    if(on.length) await FU.rpc('ft_conv_donnees_groupe',{p_token:tok(),p_saison:S(),p_assos:on,p_d:{modele_id:String(MODELE_ID)}});
+    if(off.length) await FU.rpc('ft_conv_donnees_groupe',{p_token:tok(),p_saison:S(),p_assos:off,p_d:{modele_id:''}});
+  }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  fermer('affect'); await charger(); dessinerModeles(); toast('✅ Associations mises à jour','ok');
+}
+// --- commandes de l'éditeur ---
+function focusEd(){ document.getElementById('editeur').focus(); }
+function cmd(c,v){ focusEd(); document.execCommand(c,false,v||null); }
+function bloc(tag){ if(tag) cmd('formatBlock',tag); }
+function selDansEditeur(){ const s=getSelection(); if(!s.rangeCount) return null; const r=s.getRangeAt(0); return document.getElementById('editeur').contains(r.commonAncestorContainer)?r:null; }
+let DERNIERE_SEL=null;
+document.addEventListener('selectionchange',()=>{ const r=selDansEditeur(); if(r) DERNIERE_SEL=r.cloneRange(); });
+function restaurerSel(){ focusEd(); if(DERNIERE_SEL){ const s=getSelection(); s.removeAllRanges(); s.addRange(DERNIERE_SEL); } }
+function insererChamp(k){ if(!k) return; restaurerSel(); document.execCommand('insertHTML',false,`<span class="champ" data-champ="${k}" contenteditable="false">${esc(LIB[k])}</span>&nbsp;`); }
+function blocHaut(n,ed){ while(n && n.parentNode!==ed){ n=n.parentNode; } return n; }
+function conteneur(n){ const ed=document.getElementById('editeur'); let x=n.nodeType===1?n:n.parentNode; while(x && x!==ed){ if(x.matches('[data-si],[data-sinon]')) return x; x=x.parentNode; } return ed; }
+function condition(v){
+  if(!v) return; restaurerSel(); const r=selDansEditeur(); if(!r) return toast('Placez le curseur dans le texte du modèle','warn');
+  if(v==='retirer'){ const c=conteneur(r.startContainer); if(c.id==='editeur') return toast('Le curseur n\'est pas dans un passage conditionnel','warn'); while(c.firstChild) c.parentNode.insertBefore(c.firstChild,c); c.remove(); return; }
+  const [type,cle]=v.split(':'); const ctn=conteneur(r.startContainer);
+  let a=blocHaut(r.startContainer,ctn), b=blocHaut(r.endContainer,ctn); if(!a||!b) return;
+  const div=document.createElement('div'); div.setAttribute(type==='si'?'data-si':'data-sinon',cle);
+  ctn.insertBefore(div,a); let n=a; while(n){ const suiv=n.nextSibling; div.appendChild(n); if(n===b) break; n=suiv; }
+  toast('Passage conditionnel créé (cadre en pointillés)','ok');
+}
+function sautPage(){ restaurerSel(); const r=selDansEditeur(); if(!r) return; const ed=document.getElementById('editeur'); let n=r.startContainer; n=n.nodeType===1?n:n.parentNode;
+  while(n && n.parentNode && !['P','H1','H2','H3','DIV','UL','TABLE'].includes(n.tagName)) n=n.parentNode; if(!n||n===ed) return; n.classList.toggle('pdf-pagebreak-before'); }
+async function insererImage(input){ const f=input.files&&input.files[0]; input.value=''; if(!f) return; if(f.size>400*1024) return toast('Image trop lourde (400 Ko maximum)','err');
+  const b=await lireBase64(f); restaurerSel(); document.execCommand('insertHTML',false,`<img src="data:${f.type};base64,${b}" width="120">`); }
+async function importerDocx(input){
+  const f=input.files&&input.files[0]; input.value=''; if(!f) return;
+  if(!confirm('Remplacer tout le texte du modèle par le contenu de ce fichier Word ? (pensez ensuite à replacer les champs automatiques)')) return;
+  try{ await chargerScript('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js');
+    const r=await mammoth.convertToHtml({arrayBuffer:await f.arrayBuffer()});
+    let h=r.value.replace(/&lt;([^&]{2,80})&gt;/g,(m,x)=>{ const k=devinerChamp(x); return k?`<span class="champ" data-champ="${k}" contenteditable="false">${esc(LIB[k])}</span>`:m; });
+    document.getElementById('editeur').innerHTML=h; toast('✅ Fichier importé — vérifiez la mise en page et les champs','ok'); }
+  catch(e){ toast('Import impossible : '+e.message,'err'); }
+}
+function devinerChamp(t){ t=norm(t);
+  const R=[[/nom de l.association|association/,'nom'],[/pr[ée]sident/,'president'],[/adresse|si[èe]ge/,'siege'],[/siret/,'siret'],[/d[ée]lib/,'deliberation'],[/activit/,'activite'],
+    [/montant glob/,'montant_global'],[/versement|fonctionnement/,'decomposition'],[/lieu/,'lieux'],[/mise [àa] dispo et|avantage/,'avantages_montant'],[/ann[ée]e mise/,'avantages_annee'],[/ann[ée]e/,'annee_subvention']];
+  for(const [re,k] of R) if(re.test(t)) return k; return null; }
+function basculerSource(){
+  const ed=document.getElementById('editeur'), src=document.getElementById('source');
+  if(src.style.display==='block'){ ed.innerHTML=src.value; sourceOff(); } else { src.value=ed.innerHTML; src.style.display='block'; ed.style.display='none'; }
+}
+function sourceOff(){ document.getElementById('source').style.display='none'; document.getElementById('editeur').style.display=''; }
+window.addEventListener('beforeunload',e=>{ if(ROLE==='admin' && editeurModifie()){ e.preventDefault(); e.returnValue=''; } });
+
+// =====================================================================
+// ASSOCIATION
+// =====================================================================
+let MA=null, LECT=null, SIG=null;
+async function demarrerAsso(){
+  document.getElementById('ecran-asso').style.display='';
+  try{ MA=await FU.rpc('ft_conv_ma_fiche',{p_token:tok()}); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  const f=MA.fiche||{};
+  document.getElementById('asso-fiche').innerHTML=champsFiche('af',f)+`<div class="mf"><label>Statuts de l'association (PDF)</label>
+    ${f.statuts_nom?`<div class="petit" style="margin-bottom:6px">📎 ${esc(f.statuts_nom)} — déposé le ${esc(dateCourte(f.statuts_maj))} <button class="lnk" onclick="telechargerStatuts()">télécharger</button></div>`:''}
+    <input type="file" accept=".pdf,.doc,.docx,.odt,image/*" onchange="deposerStatuts(this)"><div class="aide-champ">Facultatif — à redéposer en cas de modification des statuts.</div></div>`;
+  const mq=manquesFiche(f);
+  document.getElementById('asso-fiche-etat').innerHTML=mq.length?`<div class="alerte">⚠️ Votre fiche est incomplète. Il manque : <b>${esc(mq.join(', '))}</b>.</div>`:'<div class="alerte vert">✔ Votre fiche est complète. Pensez à la mettre à jour après chaque assemblée générale.</div>';
+  document.getElementById('asso-fiche-maj').textContent=f.maj?`Dernière mise à jour le ${dateCourte(f.maj)} (${f.maj_par||''})`:'';
+  const L=MA.conventions||[];
+  document.getElementById('asso-conventions').innerHTML=L.length?L.map(c=>{
+    const st=c.statut==='a_signer'?'<span class="pastille p-jaune">⏳ À signer</span>':c.statut==='signee'?'<span class="pastille p-bleu">✍️ Signée — en attente de la signature du Maire</span>':'<span class="pastille p-vert">✅ Signée par les deux parties</span>';
+    return `<div class="conv-carte ${c.statut==='a_signer'?'a-signer':''}"><div class="info"><h4>Convention de partenariat ${esc(saisonLib(c.saison))}</h4>${st}
+      <div class="petit" style="margin-top:6px">Reçue le ${esc(dateCourte(c.envoyee_le))}${c.signe_le?` · signée le ${esc(dateHeure(c.signe_le))} par ${esc(c.signataire||'')}`:''}${c.final_le?` · finalisée le ${esc(dateCourte(c.final_le))}`:''}</div></div>
+      <div class="flex">${c.statut==='a_signer'?`<button class="btn btn-or" onclick="lireConvention(${c.id})">✍️ Lire et signer</button>`:`<button class="btn btn-secondary" onclick="lireConvention(${c.id})">👁️ Voir</button><button class="btn btn-primary" onclick="pdfParId(${c.id})">📄 PDF signé</button>`}
+      ${c.final_le?`<button class="btn btn-success" onclick="telechargerFinal(${c.id})">📥 Version définitive</button>`:''}</div></div>`; }).join('')
+    :'<div class="alerte bleu">Aucune convention à signer pour le moment. Vous recevrez un mail dès que la Ville vous enverra votre convention.</div>';
+  if(new URLSearchParams(location.search).get('c')){ const id=Number(new URLSearchParams(location.search).get('c')); if(L.some(c=>c.id===id)) lireConvention(id); }
+}
+async function sauverMaFiche(){
+  err('asso-fiche-err');
+  const o=lireFiche('af');
+  try{ await FU.rpc('ft_conv_fiche_sauver',{p_token:tok(),p_asso:null,p_fiche:o}); }catch(e){ return err('asso-fiche-err',e.message); }
+  toast('✅ Fiche enregistrée','ok'); demarrerAsso();
+}
+function retourAsso(){ document.getElementById('asso-lecture').style.display='none'; document.getElementById('asso-liste').style.display=''; window.scrollTo(0,0); demarrerAsso(); }
+async function lireConvention(id){
+  try{ LECT=await lireConv(id); }catch(e){ return toast('Erreur : '+e.message,'err'); }
+  document.getElementById('asso-liste').style.display='none'; document.getElementById('asso-lecture').style.display='';
+  const c=LECT;
+  document.getElementById('lecture-entete').innerHTML=`<div class="section-title">Convention de partenariat ${esc(saisonLib(c.saison))}</div>
+    <p class="section-sub">${c.statut==='a_signer'?'Lisez attentivement la convention jusqu\'en bas, puis signez-la en suivant les étapes.':'Convention signée le '+esc(dateHeure(c.signe_le))+' par '+esc(c.signataire||'')+'.'}</p>`;
+  document.getElementById('lecture-doc').innerHTML=`<div class="feuille">${avecSignature(c.contenu,c)}</div>`;
+  const z=document.getElementById('lecture-signature');
+  if(c.statut!=='a_signer'){ z.innerHTML=`<div class="flex"><button class="btn btn-primary" onclick="pdfParId(${c.id})">📄 Télécharger le PDF signé</button>${c.final_le?`<button class="btn btn-success" onclick="telechargerFinal(${c.id})">📥 Version définitive (signée par le Maire)</button>`:''}</div>`; window.scrollTo(0,0); return; }
+  const f=(MA&&MA.fiche)||{};
+  z.innerHTML=`<div class="etapes">
+    <div class="etape on" id="et1"><h5><span class="num">1</span>Lecture</h5>
+      <label class="switch" style="font-size:14px;white-space:normal"><input type="checkbox" id="sg-lu" onchange="etapes()"> J'ai lu la convention et j'en accepte les termes au nom de l'association.</label></div>
+    <div class="etape" id="et2"><h5><span class="num">2</span>Signataire</h5>
+      <div class="grille"><div class="mf oblig"><label>Nom et prénom du signataire</label><input id="sg-nom" value="${esc(f.president||'')}" oninput="etapes()"></div>
+      <div class="mf"><label>Qualité</label><input id="sg-qualite" value="${esc(f.president_qualite||'Président(e)')}"></div></div></div>
+    <div class="etape" id="et3"><h5><span class="num">3</span>Signature</h5>
+      <p class="aide">Signez dans le cadre avec la souris ou le doigt.</p>
+      <div class="sig-zone"><canvas id="sg-canvas"></canvas><div class="sig-ligne"></div><div class="sig-txt">Signature</div></div>
+      <div class="flex" style="margin-top:6px"><button class="lnk" onclick="effacerSig()">Effacer</button></div></div>
+    <div class="etape" id="et4"><h5><span class="num">4</span>Code de vérification</h5>
+      <p class="aide">Pour confirmer que vous êtes bien le signataire, un code à 6 chiffres est envoyé à l'adresse de la fiche de l'association : <b>${esc(masquerMail(f.mail))}</b>.</p>
+      <div class="flex"><button class="btn btn-secondary" id="sg-code-btn" onclick="demanderCode()">✉️ Recevoir le code par mail</button><span class="petit" id="sg-code-info"></span></div>
+      <div class="flex" style="margin-top:12px"><input class="code-in" id="sg-code" inputmode="numeric" maxlength="6" placeholder="······" oninput="this.value=this.value.replace(/\\D/g,'');etapes()">
+        <button class="btn btn-or" id="sg-go" onclick="signer()" disabled>✍️ Signer la convention</button></div>
+      <div class="err-msg" id="sg-err"></div></div>
+  </div>`;
+  initSig(); etapes(); window.scrollTo(0,0);
+}
+function masquerMail(m){ m=String(m||''); const i=m.indexOf('@'); return i>1?m[0]+'•••'+m.slice(i):m||'(aucune adresse — complétez votre fiche)'; }
+function etapes(){
+  const lu=document.getElementById('sg-lu').checked, nom=document.getElementById('sg-nom').value.trim(), sig=SIG&&SIG.traits>0, code=/^\d{6}$/.test(document.getElementById('sg-code').value);
+  const set=(id,on,ok)=>{ const e=document.getElementById(id); e.classList.toggle('on',on&&!ok); e.classList.toggle('ok',!!ok); e.style.opacity=on?1:.55; };
+  set('et1',true,lu); set('et2',lu,lu&&nom); set('et3',lu&&nom,sig); set('et4',lu&&nom&&sig,false);
+  document.getElementById('sg-go').disabled=!(lu&&nom&&sig&&code);
+  document.getElementById('sg-code-btn').disabled=!(lu&&nom&&sig);
+}
+function initSig(){
+  const cv=document.getElementById('sg-canvas'); const r=cv.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  cv.width=r.width*dpr; cv.height=r.height*dpr; const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.lineWidth=2.4; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.strokeStyle='#0b1f3a';
+  SIG={cv,ctx,traits:0,actif:false,minX:1e9,minY:1e9,maxX:0,maxY:0};
+  const pos=e=>{ const b=cv.getBoundingClientRect(); return [e.clientX-b.left,e.clientY-b.top]; };
+  cv.onpointerdown=e=>{ cv.setPointerCapture(e.pointerId); SIG.actif=true; const [x,y]=pos(e); ctx.beginPath(); ctx.moveTo(x,y); borne(x,y); };
+  cv.onpointermove=e=>{ if(!SIG.actif) return; const [x,y]=pos(e); ctx.lineTo(x,y); ctx.stroke(); borne(x,y); };
+  cv.onpointerup=cv.onpointercancel=()=>{ if(SIG.actif){ SIG.actif=false; SIG.traits++; etapes(); } };
+  function borne(x,y){ SIG.minX=Math.min(SIG.minX,x); SIG.minY=Math.min(SIG.minY,y); SIG.maxX=Math.max(SIG.maxX,x); SIG.maxY=Math.max(SIG.maxY,y); }
+}
+function effacerSig(){ if(!SIG) return; const {cv,ctx}=SIG; ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cv.width,cv.height); ctx.restore(); Object.assign(SIG,{traits:0,minX:1e9,minY:1e9,maxX:0,maxY:0}); etapes(); }
+function imageSig(){
+  const {cv}=SIG, dpr=window.devicePixelRatio||1, m=8;
+  const x=Math.max(0,(SIG.minX-m)*dpr), y=Math.max(0,(SIG.minY-m)*dpr), w=Math.min(cv.width-x,(SIG.maxX-SIG.minX+2*m)*dpr), h=Math.min(cv.height-y,(SIG.maxY-SIG.minY+2*m)*dpr);
+  const sc=Math.min(1,500/w), o=document.createElement('canvas'); o.width=Math.max(1,Math.round(w*sc)); o.height=Math.max(1,Math.round(h*sc));
+  o.getContext('2d').drawImage(cv,x,y,w,h,0,0,o.width,o.height); return o.toDataURL('image/png');
+}
+async function demanderCode(){
+  const b=document.getElementById('sg-code-btn'); b.disabled=true; err('sg-err');
+  const r=await envoyerMail(LECT.id,'code');
+  if(r.envoye){ document.getElementById('sg-code-info').textContent='✅ Code envoyé — valable 15 minutes. Pensez à regarder dans les indésirables.'; document.getElementById('sg-code').focus(); setTimeout(()=>{ b.textContent='✉️ Renvoyer un code'; etapes(); },60000); }
+  else { err('sg-err',r.erreur||r.detail||'Envoi du code impossible.'); b.disabled=false; }
+}
+async function signer(){
+  const b=document.getElementById('sg-go'); b.disabled=true; err('sg-err');
+  let r;
+  try{ r=await FU.rpc('ft_conv_signer',{p_token:tok(),p_id:LECT.id,p_code:document.getElementById('sg-code').value,p_signataire:document.getElementById('sg-nom').value,
+    p_qualite:document.getElementById('sg-qualite').value,p_signature:imageSig(),p_empreinte:LECT.empreinte}); }
+  catch(e){ err('sg-err',e.message); b.disabled=false; return; }
+  if(r && r.erreur){ err('sg-err',r.erreur); b.disabled=false; return; }
+  envoyerMail(LECT.id,'signee');
+  toast('✅ Convention signée — merci !','ok');
+  await lireConvention(LECT.id);
+  document.getElementById('lecture-entete').insertAdjacentHTML('beforeend','<div class="alerte vert">✅ Votre signature est enregistrée. Un mail de confirmation vous est envoyé. La Ville va maintenant faire signer le Maire ; la version définitive apparaîtra dans votre espace.</div>');
+}
+
+// =====================================================================
+// DEMANDE DE COMPTE (publique)
+// =====================================================================
+function ecranDemande(){
+  document.getElementById('hdr-role').textContent='Association'; document.getElementById('hdr-deco').style.display='none';
+  document.getElementById('ecran-demande').style.display='';
+  document.getElementById('demande-form').innerHTML=champsFiche('dm',{})+`<div class="grille"><div class="mf"><label>Nom court souhaité pour le compte</label><input id="dm-nom_court" placeholder="ex : Basket"><div class="aide-champ">Le nom qui apparaîtra dans la liste des associations du site.</div></div></div>
+    <div class="mf"><label>Message (facultatif)</label><textarea id="dm-message"></textarea></div>
+    <div class="err-msg" id="dm-err"></div>
+    <div class="flex" style="margin-top:8px"><button class="btn btn-primary" id="dm-go" onclick="envoyerDemande()">📨 Envoyer la demande</button></div>`;
+}
+async function envoyerDemande(){
+  const o=lireFiche('dm'); o.nom_court=document.getElementById('dm-nom_court').value.trim(); o.message=document.getElementById('dm-message').value.trim();
+  const mq=FICHE_CHAMPS.filter(c=>c[3]&&!o[c[0]]).map(c=>c[1]); if(mq.length) return err('dm-err','À compléter : '+mq.join(', '));
+  const b=document.getElementById('dm-go'); b.disabled=true;
+  let id; try{ id=await FU.rpc('ft_conv_demande_compte',{p_infos:o}); }catch(e){ b.disabled=false; return err('dm-err',e.message); }
+  await envoyerMail(id,'demande');
+  document.getElementById('demande-form').innerHTML='<div class="alerte vert" style="margin:0">✅ Votre demande est envoyée au service des sports. Vous recevrez une réponse par mail à l\'adresse indiquée.</div><p style="margin-top:12px"><a href="index.html">← Retour à l\'accueil</a></p>';
+}
+</script>
+</body>
+</html>

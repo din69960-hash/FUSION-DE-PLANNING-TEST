@@ -45,3 +45,15 @@ Copie de test du site FUSION-DE-PLANNING, pour développer la réservation des s
 - Admin › Salles : tableau de toutes les salles avec cases à cocher ; réglage groupé (visibilité, visible et réservable, un événement par week-end, tarifs, forfaits week-end, cautions, nature proposée, capacité) appliqué à toutes les salles cochées.
 - Admin › Demandes : « Modifier » (salle, date, période, statut, profil, nature, demandeur, contacts, montants, remarque, pièces jointes ajoutées ou retirées) ; « Supprimer » avec archive (date libérée, demande gardée 1 an dans l'onglet Archives, restaurable) ou définitivement.
 - Base : `supabase/salles_v4.sql` (migration `ft_salles_v4`).
+
+## Étape 8 — Conventions de partenariat et signature en ligne (20/11/2026)
+
+- Page `conventions.html` (menu administrateur « 📝 Conventions », carte association « Ma fiche association et ma convention »).
+- Fiche association (nom officiel, SIRET, président, mail, date de la dernière AG, siège, activité, fédération, statuts) remplie par l'association, corrigeable par l'admin.
+- Demande de compte association sans connexion : `conventions.html?demande=1` (lien aussi dans la fenêtre de connexion association) ; l'admin accepte (compte + fiche créés) ou refuse.
+- Admin › Tableau des données (une ligne par association et par saison) : modèle, subvention « apparaît / n'apparaît pas », versements et aides (1 ou plusieurs montants), montant global, avantages en nature (année n-1 par défaut), lieux, article spécifique 3.9. Paramètres communs de la saison : maire, dates, délibération, année de la subvention, année des avantages. Import du tableau `DONNEES_AUTOMATIQUE` (.ods/.xlsx).
+- Admin › Modèles : éditeur de texte avec champs automatiques, passages conditionnels, sauts de page, import .docx, plusieurs modèles et choix des associations de chaque modèle. Modèle de départ : `supabase/modele_convention_sport.html`.
+- Annexe I générée à partir des créneaux annuels saisis (`ft_creneaux`).
+- Envoi pour signature : texte figé + empreinte SHA-256 ; mail à l'association. Signature par l'association : lecture, nom/qualité, signature tracée, code à 6 chiffres envoyé par mail (15 min, 5 essais) ; IP, navigateur et horodatage enregistrés. Signature électronique simple (eIDAS art. 25).
+- PDF (pdfmake) avec la signature de l'association et une page « Attestation de signature électronique » → dépôt dans i-parapheur par la Ville → dépôt du PDF final sur le site (l'association le télécharge). ZIP de toutes les conventions signées.
+- Base : `supabase/conventions.sql` (tables `ft_conv_*`). Mails : fonction `fusiontest-conv-mail` (Brevo).
